@@ -8,10 +8,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import userPic from "../assets/UserImage.svg"
-
+import { useEffect, useState } from "react"
 
 // The header now accepts an onMenuClick function to toggle the sidebar on mobile
 export default function DashboardHeader({ onMenuClick }) {
+  const [welcomeText, setWelcomeText] = useState("")
+  const fullText = "Welcome Back, Rahul Singh"
+  
+  useEffect(() => {
+    let currentIndex = 0
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setWelcomeText(fullText.substring(0, currentIndex))
+        currentIndex++
+      } else {
+        clearInterval(typingInterval)
+      }
+    }, 100) // Adjust typing speed here
+    
+    return () => clearInterval(typingInterval)
+  }, [])
+
   return (
     <header className="w-full bg-white p-4 md:border-b md:border-gray-100">
       <div className="flex items-center justify-between">
@@ -23,9 +40,16 @@ export default function DashboardHeader({ onMenuClick }) {
           </button>
 
           {/* Welcome Text */}
-          <div className="flex flex-col">
+          <div className="hidden md:flex flex-col">
             <h1 className="text-lg text-start font-semibold text-gray-900 md:text-xl">
-              Welcome Back, <span className="text-blue-600">Rahul Singh</span>
+              <span className="text-gray-900">{welcomeText.substring(0, 13)}</span>
+              {welcomeText.length > 13 && (
+                <span className="text-blue-600">{welcomeText.substring(13)}</span>
+              )}
+              {/* Cursor animation */}
+              {welcomeText.length < fullText.length && (
+                <span className="animate-pulse">|</span>
+              )}
             </h1>
             <p className="text-sm text-gray-500 mt-1 hidden md:block">
               Here is the information about all your verifications
@@ -34,12 +58,12 @@ export default function DashboardHeader({ onMenuClick }) {
         </div>
 
         {/* Right Section - Actions and Profile - Hidden on mobile */}
-        <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-gray-100">
-            <Search className="h-4 w-4 text-gray-600" />
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="hidden md:h-9 md:w-9 hover:bg-gray-100">
+            <Search className="hidden md:h-4 md:w-4 text-gray-600" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-gray-100">
-            <RotateCcw className="h-4 w-4 text-gray-600" />
+          <Button variant="ghost" size="icon" className="hidden md:h-9 md:w-9  hover:bg-gray-100">
+            <RotateCcw className="hidden md:h-4 md:w-4 text-gray-600" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
