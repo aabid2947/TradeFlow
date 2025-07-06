@@ -15,7 +15,7 @@ export default function AdminDashBoard() {
          {/* Main content area */}
          <div className="flex flex-col flex-1 md:ml-72">
            {/* Mobile Header with Hamburger Menu */}
-           <DashboardHeader/>
+            <DashboardHeader onMenuClick={() => setSidebarOpen(true)} />
            <DashboardAnalytics/>
          </div>
        </div>

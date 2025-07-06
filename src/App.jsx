@@ -1,20 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
-import UserDashBoard from "./pages/UserDashBoard"
-import AdminDashBoard from './pages/AdminDashBoard'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import publicRoutes from './routes/publicRoutes';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const router = createBrowserRouter([
+    ...publicRoutes,
+    // You can add other routes here
+    {
+      path: '*',
+      element: <div>404 Not Found</div>, // Add a 404 page
+    },
+  ]);
 
-  return (
-    <>
-      {/* <UserDashBoard/> */}
-   <AdminDashBoard/>
-      
-    </>
-  )
+  return <RouterProvider router={router} />;
 }
 
 export default App

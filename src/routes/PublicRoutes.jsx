@@ -4,6 +4,10 @@ import AdminDashBoard from "../pages/AdminDashBoard"
 
 const publicRoutes = [
   {
+    path: '/',
+    element: <UserDashBoard />,
+  },
+  {
     path: '/user',
     element: <UserDashBoard />,
   },
@@ -11,6 +15,10 @@ const publicRoutes = [
     path: '/admin',
     element: <AdminDashBoard />
   },
+   {
+      path: '*',
+      element: <div>404 Not Found</div>, // Add a 404 page
+    },
 ];
 
 export default publicRoutes;

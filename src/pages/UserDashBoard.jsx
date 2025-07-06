@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { Menu } from "lucide-react" // Import the Menu icon for the hamburger
-
 import SidebarComponent from "../components/SidebarComponent"
 import ServiceCard from "../cards/ServiceCard"
 import PANCardImage from "../assets/PANCardImage.svg"
@@ -13,115 +11,30 @@ import PANLinkedCardImage from "../assets/PANLinkedCardImage.svg"
 import DashboardHeader from "../components/DashboardHeader"
 
 export default function UserDashBoard() {
-  // State to control the sidebar visibility on mobile
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const serviceCards = [
-    {
-      id: "pan-card",
-      imageSrc: PANCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "PAN Card Verification",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 250,
-      buttonState: "purchased",
-    },
-    {
-      id: "aadhaar-card",
-      imageSrc: AadharCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "Aadhaar Card Verification",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 360,
-      buttonState: "subscribe",
-    },
-    {
-      id: "voter-id",
-      imageSrc: VoterCardImage,
-      demandLevel: "Average Demanding",
-      serviceName: "Voter ID Verification",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 241,
-      buttonState: "subscribe",
-    },
-    {
-      id: "passport",
-      imageSrc: PassportCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "Passport Verification",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 241,
-      buttonState: "subscribe",
-    },
-    {
-      id: "pan-aadhaar-linked",
-      imageSrc: PANAadhaarLinkedCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "Pan Aadhaar Linked Check",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 272,
-      buttonState: "subscribe",
-    },
-    {
-      id: "pan-validation-api",
-      imageSrc: PANValidationCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "Pan Validation API",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 385,
-      buttonState: "subscribe",
-    },
-    {
-      id: "pan-linked",
-      imageSrc: PANLinkedCardImage,
-      demandLevel: "Average Demanding",
-      serviceName: "Pan Linked",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 441,
-      buttonState: "subscribe",
-    },
-    {
-      id: "passport-2",
-      imageSrc: PassportCardImage,
-      demandLevel: "Most Demanding",
-      serviceName: "Passport Verification",
-      verificationCount: 20,
-      durationDays: 7,
-      price: 351,
-      buttonState: "subscribe",
-    },
+    { id: "pan-card", imageSrc: PANCardImage, demandLevel: "Most Demanding", serviceName: "PAN Card Verification", verificationCount: 20, durationDays: 7, price: 250, buttonState: "purchased" },
+    { id: "aadhaar-card", imageSrc: AadharCardImage, demandLevel: "Most Demanding", serviceName: "Aadhaar Card Verification", verificationCount: 20, durationDays: 7, price: 360, buttonState: "subscribe" },
+    { id: "voter-id", imageSrc: VoterCardImage, demandLevel: "Average Demanding", serviceName: "Voter ID Verification", verificationCount: 20, durationDays: 7, price: 241, buttonState: "subscribe" },
+    { id: "passport", imageSrc: PassportCardImage, demandLevel: "Most Demanding", serviceName: "Passport Verification", verificationCount: 20, durationDays: 7, price: 241, buttonState: "subscribe" },
+    { id: "pan-aadhaar-linked", imageSrc: PANAadhaarLinkedCardImage, demandLevel: "Most Demanding", serviceName: "Pan Aadhaar Linked Check", verificationCount: 20, durationDays: 7, price: 272, buttonState: "subscribe" },
+    { id: "pan-validation-api", imageSrc: PANValidationCardImage, demandLevel: "Most Demanding", serviceName: "Pan Validation API", verificationCount: 20, durationDays: 7, price: 385, buttonState: "subscribe" },
+    { id: "pan-linked", imageSrc: PANLinkedCardImage, demandLevel: "Average Demanding", serviceName: "Pan Linked", verificationCount: 20, durationDays: 7, price: 441, buttonState: "subscribe" },
+    { id: "passport-2", imageSrc: PassportCardImage, demandLevel: "Most Demanding", serviceName: "Passport Verification", verificationCount: 20, durationDays: 7, price: 351, buttonState: "subscribe" },
   ]
 
   return (
-    <div className="relative min-h-screen bg-gray-100">
-      {/* Pass state and setter to the SidebarComponent */}
+    <div className="relative min-h-screen bg-gray-50">
       <SidebarComponent isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-      {/* Main content area */}
+      {/* Main content area, with a left margin on desktop to make space for the sidebar */}
       <div className="flex flex-col flex-1 md:ml-72">
-        {/* Mobile Header with Hamburger Menu */}
-        <header className="md:hidden bg-white shadow-sm flex items-center justify-between p-4">
-          <span className="text-xl font-semibold text-gray-800">Menu</span>
-          <button onClick={() => setSidebarOpen(true)} className="text-gray-600 hover:text-gray-900">
-            <Menu className="h-6 w-6" />
-          </button>
-        </header>
+        {/* A single, unified header that handles its own responsiveness */}
+        <DashboardHeader onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Main content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {/* Desktop Header */}
-          <div className="hidden md:block">
-            <DashboardHeader />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {serviceCards.map((card) => (
               <ServiceCard
                 key={card.id}
