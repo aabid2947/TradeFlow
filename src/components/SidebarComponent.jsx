@@ -32,6 +32,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import sidebarLogo from "../assets/sidebarLogo.svg"
+import userPic from "../assets/UserImage.svg"
 
 const navigationData = {
   dashboard: [{ title: "Dashboard", icon: LayoutDashboard, url: "#", iconColor: "text-orange-500" }],
@@ -148,7 +149,7 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
             <SidebarFooter className="p-3 border-t border-gray-100">
               <div className="flex items-center gap-3 mb-3">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src="https://placehold.co/32x32/E2E8F0/4A5568?text=RS" alt="Rahul Singh" />
+                  <AvatarImage src={userPic} alt="Rahul Singh" />
                   <AvatarFallback>RS</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">

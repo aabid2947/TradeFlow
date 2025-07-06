@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import userPic from "../assets/UserImage.svg"
+
 
 // The header now accepts an onMenuClick function to toggle the sidebar on mobile
 export default function DashboardHeader({ onMenuClick }) {
@@ -43,14 +45,14 @@ export default function DashboardHeader({ onMenuClick }) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 px-2 hover:bg-gray-100 flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src="https://placehold.co/24x24/DBEAFE/1E40AF?text=RS" alt="Rahul Singh" />
+                  <AvatarImage src={userPic}alt="Rahul Singh" />
                   <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-medium">RS</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-gray-700">Rahul Singh</span>
                 <ChevronDown className="h-3 w-3 text-gray-500" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-48 bg-white border-[#1A89C1] ">
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Log out</DropdownMenuItem>

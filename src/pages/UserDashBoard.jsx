@@ -18,7 +18,7 @@ export default function UserDashBoard() {
     { id: "aadhaar-card", imageSrc: AadharCardImage, demandLevel: "Most Demanding", serviceName: "Aadhaar Card Verification", verificationCount: 20, durationDays: 7, price: 360, buttonState: "subscribe" },
     { id: "voter-id", imageSrc: VoterCardImage, demandLevel: "Average Demanding", serviceName: "Voter ID Verification", verificationCount: 20, durationDays: 7, price: 241, buttonState: "subscribe" },
     { id: "passport", imageSrc: PassportCardImage, demandLevel: "Most Demanding", serviceName: "Passport Verification", verificationCount: 20, durationDays: 7, price: 241, buttonState: "subscribe" },
-    { id: "pan-aadhaar-linked", imageSrc: PANAadhaarLinkedCardImage, demandLevel: "Most Demanding", serviceName: "Pan Aadhaar Linked Check", verificationCount: 20, durationDays: 7, price: 272, buttonState: "subscribe" },
+    { id: "pan-aadhaar-linked", imageSrc: PANAadhaarLinkedCardImage, demandLevel: "Most Demanding", serviceName: "Pan Aadhaar Check", verificationCount: 20, durationDays: 7, price: 272, buttonState: "subscribe" },
     { id: "pan-validation-api", imageSrc: PANValidationCardImage, demandLevel: "Most Demanding", serviceName: "Pan Validation API", verificationCount: 20, durationDays: 7, price: 385, buttonState: "subscribe" },
     { id: "pan-linked", imageSrc: PANLinkedCardImage, demandLevel: "Average Demanding", serviceName: "Pan Linked", verificationCount: 20, durationDays: 7, price: 441, buttonState: "subscribe" },
     { id: "passport-2", imageSrc: PassportCardImage, demandLevel: "Most Demanding", serviceName: "Passport Verification", verificationCount: 20, durationDays: 7, price: 351, buttonState: "subscribe" },
@@ -29,12 +29,13 @@ export default function UserDashBoard() {
       <SidebarComponent isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       {/* Main content area, with a left margin on desktop to make space for the sidebar */}
-      <div className="flex flex-col flex-1 md:ml-72">
+      <div className="flex flex-col flex-1 md:ml-68">
         {/* A single, unified header that handles its own responsiveness */}
         <DashboardHeader onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-4">
+          <h1 className="font-bold text-xl my-2">KYC Verification API</h1>
+          <div className="grid grid-cols-1 space-y-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 ">
             {serviceCards.map((card) => (
               <ServiceCard
                 key={card.id}

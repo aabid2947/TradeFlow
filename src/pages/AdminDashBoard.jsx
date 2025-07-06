@@ -13,7 +13,7 @@ export default function AdminDashBoard() {
          <SidebarComponent isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
    
          {/* Main content area */}
-         <div className="flex flex-col flex-1 md:ml-72">
+         <div className="flex flex-col flex-1 md:ml-66">
            {/* Mobile Header with Hamburger Menu */}
             <DashboardHeader onMenuClick={() => setSidebarOpen(true)} />
            <DashboardAnalytics/>

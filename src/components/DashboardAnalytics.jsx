@@ -78,7 +78,7 @@ export default function DashboardAnalytics() {
       </div>
 
       {/* API Statistics Chart */}
-      <Card className="mb-6 shadow-sm">
+      <Card className="mb-6 shadow-sm border-[#1A89C1] ">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900">API Statistics</CardTitle>
         </CardHeader>
@@ -113,11 +113,11 @@ export default function DashboardAnalytics() {
       </Card>
 
       {/* Bottom Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6  ">
         {/* Create/Manage API Keys Card */}
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <div className="bg-gray-900 rounded-t-lg p-4 h-32 relative overflow-hidden">
+        <Card className="shadow-sm border-[#1A89C1] ">
+          <CardContent className="p-2">
+            <div className="bg-gray-900 rounded-lg p-4 h-40 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
               <div className="relative z-10">
                 <div className="text-green-400 text-xs font-mono mb-2">
@@ -138,9 +138,9 @@ export default function DashboardAnalytics() {
         </Card>
 
         {/* API Data Analytics Card */}
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-t-lg p-4 h-32 relative overflow-hidden">
+        <Card className="shadow-sm border-[#1A89C1] " >
+          <CardContent className="p-2">
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg p-4 h-40 relative overflow-hidden">
               <div className="absolute inset-0 opacity-20">
                 <div className="w-full h-full bg-[url('data:image/svg+xml,%3Csvg width%3D%2260%22 height%3D%2260%22 viewBox%3D%220 0 60 60%22 xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cg fill%3D%22none%22 fillRule%3D%22evenodd%22%3E%3Cg fill%3D%22%23ffffff%22 fillOpacity%3D%220.1%22%3E%3Ccircle cx%3D%227%22 cy%3D%227%22 r%3D%221%22/%3E%3Ccircle cx%3D%2227%22 cy%3D%227%22 r%3D%221%22/%3E%3Ccircle cx%3D%2247%22 cy%3D%227%22 r%3D%221%22/%3E%3Ccircle cx%3D%227%22 cy%3D%2227%22 r%3D%221%22/%3E%3Ccircle cx%3D%2227%22 cy%3D%2227%22 r%3D%221%22/%3E%3Ccircle cx%3D%2247%22 cy%3D%2227%22 r%3D%221%22/%3E%3Ccircle cx%3D%227%22 cy%3D%2247%22 r%3D%221%22/%3E%3Ccircle cx%3D%2227%22 cy%3D%2247%22 r%3D%221%22/%3E%3Ccircle cx%3D%2247%22 cy%3D%2247%22 r%3D%221%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
               </div>
