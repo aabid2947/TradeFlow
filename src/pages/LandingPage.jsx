@@ -6,6 +6,10 @@ import StatsBanner from "../components/HomePage/StatsBanner"
 import TrustSection from "../components/HomePage/TrustSection"
 import CustomerReviews from "../components/HomePage/CustomerReviewSection"
 import LandingPageFooter from "../components/HomePage/Footer"
+import SubscriptionSection from "../components/HomePage/SubsciptionSection"
+import FAQSection from "../components/HomePage/FAQSection"
+import ServicesShowcase from "../components/HomePage/ServiceShowcase"
+import HeroSection from "../components/HomePage/HeroSection"
 export default function LandingPage() {
 
   return (
@@ -15,11 +19,15 @@ export default function LandingPage() {
     
         {/* A single, unified header that handles its own responsiveness */}
         <HomePageHeader />
+        <HeroSection/>
         <ServicesSection/>
+        <ServicesShowcase/>
         <PricingSection/>
-        <TrustSection/>
         <StatsBanner/>
+        <TrustSection/>
         <CustomerReviews/>
+        <FAQSection/>
+        <SubscriptionSection/>
         <LandingPageFooter/>
 
 

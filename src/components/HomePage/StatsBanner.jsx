@@ -19,7 +19,7 @@ const statsData = [
 
 export default function StatsBanner() {
   return (
-    <section className="w-full bg-gradient-to-r from-blue-500 to-blue-600 py-12">
+    <section className="w-[80%] mx-auto rounded-[2rem] bg-gradient-to-r from-blue-500 to-blue-600 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {statsData.map((stat, index) => (

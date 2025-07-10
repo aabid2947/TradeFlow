@@ -4,11 +4,30 @@ import AdminDashBoard from "../pages/AdminDashBoard"
 import ServicePage from "../pages/ServicePage";
 import ErrorPage from "../pages/ErrorPage";
 import LandingPage from "../pages/LandingPage";
+import LoginPage from "../pages/LoginPage";
+import SignUpPage from "../pages/SignUpPage";
+import RecentlyPurchased from "../components/AdminComponents/RecentlyPurchased";
+import AdminRecentPurchasedListPage from "../pages/Admin/RecentPurchasedPage";
+import CouponOfferPage from "../pages/Admin/CouponOfferPage";
 const publicRoutes = [
   {
     path: '/',
     element: <LandingPage />,
     errorElement: <ErrorPage />
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/signup',
+    element: <SignUpPage />,
+    // errorElement: <ErrorPage />
+  },
+  {
+    path:'/coupon-offer',
+    element:<CouponOfferPage/>
   },
   {
     path: '/user',
@@ -18,6 +37,11 @@ const publicRoutes = [
   {
     path: '/admin',
     element: <AdminDashBoard />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/purchase-list',
+    element: <AdminRecentPurchasedListPage/>,
     errorElement: <ErrorPage />
   },
   {

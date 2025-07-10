@@ -122,7 +122,7 @@ export default function CustomerReviews() {
   }
 
   return (
-    <section className="w-full bg-gradient-to-r from-blue-500 to-blue-600 py-16">
+    <section className="w-full bg-[#3F87FE] py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
