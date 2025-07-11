@@ -315,7 +315,7 @@ export default function HeroSection() {
             </div>
 
             {/* Right Side - Enhanced Visualization */}
-            <div className={`flex justify-center lg:justify-end ${!isAnimating ? "slide-in-right" : ""}`}>
+            <div className={`hidden lg:flex justify-center lg:justify-end ${!isAnimating ? "slide-in-right" : ""}`}>
               <div className="relative">
                 {/* Main Card */}
                 <Card className="w-full max-w-md bg-white/90 backdrop-blur-lg border-0 shadow-2xl overflow-hidden">

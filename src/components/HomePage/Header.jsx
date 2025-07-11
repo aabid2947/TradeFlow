@@ -180,7 +180,7 @@ export default function Header() {
             </NavigationMenu>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-5">
+            <div className="hidden lg:flex items-center gap-5">
               {/* Contact Sales Button - Hidden on mobile */}
               {/* <Button
                 variant="outline"
