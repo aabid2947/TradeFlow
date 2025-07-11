@@ -11,6 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import { useNavigate } from "react-router-dom"
 import AppLogo from "@/assets/sidebarLogo.svg"
 const navigationItems = [
   {
@@ -64,6 +65,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -180,7 +182,7 @@ export default function Header() {
             </NavigationMenu>
 
             {/* Right Side Actions */}
-            <div className="hidden lg:flex items-center gap-5">
+            <div className="flex items-center gap-5">
               {/* Contact Sales Button - Hidden on mobile */}
               {/* <Button
                 variant="outline"
@@ -191,6 +193,8 @@ export default function Header() {
               </Button> */}
 
               {/* Demo Button */}
+              <div className="hidden lg:block">
+
               <Button
                 className={`
                 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
@@ -198,22 +202,25 @@ export default function Header() {
                 transition-all duration-200 transform hover:scale-105 active:scale-95
                 flex items-center gap-2 group text-[1.1rem]
               `}
+              type="button"
+              onClick={()=>navigate('/signup')}
               >
-                Book Demo
+                Get Started
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
               </Button>
+              </div>
 
               {/* Search Button - Desktop */}
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 className={`
-                  hidden md:flex h-12 w-12 p-0 hover:bg-gray-100 rounded-lg transition-all duration-200 /* Increased size */
+                  hidden md:flex h-12 w-12 p-0 hover:bg-gray-100 rounded-lg transition-all duration-200 
                   ${isScrolled ? "hover:shadow-sm" : ""}
                 `}
               >
                 <Search className="h-6 w-6 text-gray-600" />
-              </Button>
+              </Button> */}
 
               {/* Mobile Menu Button */}
               <Button

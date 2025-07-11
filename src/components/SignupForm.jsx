@@ -70,7 +70,7 @@ export function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="max-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-1">
       <div className="w-full max-w-md">
         <AuthCard title="Create Account" subtitle="Join thousands of users who trust our platform">
           <form onSubmit={handleSubmit} className="space-y-4">

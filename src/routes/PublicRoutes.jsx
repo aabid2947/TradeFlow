@@ -9,10 +9,16 @@ import SignUpPage from "../pages/SignUpPage";
 import RecentlyPurchased from "../components/AdminComponents/RecentlyPurchased";
 import AdminRecentPurchasedListPage from "../pages/Admin/RecentPurchasedPage";
 import CouponOfferPage from "../pages/Admin/CouponOfferPage";
+import AdminLoginPage from "../pages/AdminLoginPage";
 const publicRoutes = [
   {
     path: '/',
     element: <LandingPage />,
+    errorElement: <ErrorPage />
+  },
+  {
+        path: '/admin-login',
+    element: <AdminLoginPage />,
     errorElement: <ErrorPage />
   },
   {

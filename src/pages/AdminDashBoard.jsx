@@ -1,8 +1,8 @@
 // src/pages/HomePage.jsx
 import { useState } from "react"
-import SidebarComponent from "../components/SidebarComponent"
-import DashboardAnalytics from "../components/DashboardAnalytics"
-import DashboardHeader from "../components/DashboardHeader"
+import SidebarComponent from "@/components/AdminComponents/Sidebar"
+import DashboardAnalytics from "@/components/DashboardAnalytics"
+import DashboardHeader from "@/components/DashboardHeader"
 
 export default function AdminDashBoard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)

@@ -8,8 +8,8 @@ export default function SignUpPage() {
   console.error(error);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2">
-      <div className="hidden lg:block">
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+      <div className="hidden lg:block ">
         <TypeformSignup />
       </div>
       <div>

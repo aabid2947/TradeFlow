@@ -13,8 +13,9 @@ import {
   LogOut,
   ChevronDown,
   X,
-} from "lucide-react"
-import { useState } from "react"
+} from "lucide-react";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom"; // Import Link and useLocation
 import {
   Sidebar,
   SidebarContent,
@@ -28,65 +29,49 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import sidebarLogo from "../assets/sidebarLogo.svg"
-import userPic from "../assets/UserImage.svg"
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import sidebarLogo from "@/assets/sidebarLogo.svg";
+import userPic from "@/assets/UserImage.svg";
 
 const navigationData = {
-  dashboard: [{ title: "Dashboard", icon: LayoutDashboard, url: "#", iconColor: "text-orange-500" }],
+  dashboard: [{ title: "Dashboard", icon: LayoutDashboard, url: "/dashboard", iconColor: "text-orange-500" }],
   services: [
-    { title: "Verification API", icon: Shield, url: "#" },
-    { title: "KYC Verification", icon: Shield, url: "#", isActive: true },
-    { title: "Banking Verification", icon: Building2, url: "#" },
-    { title: "Business Verification", icon: Building2, url: "#" },
-    { title: "Employment Check", icon: Users, url: "#" },
-    { title: "Document Check", icon: FileCheck, url: "#" },
-    { title: "Document OCR", icon: ScanText, url: "#" },
-     // Adding more items to demonstrate scrolling
-    { title: "Service Item 1", icon: Shield, url: "#" },
-    { title: "Service Item 2", icon: Shield, url: "#" },
-    { title: "Service Item 3", icon: Shield, url: "#" },
+    { title: "Analytics", icon: Shield, url: "/admin" },
+    { title: "Coupon Offers", icon: Shield, url: "/coupon-offer" },
+    { title: "Recent Purchased", icon: ScanText, url: "/purchase-list" },
+    { title: "Services", icon: ScanText, url: "/services" },
+  
   ],
   reports: [
-    { title: "Account Report", icon: BarChart3, url: "#" },
-    { title: "Data Analytics", icon: PieChart, url: "#" },
- 
+    { title: "Account Report", icon: BarChart3, url: "/account-report" },
+    { title: "Data Analytics", icon: PieChart, url: "/data-analytics" },
   ],
-  pricing: [   { title: "Report Item 1", icon: BarChart3, url: "#" },
-    { title: "Report Item 2", icon: BarChart3, url: "#" }],
-}
+  pricing: [
+    { title: "Report Item 1", icon: BarChart3, url: "#" },
+    { title: "Report Item 2", icon: BarChart3, url: "#" },
+  ],
+};
 
-// CSS for the modern scrollbar is injected via a style tag
 const scrollbarStyles = `
-  .modern-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-  .modern-scrollbar::-webkit-scrollbar-track {
-    background-color: #f8fafc; /* slate-50 */
-  }
-  .modern-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #e2e8f0; /* slate-200 */
-    border-radius: 0px; /* Rectangular corners */
-  }
-  .modern-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #cbd5e1; /* slate-300 */
-  }
-  /* For Firefox */
-  .modern-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 #f8fafc;
-  }
-`
+  .modern-scrollbar::-webkit-scrollbar { width: 8px; }
+  .modern-scrollbar::-webkit-scrollbar-track { background-color: #f8fafc; }
+  .modern-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 0px; }
+  .modern-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #cbd5e1; }
+  .modern-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 #f8fafc; }
+`;
 
 export default function SidebarComponent({ isOpen, setIsOpen }) {
-  const [isServicesOpen, setIsServicesOpen] = useState(true)
+  const [isServicesOpen, setIsServicesOpen] = useState(true);
+  const location = useLocation(); // Get current location
+
+  // Function to check if a link is active
+  const isLinkActive = (url) => location.pathname === url;
 
   return (
     <>
       <style>{scrollbarStyles}</style>
-      {/* Backdrop for mobile */}
       <div
         className={`fixed inset-0 modal-overlay bg-transparent bg-opacity-30 backdrop-blur-sm z-40 md:hidden transition-opacity ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -95,15 +80,13 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
         aria-hidden="true"
       ></div>
 
-      {/* Main sidebar container */}
       <aside
-         className={`fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed inset-y-0 left-0 w-68 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        {/* All sidebar components must be wrapped in the SidebarProvider */}
-        <SidebarProvider className='border-none'>
-          {/* The Sidebar component itself acts as the main container */}
+        <SidebarProvider className="border-none">
           <Sidebar collapsible="none" className="flex flex-col h-full w-full border-none">
-            {/* Header (Not part of the scrollable area) */}
             <SidebarHeader className="p-4 border-b border-gray-100 flex-row justify-between items-center">
               <div className="flex items-center gap-2">
                 <img src={sidebarLogo} alt="Logo" className="h-12" />
@@ -119,20 +102,18 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
               </div>
             </SidebarHeader> */}
 
-            {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto modern-scrollbar">
               <SidebarContent className="px-3 py-2">
-                {/* Navigation Groups are placed inside the scrollable area */}
                 <SidebarGroup>
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {navigationData.dashboard.map((item) => (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild className="h-9 px-3 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            <a href={item.url} className="flex items-center gap-3">
-                              <item.icon className={`w-4 h-4 ${item.iconColor || "text-gray-500"}`} />
+                          <SidebarMenuButton asChild isActive={isLinkActive(item.url)} className={`h-9 px-3 text-sm font-medium ${isLinkActive(item.url) ? 'bg-[#E8F3FA] text-[#1A89C1] border-2 border-[#1A89C1]' : 'text-gray-700 hover:bg-gray-50'}`}>
+                            <Link to={item.url} className="flex items-center gap-3">
+                              <item.icon className={`w-4 h-4 ${isLinkActive(item.url) ? 'text-[#1A89C1]' : item.iconColor || "text-gray-500"}`} />
                               <span>{item.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       ))}
@@ -157,16 +138,19 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
                       </SidebarMenuItem>
                       {isServicesOpen && (
                         <div className="pl-4 mt-2 space-y-1">
-                          {navigationData.services.map((item) => (
-                            <SidebarMenuItem key={item.title}>
-                              <SidebarMenuButton asChild isActive={item.isActive} className={`h-9 px-3 text-sm w-full flex items-center justify-start rounded-md ${item.isActive ? "bg-[#E8F3FA] text-[#1A89C1] font-medium border-2 border-[#1A89C1]" : "text-gray-700 hover:bg-gray-50"}`}>
-                                <a href={item.url} className="flex items-center gap-3">
-                                  <item.icon className={`w-4 h-4 ${item.isActive ? "text-[#1A89C1]" : "text-gray-500"}`} />
-                                  <span>{item.title}</span>
-                                </a>
-                              </SidebarMenuButton>
-                            </SidebarMenuItem>
-                          ))}
+                          {navigationData.services.map((item) => {
+                            const isActive = isLinkActive(item.url);
+                            return (
+                              <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton asChild isActive={isActive} className={`h-9 px-3 text-sm w-full flex items-center justify-start rounded-md ${isActive ? "bg-[#E8F3FA] text-[#1A89C1] font-medium border-2 border-[#1A89C1]" : "text-gray-700 hover:bg-gray-50"}`}>
+                                  <Link to={item.url} className="flex items-center gap-3">
+                                    <item.icon className={`w-4 h-4 ${isActive ? "text-[#1A89C1]" : "text-gray-500"}`} />
+                                    <span>{item.title}</span>
+                                  </Link>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            );
+                          })}
                         </div>
                       )}
                     </SidebarMenu>
@@ -179,16 +163,18 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
                   </SidebarGroupLabel>
                   <SidebarGroupContent>
                     <SidebarMenu>
-                      {navigationData.reports.map((item) => (
+                      {navigationData.reports.map((item) => {
+                        const isActive = isLinkActive(item.url);
+                        return(
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild className="h-9 px-3 text-sm text-gray-700 hover:bg-gray-50">
-                            <a href={item.url} className="flex items-center gap-3">
-                              <item.icon className="w-4 h-4 text-gray-500" />
+                          <SidebarMenuButton asChild isActive={isActive} className={`h-9 px-3 text-sm ${isActive ? 'bg-[#E8F3FA] text-[#1A89C1] font-medium border-2 border-[#1A89C1]' : 'text-gray-700 hover:bg-gray-50'}`}>
+                            <Link to={item.url} className="flex items-center gap-3">
+                              <item.icon className={`w-4 h-4 ${isActive ? 'text-[#1A89C1]' : 'text-gray-500'}`} />
                               <span>{item.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
-                      ))}
+                      )})}
                     </SidebarMenu>
                   </SidebarGroupContent>
                 </SidebarGroup>
@@ -201,10 +187,10 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
                       {navigationData.pricing.map((item) => (
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton asChild className="h-9 px-3 text-sm text-gray-700 hover:bg-gray-50">
-                            <a href={item.url} className="flex items-center gap-3">
+                            <Link to={item.url} className="flex items-center gap-3">
                               <item.icon className="w-4 h-4 text-gray-500" />
                               <span>{item.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       ))}
@@ -214,7 +200,6 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
               </SidebarContent>
             </div>
 
-            {/* Footer (Fixed at the bottom) */}
             <SidebarFooter className="p-3 border-t border-gray-100">
               <div className="flex items-center gap-3 mb-3">
                 <Avatar className="w-8 h-8">
@@ -239,5 +224,5 @@ export default function SidebarComponent({ isOpen, setIsOpen }) {
         </SidebarProvider>
       </aside>
     </>
-  )
+  );
 }

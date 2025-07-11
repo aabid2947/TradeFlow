@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Star, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 
-
 // Mock data
-const mockOffers= [
+const mockOffers = [
   {
     id: "1",
     title: "Summer Verification Sale",
@@ -98,30 +97,52 @@ const CountdownTimer = ({ expiryDate }) => {
   }, [expiryDate])
 
   if (!timeLeft) {
-    return <Badge className="bg-red-100 text-red-800 border-red-200">Expired</Badge>
+    return (
+      <Badge className="bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200 font-medium px-3 py-1 rounded-full">
+        Expired
+      </Badge>
+    )
   }
 
   const isUrgent = timeLeft.days < 2
 
   return (
-    <div className={`flex items-center gap-1 text-xs font-medium ${isUrgent ? "text-red-600" : "text-orange-600"}`}>
-      <Timer className="w-3 h-3" />
-      {timeLeft.days > 0 ? (
-        <span>
-          {timeLeft.days}d {timeLeft.hours}h
-        </span>
-      ) : (
-        <span>
-          {timeLeft.hours.toString().padStart(2, "0")}:{timeLeft.minutes.toString().padStart(2, "0")}:
-          {timeLeft.seconds.toString().padStart(2, "0")}
-        </span>
-      )}
+    <div
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border ${
+        isUrgent ? "bg-red-50/80 border-red-200 text-red-700" : "bg-orange-50/80 border-orange-200 text-orange-700"
+      }`}
+    >
+      <Timer className="w-3.5 h-3.5 animate-pulse" />
+      <span className="text-xs font-semibold">
+        {timeLeft.days > 0
+          ? `${timeLeft.days}d ${timeLeft.hours}h`
+          : `${timeLeft.hours.toString().padStart(2, "0")}:${timeLeft.minutes.toString().padStart(2, "0")}:${timeLeft.seconds.toString().padStart(2, "0")}`}
+      </span>
     </div>
   )
 }
 
-const OfferCard = ({ offer, onApply }) => {
+const OfferCard = ({ offer, onApply, index }) => {
   const [copied, setCopied] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const cardRef = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), index * 100)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [index])
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(offer.code)
@@ -147,94 +168,124 @@ const OfferCard = ({ offer, onApply }) => {
   const usagePercentage = offer.maxUsage ? (offer.usageCount / offer.maxUsage) * 100 : 0
 
   return (
-    <Card className="group relative overflow-hidden border border-gray-200 hover:border-[#1987BF]/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div
+      ref={cardRef}
+      className={`transform transition-all duration-700 ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      }`}
+    >
+      <Card className="group relative overflow-hidden border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] rounded-2xl">
+        {/* Glassmorphism Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-      {/* Discount Badge */}
-      <div className="absolute top-4 right-4 z-10">
-        <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-3 py-1 text-sm">
-          {formatDiscount()}
-        </Badge>
-      </div>
-
-      {/* Public/Private Indicator */}
-      {!offer.isPublic && (
-        <div className="absolute top-4 left-4 z-10">
-          <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">Private</Badge>
-        </div>
-      )}
-
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF]/10 to-blue-500/10 rounded-xl flex items-center justify-center">
-            {offer.discountType === "percentage" ? (
-              <Percent className="w-6 h-6 text-[#1987BF]" />
-            ) : (
-              <DollarSign className="w-6 h-6 text-[#1987BF]" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">{offer.title}</CardTitle>
-            <p className="text-sm text-gray-600 line-clamp-2">{offer.description}</p>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Savings Information */}
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-green-600">{calculateSavings()}</div>
-          <CountdownTimer expiryDate={offer.expiryDate} />
+        {/* Floating Elements */}
+        <div className="absolute top-6 right-6 z-20">
+          <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-4 py-2 text-sm rounded-full shadow-lg shadow-blue-500/25 animate-pulse">
+            {formatDiscount()}
+          </Badge>
         </div>
 
-        {/* Usage Progress */}
-        {offer.maxUsage && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-gray-600">
-              <span>Used: {offer.usageCount}</span>
-              <span>Limit: {offer.maxUsage}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-[#1987BF] to-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-              />
-            </div>
+        {!offer.isPublic && (
+          <div className="absolute top-6 left-6 z-20">
+            <Badge className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 border border-purple-200 text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+              <Star className="w-3 h-3 mr-1" />
+              Exclusive
+            </Badge>
           </div>
         )}
 
-        {/* Minimum Order Value */}
-        {offer.minOrderValue && (
-          <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2">
-            Minimum order value: ₹{offer.minOrderValue}
-          </div>
-        )}
-
-        {/* Code and Actions */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 bg-gray-50 rounded-lg p-3 border-2 border-dashed border-gray-200">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-sm font-bold text-gray-900">{offer.code}</span>
-              <Button onClick={handleCopy} variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-200">
-                {copied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3 text-gray-600" />}
-              </Button>
+        <CardHeader className="pb-4 pt-8 px-8 relative z-10">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300">
+              {offer.discountType === "percentage" ? (
+                <Percent className="w-7 h-7 text-[#1987BF]" />
+              ) : (
+                <DollarSign className="w-7 h-7 text-[#1987BF]" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-xl font-bold text-gray-900 mb-2 leading-tight">{offer.title}</CardTitle>
+              <p className="text-sm text-gray-600 leading-relaxed">{offer.description}</p>
             </div>
           </div>
-          <Button
-            onClick={() => onApply(offer.code)}
-            className="bg-[#1987BF] hover:bg-[#1987BF]/90 text-white px-6 py-2 font-medium rounded-lg transition-all duration-200 hover:scale-105"
-          >
-            Apply
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+
+        <CardContent className="space-y-6 px-8 pb-8 relative z-10">
+          {/* Savings and Timer */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-semibold text-green-600">{calculateSavings()}</span>
+            </div>
+            <CountdownTimer expiryDate={offer.expiryDate} />
+          </div>
+
+          {/* Usage Progress */}
+          {offer.maxUsage && (
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span className="font-medium">Usage Progress</span>
+                <span className="font-semibold">
+                  {offer.usageCount}/{offer.maxUsage}
+                </span>
+              </div>
+              <div className="relative">
+                <div className="w-full bg-gray-200/60 rounded-full h-3 backdrop-blur-sm">
+                  <div
+                    className="bg-gradient-to-r from-[#1987BF] to-blue-600 h-3 rounded-full transition-all duration-1000 ease-out shadow-sm"
+                    style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full animate-pulse" />
+              </div>
+            </div>
+          )}
+
+          {/* Minimum Order Value */}
+          {offer.minOrderValue && (
+            <div className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#1987BF] rounded-full" />
+                <span className="text-sm font-medium text-gray-700">Minimum order value: ₹{offer.minOrderValue}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Code and Actions */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-base font-bold text-gray-900 tracking-wider">{offer.code}</span>
+                <Button
+                  onClick={handleCopy}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-white/80 rounded-lg transition-all duration-200 hover:scale-110"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-gray-600 hover:text-[#1987BF]" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <Button
+              onClick={() => onApply(offer.code)}
+              className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white px-8 py-3 font-semibold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+            >
+              Apply Now
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
 const CreateOfferCard = ({ onSave, onCancel }) => {
-  const [formData, setFormData] = useState<NewOffer>({
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
     discountType: "percentage",
@@ -248,8 +299,8 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
 
   const [errors, setErrors] = useState({})
 
-  const validateForm = () => {
-    const newErrors = {}
+  const validateForm = ()=> {
+    const newErrors= {}
 
     if (!formData.title.trim()) newErrors.title = "Title is required"
     if (!formData.description.trim()) newErrors.description = "Description is required"
@@ -279,60 +330,71 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
   }
 
   return (
-    <Card className="border-2 border-[#1987BF]/20 bg-gradient-to-br from-[#1987BF]/5 to-blue-500/5 animate-in slide-in-from-top-4 duration-300">
-      <CardHeader>
+    <Card className="border-0 bg-gradient-to-br from-[#1987BF]/10 via-blue-50/80 to-purple-50/80 backdrop-blur-xl shadow-xl shadow-blue-500/10 rounded-2xl animate-in slide-in-from-top-4 duration-500">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent rounded-2xl" />
+
+      <CardHeader className="px-8 pt-8 pb-6 relative z-10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#1987BF] rounded-xl flex items-center justify-center">
-              <Plus className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF] to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Plus className="w-6 h-6 text-white" />
             </div>
-            <CardTitle className="text-xl font-bold text-gray-900">Create New Offer</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">Create New Offer</CardTitle>
           </div>
-          <Button onClick={onCancel} variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <X className="w-4 h-4" />
+          <Button
+            onClick={onCancel}
+            variant="ghost"
+            size="sm"
+            className="h-10 w-10 p-0 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+          >
+            <X className="w-5 h-5" />
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="space-y-8 px-8 pb-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Title */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Offer Title *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Offer Title *</label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="e.g., Summer Sale 2025"
-              className={`${errors.title ? "border-red-400 focus:border-red-500" : ""}`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
+                errors.title ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+              }`}
             />
-            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
+            {errors.title && <p className="text-red-500 text-sm mt-2 font-medium">{errors.title}</p>}
           </div>
 
           {/* Description */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Description *</label>
             <Input
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="e.g., Get amazing discounts on all verification services"
-              className={`${errors.description ? "border-red-400 focus:border-red-500" : ""}`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
+                errors.description ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+              }`}
             />
-            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+            {errors.description && <p className="text-red-500 text-sm mt-2 font-medium">{errors.description}</p>}
           </div>
 
           {/* Discount Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Discount Type *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Discount Type *</label>
             <Select
               value={formData.discountType}
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, discountType: value }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base focus:border-[#1987BF]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white/95 backdrop-blur-xl border-gray-200 rounded-xl">
                 <SelectItem value="percentage">Percentage (%)</SelectItem>
                 <SelectItem value="flat">Flat Amount (₹)</SelectItem>
               </SelectContent>
@@ -341,7 +403,7 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
 
           {/* Discount Value */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               Discount Value * {formData.discountType === "percentage" ? "(%)" : "(₹)"}
             </label>
             <Input
@@ -349,84 +411,104 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
               value={formData.discountValue}
               onChange={(e) => setFormData((prev) => ({ ...prev, discountValue: e.target.value }))}
               placeholder={formData.discountType === "percentage" ? "20" : "100"}
-              className={`${errors.discountValue ? "border-red-400 focus:border-red-500" : ""}`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
+                errors.discountValue ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+              }`}
             />
-            {errors.discountValue && <p className="text-red-500 text-xs mt-1">{errors.discountValue}</p>}
+            {errors.discountValue && <p className="text-red-500 text-sm mt-2 font-medium">{errors.discountValue}</p>}
           </div>
 
           {/* Coupon Code */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Coupon Code *</label>
-            <div className="flex gap-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Coupon Code *</label>
+            <div className="flex gap-3">
               <Input
                 value={formData.code}
                 onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
                 placeholder="SUMMER20"
-                className={`${errors.code ? "border-red-400 focus:border-red-500" : ""}`}
+                className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base font-mono ${
+                  errors.code ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+                }`}
               />
-              <Button onClick={generateCode} variant="outline" size="sm" className="px-3 bg-transparent">
-                <Sparkles className="w-4 h-4" />
+              <Button
+                onClick={generateCode}
+                variant="outline"
+                size="sm"
+                className="px-4 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl hover:bg-[#1987BF]/10 hover:border-[#1987BF] transition-all duration-200"
+              >
+                <Sparkles className="w-5 h-5" />
               </Button>
             </div>
-            {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code}</p>}
+            {errors.code && <p className="text-red-500 text-sm mt-2 font-medium">{errors.code}</p>}
           </div>
 
           {/* Expiry Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Expiry Date *</label>
             <Input
               type="datetime-local"
               value={formData.expiryDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, expiryDate: e.target.value }))}
-              className={`${errors.expiryDate ? "border-red-400 focus:border-red-500" : ""}`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
+                errors.expiryDate ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+              }`}
             />
-            {errors.expiryDate && <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>}
+            {errors.expiryDate && <p className="text-red-500 text-sm mt-2 font-medium">{errors.expiryDate}</p>}
           </div>
 
           {/* Max Usage */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Max Usage (Optional)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Max Usage (Optional)</label>
             <Input
               type="number"
               value={formData.maxUsage}
               onChange={(e) => setFormData((prev) => ({ ...prev, maxUsage: e.target.value }))}
               placeholder="100"
+              className="bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base focus:border-[#1987BF]"
             />
           </div>
 
           {/* Min Order Value */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Min Order Value (₹)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Min Order Value (₹)</label>
             <Input
               type="number"
               value={formData.minOrderValue}
               onChange={(e) => setFormData((prev) => ({ ...prev, minOrderValue: e.target.value }))}
               placeholder="200"
+              className="bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base focus:border-[#1987BF]"
             />
           </div>
         </div>
 
         {/* Public/Private Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
           <input
             type="checkbox"
             id="isPublic"
             checked={formData.isPublic}
             onChange={(e) => setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))}
-            className="w-4 h-4 text-[#1987BF] border-gray-300 rounded focus:ring-[#1987BF]"
+            className="w-5 h-5 text-[#1987BF] border-gray-300 rounded focus:ring-[#1987BF] focus:ring-2"
           />
-          <label htmlFor="isPublic" className="text-sm font-medium text-gray-700">
+          <label htmlFor="isPublic" className="text-sm font-semibold text-gray-700 cursor-pointer">
             Make this offer public (visible to all users)
           </label>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
-          <Button onClick={handleSubmit} className="flex-1 bg-[#1987BF] hover:bg-[#1987BF]/90 text-white font-medium">
-            <Gift className="w-4 h-4 mr-2" />
+        <div className="flex gap-4 pt-6 border-t border-gray-200/50">
+          <Button
+            onClick={handleSubmit}
+            className="flex-1 bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold h-12 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
+          >
+            <Gift className="w-5 h-5 mr-2" />
             Create Offer
           </Button>
-          <Button onClick={onCancel} variant="outline" className="px-6 bg-transparent">
+          <Button
+            onClick={onCancel}
+            variant="outline"
+            className="px-8 h-12 bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl hover:bg-gray-50/80 transition-all duration-200"
+          >
             Cancel
           </Button>
         </div>
@@ -443,7 +525,6 @@ export default function CouponsOffers() {
   const handleApplyOffer = (code) => {
     setAppliedCode(code)
     setTimeout(() => setAppliedCode(null), 3000)
-    // Here you would typically integrate with your cart/checkout system
     console.log("Applied offer code:", code)
   }
 
@@ -472,93 +553,117 @@ export default function CouponsOffers() {
   const privateOffers = activeOffers.filter((offer) => !offer.isPublic)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Coupons & Offers</h1>
-            <p className="text-gray-600">Manage promotional offers and discounts</p>
-          </div>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-[#1987BF] hover:bg-[#1987BF]/90 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Create New Offer
-          </Button>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/80 via-white to-purple-50/80 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(25,135,191,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(147,51,234,0.1),transparent_50%)]" />
 
-        {/* Applied Code Notification */}
-        {appliedCode && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl animate-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600" />
-              <span className="text-green-800 font-medium">Coupon "{appliedCode}" applied successfully!</span>
+      <div className="relative z-10 p-6 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">Coupons & Offers</h1>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Manage promotional offers and discounts with our advanced coupon system
+              </p>
             </div>
-          </div>
-        )}
-
-        {/* Create Offer Form */}
-        {showCreateForm && (
-          <div className="mb-8">
-            <CreateOfferCard onSave={handleSaveOffer} onCancel={() => setShowCreateForm(false)} />
-          </div>
-        )}
-
-        {/* Public Offers */}
-        {publicOffers.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Tag className="w-5 h-5 text-[#1987BF]" />
-              <h2 className="text-xl font-bold text-gray-900">Public Offers</h2>
-              <Badge className="bg-[#1987BF]/10 text-[#1987BF] border-[#1987BF]/20">
-                {publicOffers.length} available
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {publicOffers.map((offer) => (
-                <OfferCard key={offer.id} offer={offer} onApply={handleApplyOffer} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Private Offers */}
-        {privateOffers.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-6">
-              <Gift className="w-5 h-5 text-purple-600" />
-              <h2 className="text-xl font-bold text-gray-900">Exclusive Offers</h2>
-              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                {privateOffers.length} exclusive
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {privateOffers.map((offer) => (
-                <OfferCard key={offer.id} offer={offer} onApply={handleApplyOffer} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {activeOffers.length === 0 && !showCreateForm && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Gift className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No active offers</h3>
-            <p className="text-gray-600 mb-6">Create your first promotional offer to get started</p>
             <Button
               onClick={() => setShowCreateForm(true)}
-              className="bg-[#1987BF] hover:bg-[#1987BF]/90 text-white font-medium px-8 py-3 rounded-xl"
+              className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105 whitespace-nowrap"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Create Your First Offer
+              Create New Offer
             </Button>
           </div>
-        )}
+
+          {/* Applied Code Notification */}
+          {appliedCode && (
+            <div className="mb-8 p-6 bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-xl border border-green-200/50 rounded-2xl shadow-lg shadow-green-500/10 animate-in slide-in-from-top-2 duration-500">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-green-800 font-semibold text-lg">Success!</p>
+                  <p className="text-green-700">Coupon "{appliedCode}" applied successfully!</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Create Offer Form */}
+          {showCreateForm && (
+            <div className="mb-12">
+              <CreateOfferCard onSave={handleSaveOffer} onCancel={() => setShowCreateForm(false)} />
+            </div>
+          )}
+
+          {/* Public Offers */}
+          {publicOffers.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <Tag className="w-6 h-6 text-[#1987BF]" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Public Offers</h2>
+                <Badge className="bg-gradient-to-r from-[#1987BF]/10 to-blue-500/10 text-[#1987BF] border border-[#1987BF]/20 font-semibold px-4 py-2 rounded-full">
+                  {publicOffers.length} available
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                {publicOffers.map((offer, index) => (
+                  <OfferCard key={offer.id} offer={offer} onApply={handleApplyOffer} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Private Offers */}
+          {privateOffers.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <Gift className="w-6 h-6 text-purple-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Exclusive Offers</h2>
+                <Badge className="bg-gradient-to-r from-purple-100/80 to-pink-100/80 text-purple-800 border border-purple-200/50 font-semibold px-4 py-2 rounded-full backdrop-blur-sm">
+                  {privateOffers.length} exclusive
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                {privateOffers.map((offer, index) => (
+                  <OfferCard
+                    key={offer.id}
+                    offer={offer}
+                    onApply={handleApplyOffer}
+                    index={index + publicOffers.length}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {activeOffers.length === 0 && !showCreateForm && (
+            <div className="text-center py-20">
+              <div className="w-32 h-32 bg-gradient-to-br from-gray-100/80 to-gray-200/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+                <Gift className="w-16 h-16 text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">No active offers</h3>
+              <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto leading-relaxed">
+                Create your first promotional offer to start engaging customers with amazing deals
+              </p>
+              <Button
+                onClick={() => setShowCreateForm(true)}
+                className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold px-10 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Create Your First Offer
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

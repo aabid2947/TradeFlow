@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import { useState } from "react"
-import SidebarComponent from "@/components/SidebarComponent"
+import SidebarComponent from "@/components/AdminComponents/Sidebar"
 import DashboardHeader from "@/components/DashboardHeader"
 import RecentlyPurchased from "../../components/AdminComponents/RecentlyPurchased"
 import CouponsOffers from "../../components/AdminComponents/CouponOffer"

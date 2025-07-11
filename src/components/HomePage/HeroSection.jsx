@@ -1,7 +1,6 @@
 "use client"
 
 import  React from "react"
-
 import { useState, useEffect } from "react"
 import {
   ChevronLeft,
@@ -104,9 +103,11 @@ const FloatingElement = ({
 export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [direction, setDirection] = useState(null)
 
   const nextSlide = () => {
     if (isAnimating) return
+    setDirection('right')
     setIsAnimating(true)
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
     setTimeout(() => setIsAnimating(false), 800)
@@ -114,6 +115,7 @@ export default function HeroSection() {
 
   const prevSlide = () => {
     if (isAnimating) return
+    setDirection('left')
     setIsAnimating(true)
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
     setTimeout(() => setIsAnimating(false), 800)
@@ -121,6 +123,7 @@ export default function HeroSection() {
 
   const goToSlide = (index) => {
     if (isAnimating || index === currentSlide) return
+    setDirection(index > currentSlide ? 'right' : 'left')
     setIsAnimating(true)
     setCurrentSlide(index)
     setTimeout(() => setIsAnimating(false), 800)
@@ -159,6 +162,14 @@ export default function HeroSection() {
           0% { transform: translateX(100px); opacity: 0; }
           100% { transform: translateX(0); opacity: 1; }
         }
+        @keyframes slide-out-left {
+          0% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(-100px); opacity: 0; }
+        }
+        @keyframes slide-out-right {
+          0% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(100px); opacity: 0; }
+        }
         @keyframes scale-in {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
@@ -179,12 +190,18 @@ export default function HeroSection() {
         .slide-in-right {
           animation: slide-in-right 0.8s ease-out forwards;
         }
+        .slide-out-left {
+          animation: slide-out-left 0.8s ease-out forwards;
+        }
+        .slide-out-right {
+          animation: slide-out-right 0.8s ease-out forwards;
+        }
         .scale-in {
           animation: scale-in 0.6s ease-out forwards;
         }
       `}</style>
 
-      <section className="relative w-full min-h-screen overflow-hidden ">
+      <section className="relative w-full min-h-screen overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0">
           {/* Dynamic Gradient Background */}
@@ -228,10 +245,33 @@ export default function HeroSection() {
           </div>
         </div>
 
+        {/* Navigation Arrows - Positioned at screen edges */}
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 hidden lg:block">
+          <Button
+            onClick={prevSlide}
+            disabled={isAnimating}
+            className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
+            style={{ borderColor: currentHero.accentColor }}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        </div>
+        
+        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 hidden lg:block">
+          <Button
+            onClick={nextSlide}
+            disabled={isAnimating}
+            className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
+            style={{ borderColor: currentHero.accentColor }}
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Content */}
-            <div className={`space-y-8 ${!isAnimating ? "slide-in-left" : ""}`}>
+            <div className={`space-y-8 ${isAnimating ? (direction === 'right' ? 'slide-out-left' : 'slide-out-right') : (direction === 'right' ? 'slide-in-right' : 'slide-in-left')}`}>
               {/* Animated Category Badge */}
               <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-full text-sm font-medium shadow-lg border border-gray-200 animate-pulse-glow">
                 <div className="relative">
@@ -258,7 +298,7 @@ export default function HeroSection() {
                 </span>
               </h1>
 
-              {/* Description with Typewriter Effect */}
+              {/* Description */}
               <p className="text-xl text-gray-600 leading-relaxed font-light">{currentHero.description}</p>
 
               {/* Animated Features Grid */}
@@ -267,28 +307,16 @@ export default function HeroSection() {
                   <div
                     key={index}
                     className="flex items-center gap-3 p-3 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    style={{ 
+                      animationDelay: `${index * 0.1}s`,
+                      animation: `slide-in-${direction === 'right' ? 'right' : 'left'} 0.6s ease-out ${index * 0.1}s forwards`
+                    }}
                   >
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span className="text-sm font-medium text-gray-700">{feature}</span>
                   </div>
                 ))}
               </div>
-
-              {/* Stats Counter */}
-              {/* <div className="flex items-center gap-6 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg">
-                <div className="text-center">
-                  <div className="text-3xl font-bold" style={{ color: currentHero.accentColor }}>
-                    {currentHero.stats.number}
-                  </div>
-                  <div className="text-sm text-gray-600">{currentHero.stats.label}</div>
-                </div>
-                <div className="w-px h-12 bg-gray-200" />
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <span className="text-sm font-medium text-gray-700">Instant Verification</span>
-                </div>
-              </div> */}
 
               {/* Enhanced CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -314,8 +342,8 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Right Side - Enhanced Visualization */}
-            <div className={`hidden lg:flex justify-center lg:justify-end ${!isAnimating ? "slide-in-right" : ""}`}>
+            {/* Right Side - Enhanced Visualization (hidden on mobile) */}
+            <div className={`hidden lg:flex justify-center lg:justify-end ${isAnimating ? (direction === 'right' ? 'slide-out-right' : 'slide-out-left') : (direction === 'right' ? 'slide-in-right' : 'slide-in-left')}`}>
               <div className="relative">
                 {/* Main Card */}
                 <Card className="w-full max-w-md bg-white/90 backdrop-blur-lg border-0 shadow-2xl overflow-hidden">
@@ -461,28 +489,6 @@ export default function HeroSection() {
               <ChevronRight className="w-5 h-5" />
             </Button>
           </div>
-
-          {/* Enhanced Service Stats */}
-          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 pt-8">
-            {[
-              { number: "10K+", label: "Verifications", icon: CheckCircle },
-              { number: "99.9%", label: "Accuracy", icon: Shield },
-              { number: "24/7", label: "Support", icon: Heart },
-              { number: "5★", label: "Rating", icon: Star },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105 scale-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <stat.icon className="w-8 h-8 mx-auto mb-3" style={{ color: currentHero.accentColor }} />
-                <div className="text-3xl font-bold mb-1" style={{ color: currentHero.accentColor }}>
-                  {stat.number}
-                </div>
-                <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div> */}
         </div>
       </section>
     </>

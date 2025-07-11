@@ -61,7 +61,7 @@ export function LoginForm() {
       dispatch(setCredentials({ user: response.data, accessToken: response.data.token }))
       
       // Navigate the user to the home page or dashboard.
-      navigate("/")
+      navigate("/user")
       
     } catch (err) {
       // RTK Query places API error details in `err.data`.
