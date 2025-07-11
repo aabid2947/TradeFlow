@@ -184,7 +184,7 @@ export default function HeroSection() {
         }
       `}</style>
 
-      <section className="relative w-full min-h-screen overflow-hidden bg-white">
+      <section className="relative w-full min-h-screen overflow-hidden ">
         {/* Animated Background */}
         <div className="absolute inset-0">
           {/* Dynamic Gradient Background */}
@@ -228,7 +228,7 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Content */}
             <div className={`space-y-8 ${!isAnimating ? "slide-in-left" : ""}`}>
@@ -252,7 +252,7 @@ export default function HeroSection() {
               </div>
 
               {/* Animated Main Heading */}
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 leading-tight">
                 <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent">
                   {currentHero.title}
                 </span>
@@ -463,7 +463,7 @@ export default function HeroSection() {
           </div>
 
           {/* Enhanced Service Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 pt-8">
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 pt-8">
             {[
               { number: "10K+", label: "Verifications", icon: CheckCircle },
               { number: "99.9%", label: "Accuracy", icon: Shield },
@@ -482,7 +482,7 @@ export default function HeroSection() {
                 <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
     </>

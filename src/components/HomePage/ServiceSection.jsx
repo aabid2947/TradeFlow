@@ -10,7 +10,7 @@ import PassportCardImage from "../../assets/PassportCardImage.svg"
 import PANAadhaarLinkedCardImage from "../../assets/PANAadharLinkedCardImage.svg"
 import PANValidationCardImage from "../../assets/PANValidationCardImage.svg"
 import PANLinkedCardImage from "../../assets/PANLinkedCardImage.svg"
-
+import { CheckCircle } from "lucide-react"
 
 const serviceCategories = [
   { name: "Personal", isActive: true },
@@ -41,11 +41,23 @@ export default function ServicesSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Small heading */}
-          <p className="text-sm text-gray-500 uppercase tracking-wide mb-4 font-medium">CHOOSE YOUR DESIRED SERVICE</p>
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <CheckCircle className="w-4 h-4" />
+            CHOOSE YOUR DESIRED SERVICE
+          </div>
 
           {/* Main heading */}
-          <h2 className="text-3xl font-bold text-gray-900 mb-12">Browse Our Top Services</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Browse Our
+            <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              {" "}
+              Top Services
+            </span>
+          </h2>
 
+          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+            Comprehensive verification services trusted by thousands of users across India
+          </p>
           {/* Service category tabs */}
           <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {serviceCategories.map((category) => (

@@ -1,4 +1,4 @@
-import { Card, CardContent,CardHeader,CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle } from "lucide-react"
 export const AuthCard = ({ children, title, subtitle }) => (
   <Card className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-lg border-0 shadow-3xl hover:shadow-4xl transition-all duration-300 hover:scale-[1.02] rounded-2xl overflow-hidden">

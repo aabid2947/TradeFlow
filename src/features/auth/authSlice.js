@@ -2,8 +2,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,
-  token: localStorage.getItem('token') || null, // Persist token on refresh
+  entity: null, // Can be either a user or an admin object
+  token: localStorage.getItem('token') || null,
+  role: localStorage.getItem('role') || null, // 'user' or 'admin'
 };
 
 const authSlice = createSlice({
@@ -11,15 +12,27 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, accessToken } = action.payload;
-      state.user = user;
+      const { user, admin, accessToken } = action.payload;
+      
+      if (user) {
+        state.entity = user;
+        state.role = 'user';
+        localStorage.setItem('role', 'user');
+      } else if (admin) {
+        state.entity = admin;
+        state.role = 'admin';
+        localStorage.setItem('role', 'admin');
+      }
+      
       state.token = accessToken;
-      localStorage.setItem('token', accessToken); // Save token to local storage
+      localStorage.setItem('token', accessToken);
     },
     logOut: (state) => {
-      state.user = null;
+      state.entity = null;
       state.token = null;
+      state.role = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('role');
     },
   },
 });
@@ -29,5 +42,6 @@ export const { setCredentials, logOut } = authSlice.actions;
 export default authSlice.reducer;
 
 // Selectors for easy access to state
-export const selectCurrentUser = (state) => state.auth.user;
+export const selectCurrentEntity = (state) => state.auth.entity;
 export const selectCurrentToken = (state) => state.auth.token;
+export const selectCurrentRole = (state) => state.auth.role;

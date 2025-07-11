@@ -28,7 +28,7 @@ export const authApi = createApi({
 
     // Then, return the query configuration object
     return {
-      url: '/auth/signup',
+      url: '/auth/register',
       method: 'POST',
       body: userInfo,
     };

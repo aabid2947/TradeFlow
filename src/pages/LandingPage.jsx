@@ -8,12 +8,12 @@ import CustomerReviews from "../components/HomePage/CustomerReviewSection"
 import LandingPageFooter from "../components/HomePage/Footer"
 import SubscriptionSection from "../components/HomePage/SubsciptionSection"
 import FAQSection from "../components/HomePage/FAQSection"
-import ServicesShowcase from "../components/HomePage/ServiceShowcase"
+import ServicesShowcase from "../components/HomePage/ServiceShowCaseComponent"
 import HeroSection from "../components/HomePage/HeroSection"
 export default function LandingPage() {
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30">
 
       {/* Main content area, with a left margin on desktop to make space for the sidebar */}
     
