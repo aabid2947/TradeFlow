@@ -331,7 +331,7 @@ export default function HeroSection() {
             </div>
             {/* Right Side - Enhanced Visualization (hidden on mobile) */}
             <div
-              className={`hidden md:flex justify-center lg:justify-end ${isAnimating ? (direction === "right" ? "slide-out-right" : "slide-out-left") : direction === "right" ? "slide-in-right" : "slide-in-left"}`}
+              className={`hidden md:flex justify-center md:justify-end ${isAnimating ? (direction === "right" ? "slide-out-right" : "slide-out-left") : direction === "right" ? "slide-in-right" : "slide-in-left"}`}
             >
               <div className="relative">
                 {/* Main Card */}
