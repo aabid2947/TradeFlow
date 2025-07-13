@@ -1,19 +1,15 @@
+// File: App.jsx (Corrected)
 
-import './App.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import publicRoutes from './routes/PublicRoutes.jsx';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from './routes/index'; // Make sure this path points to your routes/index.jsx
+import './App.css';
 
 function App() {
-  const router = createBrowserRouter([
-    ...publicRoutes,
-    // You can add other routes here
-    {
-      path: '*',
-      element: <div>404 Not Found</div>, // Add a 404 page
-    },
-  ]);
-
-  return <RouterProvider router={router} />;
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 }
 
-export default App
+export default App;

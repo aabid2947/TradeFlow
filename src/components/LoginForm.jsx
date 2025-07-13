@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { FloatingLabel } from "./FloatingLabel"
 import { AuthCard } from "../cards/AuthCard"
 
-// --- API INTEGRATION: STEP 1 ---
 // Import the necessary hooks and actions from our new Redux structure
 import { useLoginMutation } from "@/app/api/authApiSlice" // Adjust path if needed
 import { setCredentials } from "@/features/auth/authSlice" // Adjust path if needed
@@ -18,7 +17,7 @@ export function LoginForm() {
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
 
-  // --- API INTEGRATION: STEP 2 ---
+
   // Instantiate hooks for navigation, Redux dispatch, and the API mutation
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -36,16 +35,12 @@ export function LoginForm() {
     if (!formData.password) {
       newErrors.password = "Password is required"
     }
-    // The 6-character check is good for UI feedback, but the server has the final say.
-    // else if (formData.password.length < 6) {
-    //   newErrors.password = "Password must be at least 6 characters"
-    // }
+   
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  // --- API INTEGRATION: STEP 3 ---
   // Update the handleSubmit function to call the real API
   const handleSubmit = async (e) => {
     e.preventDefault()

@@ -2,6 +2,7 @@ import { Heart, Shield, Clock, Check } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 
 export default function ServiceCard({
   imageSrc,
@@ -12,14 +13,16 @@ export default function ServiceCard({
   durationDays,
   price,
   buttonState, // "purchased" | "subscribe"
+  serviceId
 }) {
   const isPurchased = buttonState === "purchased"
+  const navigate = useNavigate()
 
   // In a real app, you might use React Router's Link component
   // For this example, a simple anchor tag is used for navigation
   return (
-    <a href="/service" className="block w-full min-w-66 px-2 mx-auto group">
-      <Card className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2">
+    // <a href={`/service?serviceId=${serviceId}`}className="block w-full min-w-66 px-2 mx-auto group">
+      <Card onClick={()=>navigate(`/user/service/${serviceId}`)} className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2">
         <div className="relative">
           {/* Main Image */}
           <div className="aspect-[4/2.8] overflow-hidden">
@@ -84,6 +87,6 @@ export default function ServiceCard({
           </div>
         </CardContent>
       </Card>
-    </a>
+    // </a>
   )
 }

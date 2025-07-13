@@ -13,7 +13,6 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action) => {
       const { user, admin, accessToken } = action.payload;
-      
       if (user) {
         state.entity = user;
         state.role = 'user';
