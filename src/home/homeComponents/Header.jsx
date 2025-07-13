@@ -94,7 +94,7 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Increased height from h-20 to h-24 */}
-          <div className="flex items-center justify-between h-24">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex items-center gap-3 group cursor-pointer">
               {/* <div
@@ -313,7 +313,7 @@ export default function Header() {
       </header>
 
       {/* Spacer to prevent content from hiding behind fixed header, matched to new height */}
-      <div className="h-24" />
+      <div className="h-20" />
     </>
   )
 }
