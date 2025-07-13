@@ -2,8 +2,7 @@
 import { useState } from "react"
 import SidebarComponent from "@/components/AdminComponents/Sidebar"
 import DashboardHeader from "@/components/DashboardHeader"
-import RecentlyPurchased from "../../components/AdminComponents/RecentlyPurchased"
-import CouponsOffers from "../../components/AdminComponents/CouponOffer"
+import CouponsOffers from "../../../admin/AdminComponents/CouponOffer"
 
 export default function CouponOfferPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)

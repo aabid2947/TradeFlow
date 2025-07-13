@@ -525,7 +525,7 @@ export default function CouponsOffers() {
   const handleApplyOffer = (code) => {
     setAppliedCode(code)
     setTimeout(() => setAppliedCode(null), 3000)
-    console.log("Applied offer code:", code)
+
   }
 
   const handleSaveOffer = (newOfferData) => {

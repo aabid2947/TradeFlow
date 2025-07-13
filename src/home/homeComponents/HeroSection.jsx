@@ -193,7 +193,7 @@ export default function HeroSection() {
           animation: scale-in 0.6s ease-out forwards;
         }
       `}</style>
-      <section className="relative w-full min-h-screen overflow-hidden">
+      <section className="relative w-full md:min-h-screen overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0">
           {/* Dynamic Gradient Background */}

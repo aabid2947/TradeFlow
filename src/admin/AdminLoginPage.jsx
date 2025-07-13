@@ -46,7 +46,6 @@ export default function AdminLoginPage() {
      if (!validateForm(formData)) return
  
      try {
-      console.log(formData)
        // Call the login mutation and `unwrap` it to handle success/error with try/catch.
        const response = await login(formData).unwrap()
        

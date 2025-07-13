@@ -113,8 +113,8 @@ export default function DashboardAnalytics() {
       </Card>
 
       {/* Bottom Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6  ">
-        {/* Create/Manage API Keys Card */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6  ">
+    
         <Card className="shadow-sm border-[#1A89C1] ">
           <CardContent className="p-2">
             <div className="bg-gray-900 rounded-lg p-4 h-40 relative overflow-hidden">
@@ -137,7 +137,6 @@ export default function DashboardAnalytics() {
           </CardContent>
         </Card>
 
-        {/* API Data Analytics Card */}
         <Card className="shadow-sm border-[#1A89C1] " >
           <CardContent className="p-2">
             <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg p-4 h-40 relative overflow-hidden">
@@ -159,7 +158,7 @@ export default function DashboardAnalytics() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
     </div>
   )
 }

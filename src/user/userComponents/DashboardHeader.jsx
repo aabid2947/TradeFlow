@@ -13,15 +13,12 @@ import { logOut } from "@/features/auth/authSlice"
 import  userPic from "@/assets/UserImage.svg"
 // Mock logOut and navigate for v0 preview
 
-const navigate = (path) => {
-  console.log(`Navigating to: ${path} (mock)`)
-}
 
 export default function DashboardHeader({ onMenuClick }) {
   const [welcomeText, setWelcomeText] = useState("")
   const fullText = "Welcome Back, Rahul Singh"
   const dispatch = useDispatch() // This will be a no-op in v0 preview without Redux setup
-
+  const navigate = useNavigate()
   useEffect(() => {
     let currentIndex = 0
     const typingInterval = setInterval(() => {

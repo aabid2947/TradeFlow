@@ -7,70 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 
 const faqData = [
-  {
-    id: 1,
-    category: "Getting Started",
-    question: "How does VerifyMyKyc work?",
-    answer:
-      "VerifyMyKyc uses advanced AI and machine learning algorithms to verify identity documents in real-time. Simply upload your document through our secure API or web interface, and our system validates it against multiple databases and security checks within seconds. Our platform supports over 50+ document types and provides instant verification results with detailed compliance reports.",
-    popular: true,
-  },
-  {
-    id: 2,
-    category: "Security",
-    question: "Is my data secure with VerifyMyKyc?",
-    answer:
-      "Absolutely. We use bank-grade encryption (AES-256) and comply with international security standards including ISO 27001, SOC 2, and GDPR. Your data is encrypted both in transit and at rest, stored in secure data centers, and we never store sensitive information longer than necessary. We also provide detailed audit logs and compliance reports for your peace of mind.",
-    popular: true,
-  },
-  {
-    id: 3,
-    category: "Enterprise",
-    question: "Does VerifyMyKyc work for large teams and enterprises?",
-    answer:
-      "Yes, VerifyMyKyc is designed to scale with your business needs. We offer enterprise plans with bulk verification capabilities, team management features, dedicated API endpoints, custom integrations, and 24/7 priority support. Our platform can handle millions of verifications per month with 99.9% uptime guarantee.",
-    popular: false,
-  },
-  {
-    id: 4,
-    category: "Account",
-    question: "How do I create a new account?",
-    answer:
-      "Creating an account is simple and takes less than 2 minutes. Click the 'Sign Up' button, provide your email and basic business information, verify your email address through the confirmation link we send, and you'll be ready to start verifying documents immediately. No credit card required for the trial period.",
-    popular: true,
-  },
-  {
-    id: 5,
-    category: "Pricing",
-    question: "What are your pricing plans?",
-    answer:
-      "We offer flexible pricing plans to suit businesses of all sizes. Our plans start from ₹2 per verification for basic document checks, with volume discounts available. Enterprise customers get custom pricing based on their specific needs, including dedicated support, custom integrations, and SLA guarantees. Contact our sales team for a personalized quote.",
-    popular: false,
-  },
-  {
-    id: 6,
-    category: "Integration",
-    question: "How easy is it to integrate VerifyMyKyc API?",
-    answer:
-      "Our REST API is designed for developers and can be integrated in minutes. We provide comprehensive documentation, SDKs for popular programming languages (Python, Node.js, PHP, Java), code examples, and sandbox environment for testing. Most integrations are completed within a few hours, and our technical support team is available to assist you.",
-    popular: false,
-  },
-  {
-    id: 7,
-    category: "Support",
-    question: "What kind of support do you provide?",
-    answer:
-      "We provide multiple support channels including 24/7 live chat, email support, phone support for enterprise customers, comprehensive documentation, video tutorials, and a community forum. Our average response time is under 2 hours, and we offer dedicated account managers for enterprise clients.",
-    popular: false,
-  },
-  {
-    id: 8,
-    category: "Compliance",
-    question: "Are you compliant with regulatory requirements?",
-    answer:
-      "Yes, we maintain compliance with major regulatory frameworks including KYC/AML regulations, GDPR, CCPA, PCI DSS, and local data protection laws. We regularly undergo third-party security audits and maintain certifications like ISO 27001 and SOC 2 Type II. We also provide compliance reports and audit trails for your regulatory needs.",
-    popular: false,
-  },
+  // ... (same as before)
 ]
 
 const categories = ["All", ...Array.from(new Set(faqData.map((faq) => faq.category)))]
@@ -155,25 +92,6 @@ export default function FAQSection() {
   const [openItems, setOpenItems] = useState([1]) // First item open by default
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.2 },
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
 
   const toggleItem = (id) => {
     setOpenItems((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
@@ -190,17 +108,12 @@ export default function FAQSection() {
   const popularFAQs = faqData.filter((faq) => faq.popular)
 
   return (
-    <section ref={sectionRef} className="w-full bg-gradient-to-b from-white to-gray-50 py-20">
+    <section className="w-full bg-gradient-to-b from-white to-gray-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column - Content */}
           <div className="lg:col-span-5">
-            <div
-              className={`
-                sticky top-8 space-y-8
-                ${isVisible ? "animate-in slide-in-from-left-4 fade-in duration-700" : "opacity-0"}
-              `}
-            >
+            <div className="lg:sticky lg:top-8 space-y-8">
               {/* Header */}
               <div>
                 <div className="inline-flex items-center gap-2 bg-[#1987BF]/10 text-[#1987BF] px-4 py-2 rounded-full text-sm font-semibold mb-6">
@@ -267,13 +180,7 @@ export default function FAQSection() {
 
           {/* Right Column - FAQ Items */}
           <div className="lg:col-span-7">
-            <div
-              className={`
-                space-y-8
-                ${isVisible ? "animate-in slide-in-from-right-4 fade-in duration-700" : "opacity-0"}
-              `}
-              style={{ animationDelay: "200ms" }}
-            >
+            <div className="space-y-8">
               {/* Search and Filters */}
               <div className="space-y-4">
                 {/* Search Bar */}
@@ -348,11 +255,7 @@ export default function FAQSection() {
                 <div className="space-y-4">
                   {filteredFAQs.length > 0 ? (
                     filteredFAQs.map((faq, index) => (
-                      <div
-                        key={faq.id}
-                        className="animate-in slide-in-from-bottom-2 fade-in duration-300"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
+                      <div key={faq.id}>
                         <FAQItem
                           faq={faq}
                           isOpen={openItems.includes(faq.id)}

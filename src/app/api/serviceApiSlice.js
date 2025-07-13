@@ -5,7 +5,6 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getServices: builder.query({
       query: () => {
-        console.log(90)
         return {
         url: '/services',
         method: 'GET',

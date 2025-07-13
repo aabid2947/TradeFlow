@@ -13,7 +13,6 @@ export default function ServicePage() {
   // This page doesn't need to manage `activeView` because its content is fixed.
   // The sidebar's navigation logic will handle moving away from this page.
 
-  console.log("Currently viewing service:", serviceId);
 
   return (
     <div className="relative min-h-screen bg-gray-50">
