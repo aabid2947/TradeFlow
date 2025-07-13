@@ -4,7 +4,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { selectCurrentToken } from '@/features/auth/authSlice';
 
 import ErrorPage from "@/pages/ErrorPage";
-import HomePage from "@/home/Homepage";
+import HomePage from "@/home/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUpPage from "@/pages/SignUpPage";
 import AdminLoginPage from "@/admin/AdminLoginPage";
@@ -28,7 +28,7 @@ export const publicRoutes = [
   {
     path: '/signup',
     element: <SignUpPage />,
-    // errorElement: <ErrorPage />
+    errorElement: <ErrorPage />
   },
 
 
