@@ -44,7 +44,7 @@ export default function DashboardHeader({ onMenuClick }) {
   }
 
   return (
-    <header className="w-full bg-white/80 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm transition-all duration-300 ease-in-out">
+    <header className="w-full bg-white/80 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm transition-all duration-300 ease-in-out md:ml-16">
       <div className="flex items-center justify-between h-full">
         {/* Left Section: Includes hamburger for mobile and welcome text */}
         <div className="flex items-center gap-3 md:gap-4">

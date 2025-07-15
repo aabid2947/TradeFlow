@@ -193,7 +193,7 @@ export default function HeroSection() {
           animation: scale-in 0.6s ease-out forwards;
         }
       `}</style>
-      <section className="relative w-full lg:min-h-screen overflow-hidden">
+      <section className="relative w-full  overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0">
           {/* Dynamic Gradient Background */}
@@ -439,13 +439,13 @@ export default function HeroSection() {
             <Button
               onClick={prevSlide}
               disabled={isAnimating}
-              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
+              className="lg:hidden w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
               style={{ borderColor: currentHero.accentColor }}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             {/* Enhanced Slide Indicators */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 lg:hidden">
               {heroSlides.map((slide, index) => (
                 <button
                   key={index}
@@ -464,7 +464,7 @@ export default function HeroSection() {
             <Button
               onClick={nextSlide}
               disabled={isAnimating}
-              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
+              className="lg:hidden w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border-2 text-gray-700 hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 disabled:opacity-50"
               style={{ borderColor: currentHero.accentColor }}
             >
               <ChevronRight className="w-5 h-5" />

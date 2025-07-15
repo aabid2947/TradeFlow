@@ -52,10 +52,10 @@ export default function UserDashBoard() {
       {/* Main content area is now a flex container */}
       <div className="flex flex-col flex-1">
         {/* The header controls the sidebar on ALL screen sizes now */}
-        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* This div establishes the two-column layout on larger screens */}
-        <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6">
+        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6 md:ml-16">
           {/* Main Content (Left Column) */}
           <main className="flex-1 overflow-hidden">
             <div
@@ -67,7 +67,7 @@ export default function UserDashBoard() {
           </main>
 
           {/* Profile Sidebar (Right Column) */}
-          <aside className="hidden lg:block w-full lg:w-80 lg:max-w-xs flex-shrink-0">
+          <aside className="hidden lg:block w-full lg:w-64 lg:max-w-xs flex-shrink-0">
             <Profile />
           </aside>
         </div>
