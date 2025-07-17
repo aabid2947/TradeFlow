@@ -16,7 +16,7 @@ const demandLevels = ["Most Demanding", "Average Demanding", "Less Demanding"];
 
 export default function ServiceCardsViewer() {
   const { data: services, isLoading, isError, error } = useGetServicesQuery();
-
+ 
   const serviceCards = services?.data?.map((svc) => {
     const randomImage = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
     const randomDemand = demandLevels[Math.floor(Math.random() * demandLevels.length)];

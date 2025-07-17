@@ -8,7 +8,7 @@ import DashboardCharts from "./AdminComponents/DashBoardCharts";
 import RecentlyPurchased from "./AdminComponents/RecentlyPurchased";
 import CouponsOffers from "./AdminComponents/CouponOffer";
 import Header from "./AdminComponents/Header";
-
+import Services from "./AdminComponents/Services";
 // A wrapper component for the main dashboard view for better organization.
 const DashboardHome = () => (
   <div className="space-y-6">
@@ -27,12 +27,7 @@ const renderContent = (activeView) => {
     case "coupons":
       return <CouponsOffers />;
     case "services":
-      return (
-        <div className="p-8 text-center bg-white rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold">Services</h1>
-          <p className="mt-2 text-gray-600">This page is currently under construction.</p>
-        </div>
-      );
+      return <Services/>;
     default:
       return <DashboardHome />;
   }
