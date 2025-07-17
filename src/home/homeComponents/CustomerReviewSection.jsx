@@ -229,29 +229,39 @@ export default function CustomerReviews() {
           </p>
 
           {/* Stats with updated text colors */}
-          <div className="flex items-center justify-center gap-8 mb-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <StarRating rating={5} size="md" />
-                <span className="text-2xl font-bold text-white">{averageRating.toFixed(1)}</span>
-              </div>
-              <p className="text-blue-100 text-sm">Average Rating</p>
-            </div>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 mb-8">
+  {/* Average Rating */}
+  <div className="text-center break-words w-full md:w-auto">
+    <div className="flex items-center justify-center gap-2 mb-2">
+      <StarRating rating={5} size="md" />
+      <span className="text-2xl font-bold text-white break-words">
+        {averageRating.toFixed(1)}
+      </span>
+    </div>
+    <p className="text-blue-100 text-sm">Average Rating</p>
+  </div>
 
-            <div className="w-px h-12 bg-white/30"></div>
+  <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
 
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white mb-2">{mockReviews.length}+</div>
-              <p className="text-blue-100 text-sm">Verified Reviews</p>
-            </div>
+  {/* Verified Reviews */}
+  <div className="text-center break-words w-full md:w-auto">
+    <div className="text-2xl font-bold text-white mb-2 break-words">
+      {mockReviews.length}+
+    </div>
+    <p className="text-blue-100 text-sm">Verified Reviews</p>
+  </div>
 
-            <div className="w-px h-12 bg-white/30"></div>
+  <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
 
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white mb-2">99%</div>
-              <p className="text-blue-100 text-sm">Satisfaction Rate</p>
-            </div>
-          </div>
+  {/* Satisfaction Rate */}
+  <div className="text-center break-words w-full md:w-auto">
+    <div className="text-2xl font-bold text-white mb-2 break-words">
+      99%
+    </div>
+    <p className="text-blue-100 text-sm">Satisfaction Rate</p>
+  </div>
+</div>
+
           
           {/* Online users section */}
           <div className="mt-10 mb-12">
