@@ -11,11 +11,14 @@ import userPic from "@/assets/UserImage.svg"
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
 import { logOut } from "@/features/auth/authSlice"
+import { useSelector } from "react-redux"
+import { selectCurrentUser } from "../../features/auth/authSlice"
 
 // The header now accepts an onMenuClick function to toggle the sidebar on mobile
 export default function Header({ onMenuClick }) {
+  const user = useSelector(selectCurrentUser)
   const [welcomeText, setWelcomeText] = useState("")
-  const fullText = "Welcome Back, Rahul Singh"
+  const fullText = `Welcome Back, ${user?.name}`
   const dispatch = useDispatch()
 
   
@@ -83,10 +86,10 @@ export default function Header({ onMenuClick }) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 px-2 hover:bg-gray-100 flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={userPic}alt="Rahul Singh" />
+                  <AvatarImage src={userPic}alt={user?.name} />
                   <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-medium">RS</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium text-gray-700">Rahul Singh</span>
+                <span className="text-sm font-medium text-gray-700">{user?.name}</span>
                 <ChevronDown className="h-3 w-3 text-gray-500" />
               </Button>
             </DropdownMenuTrigger>

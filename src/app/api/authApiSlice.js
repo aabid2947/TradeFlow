@@ -1,4 +1,4 @@
-// src/app/api/authApiSlice.js
+
 import { apiSlice } from './apiSlice';
 
 export const authApiSlice = apiSlice.injectEndpoints({
@@ -11,18 +11,44 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     signup: builder.mutation({
-      query: (userInfo) => ({
+   
+      query: (userInfo) =>  {
+           console.log(userInfo)
+        return {
         url: '/auth/register',
         method: 'POST',
         body: userInfo,
-      }),
+      }},
     }),
-    // You could add getProfile here as well, providing a 'User' tag
     getProfile: builder.query({
       query: () => '/users/profile',
       providesTags: ['User']
-    })
+    }),
+      getAllUsers: builder.query({
+      query: () => ({
+        url: '/users/all',
+        method: 'GET',
+      }),
+      providesTags: ['User'], // Optional: for caching
+    }),
+    signupAdmin: builder.mutation({
+   
+      query: (adminInfo) =>  {
+           console.log(adminInfo)
+        return {
+        url: '/admin/register',
+        method: 'POST',
+        body: adminInfo,
+      }},
+    }),
+      getAllAdmin: builder.query({
+      query: () => ({
+        url: '/admin/all',
+        method: 'GET',
+      }),
+      providesTags: ['User'], // Optional: for caching
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useGetProfileQuery } = authApiSlice;
+export const { useLoginMutation, useSignupMutation, useGetProfileQuery, useGetAllUsersQuery,useSignupAdminMutation,useGetAllAdminQuery  } = authApiSlice;

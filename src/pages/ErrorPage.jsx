@@ -1,9 +1,19 @@
-// src/pages/ErrorPage.jsx
-import { useRouteError } from "react-router-dom";
+
+import { useRouteError, isRouteErrorResponse, Link } from "react-router-dom";
 
 export default function ErrorPage() {
   const error = useRouteError();
   console.error(error);
+
+  let errorMessage = "An unexpected error has occurred.";
+  let errorStatus = "";
+
+  if (isRouteErrorResponse(error)) {
+    errorMessage = error.statusText || error.data?.message;
+    errorStatus = `${error.status}: `;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white px-4">

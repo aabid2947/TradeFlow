@@ -6,7 +6,6 @@ import PassportCardImage from "@/assets/PassportCardImage.svg";
 import PANAadhaarLinkedCardImage from "@/assets/PANAadharLinkedCardImage.svg";
 import PANValidationCardImage from "@/assets/PANValidationCardImage.svg";
 import PANLinkedCardImage from "@/assets/PANLinkedCardImage.svg";
-import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 
 const fallbackImages = [
   PANCardImage, AadharCardImage, VoterCardImage, PassportCardImage,
@@ -14,10 +13,10 @@ const fallbackImages = [
 ];
 const demandLevels = ["Most Demanding", "Average Demanding", "Less Demanding"];
 
-export default function ServiceCardsViewer() {
-  const { data: services, isLoading, isError, error } = useGetServicesQuery();
+// The component now accepts `services` and `isLoading` as props
+export default function ServiceCardsViewer({ services = [], isLoading }) {
  
-  const serviceCards = services?.data?.map((svc) => {
+  const serviceCards = services.map((svc) => {
     const randomImage = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
     const randomDemand = demandLevels[Math.floor(Math.random() * demandLevels.length)];
 
@@ -32,7 +31,7 @@ export default function ServiceCardsViewer() {
       buttonState: "subscribe",
       serviceId: svc.service_key,
     };
-  }) ?? [];
+  });
 
   if (isLoading) {
     return (
@@ -42,36 +41,30 @@ export default function ServiceCardsViewer() {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center w-full bg-red-100 p-4 rounded-md" style={{ height: '60vh' }}>
-        <div className="text-red-700 text-center">
-          <h3 className="font-bold text-lg">Oops! Something went wrong.</h3>
-          <p>{error?.data?.message || error?.error || "Failed to fetch services."}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
       <h1 className="font-bold text-xl my-2">KYC Verification API</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3  gap-4">
-        {serviceCards.map((card) => (
-          <ServiceCard
-            key={card.id}
-            imageSrc={card.imageSrc}
-            demandLevel={card.demandLevel}
-            serviceName={card.serviceName}
-            verificationCount={card.verificationCount}
-            durationDays={card.durationDays}
-            price={card.price}
-            buttonState={card.buttonState}
-            // Each card should link to its detailed service page
-            serviceId={card.serviceId}
-          />
-        ))}
-      </div>
+      {serviceCards.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {serviceCards.map((card) => (
+            <ServiceCard
+              key={card.id}
+              imageSrc={card.imageSrc}
+              demandLevel={card.demandLevel}
+              serviceName={card.serviceName}
+              verificationCount={card.verificationCount}
+              durationDays={card.durationDays}
+              price={card.price}
+              buttonState={card.buttonState}
+              serviceId={card.serviceId}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16 text-gray-500">
+          <p>No services found for this category.</p>
+        </div>
+      )}
     </div>
   );
 }

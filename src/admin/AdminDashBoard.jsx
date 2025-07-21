@@ -1,60 +1,95 @@
 "use client"
 
 import { useState } from "react";
-// NOTE: Assuming these component paths are correct from your project structure.
+import { useGetAllUsersQuery } from "@/app/api/authApiSlice"; 
+import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"; 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert" 
+import { Terminal } from "lucide-react"
+
+// Import Admin Components
 import AdminDashboardSidebar from "./AdminComponents/Sidebar";
-import DashboardOverview from "./AdminComponents/DashBoardOverview";
-import DashboardCharts from "./AdminComponents/DashBoardCharts";
-import RecentlyPurchased from "./AdminComponents/RecentlyPurchased";
-import CouponsOffers from "./AdminComponents/CouponOffer";
 import Header from "./AdminComponents/Header";
 import Services from "./AdminComponents/Services";
-// A wrapper component for the main dashboard view for better organization.
-const DashboardHome = () => (
-  <div className="space-y-6">
-    <DashboardOverview />
+import RecentlyPurchased from "./AdminComponents/RecentlyPurchased";
+import CouponsOffers from "./AdminComponents/CouponOffer";
+import Analytics from "./AdminComponents/Analytics";
+import DashboardOverview from "./AdminComponents/DashBoardOverview";
+import DashboardCharts from "./AdminComponents/DashBoardCharts"; 
+import RegisterAdmin from "./AdminComponents/RegisterAdmin";
+import Feedback from "./AdminComponents/Feedback"
+
+/**
+ * The DashboardHome component  receives users and transactions
+ * to pass down to the overview component.
+ */
+const DashboardHome = ({ users, transactions, isLoading }) => (
+  <div className="space-y-6 bg-white">
+    <DashboardOverview users={users} transactions={transactions} isLoading={isLoading} />
     <DashboardCharts />
   </div>
 );
 
-// This function determines which component to render based on the state.
-const renderContent = (activeView) => {
+/**
+ * The renderContent function  passes all necessary data down to its children.
+ */
+const renderContent = (activeView, users, transactions, isLoading) => {
   switch (activeView) {
     case "dashboard":
-      return <DashboardHome />;
+      return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
+    case "analytics":
+      return <Analytics transactions={transactions} isLoading={isLoading} />;
     case "clients":
       return <RecentlyPurchased />;
     case "coupons":
       return <CouponsOffers />;
     case "services":
-      return <Services/>;
+      return <Services />;
+    case "register":
+      return <RegisterAdmin/>
+    case "feedback":
+      return <Feedback/>
     default:
-      return <DashboardHome />;
+      // Default to the main dashboard view
+      return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
   }
 };
 
 export default function AdminDashboard() {
-  // State to manage the visibility of the sidebar on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // State to track the currently active view/page.
-  const [activeView, setActiveView] = useState("dashboard");
+  const [activeView, setActiveView] =useState("dashboard");
+  const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetAllTransactionsQuery();
+  const { data: usersResponse, isLoading: isLoadingUsers, isError: isErrorUsers, error: usersError } = useGetAllUsersQuery();
 
-  /**
-   * Handles navigation between different views.
-   * On mobile screens, it also closes the sidebar for a better user experience.
-   * @param {string} view - The key of the view to navigate to.
-   */
+  const isLoading = isLoadingTransactions || isLoadingUsers;
+  const isError = isErrorTransactions || isErrorUsers;
+  const error = transactionsError || usersError;
+
+  const allTransactions = transactionsResponse?.data || [];
+  const allUsers = usersResponse?.data || [];
+
   const handleNavigate = (view) => {
     setActiveView(view);
-    // Check if the screen width is mobile-sized.
     if (window.innerWidth < 1024) {
       setSidebarOpen(false);
     }
   };
 
+  // if (isError) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen p-4">
+  //       <Alert variant="destructive" className="max-w-lg">
+  //           <Terminal className="h-4 w-4" />
+  //           <AlertTitle>Error Fetching Platform Data</AlertTitle>
+  //           <AlertDescription>
+  //               Could not load admin dashboard. {error?.data?.message || "Please try again later."}
+  //           </AlertDescription>
+  //       </Alert>
+  //     </div>
+  //   );
+  // }
+
   return (
-    // Main container for the entire dashboard.
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-gray-100">
       <AdminDashboardSidebar
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
@@ -62,30 +97,15 @@ export default function AdminDashboard() {
         onNavigate={handleNavigate}
       />
 
-      {/* Main content area.
-        Key change: `lg:pl-64` adds left padding on large screens (desktops)
-        to make space for the fixed sidebar. On smaller screens, this padding is not applied,
-        allowing the content to take up the full width.
-      */}
       <div className="flex flex-col flex-1 lg:pl-64">
-        {/* The header component contains the hamburger menu icon for mobile 
-          and other header elements like user profile.
-        */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* The main content is rendered here. Added `overflow-hidden` to contain the slide animation. */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-hidden">
-          {/*
-            This wrapper div enables the animation.
-            - The `key={activeView}` prop is crucial. When the view changes, React sees a new key 
-              and re-mounts the component, which re-triggers the animation.
-            - The `className` props are from `tailwindcss-animate` to create the slide effect.
-          */}
           <div
             key={activeView}
             className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
           >
-            {renderContent(activeView)}
+            {renderContent(activeView, allUsers, allTransactions, isLoading)}
           </div>
         </main>
       </div>

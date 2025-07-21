@@ -20,67 +20,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
+import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice"
 
 // Mock data for demonstration since RTK Query setup is not provided in this context
-const mockTransactions = [
-  {
-    _id: "ORD-2025-001",
-    user: { name: "Sarah Johnson", email: "sarah.johnson@email.com" },
-    service: { name: "PAN Card Verification - Premium", price: 299 },
-    timestamp: "2025-01-08T14:30:00Z",
-    status: "completed",
-  },
-  {
-    _id: "ORD-2025-002",
-    user: { name: "Michael Chen", email: "michael.chen@company.com" },
-    service: { name: "Business Verification Suite", price: 599 },
-    timestamp: "2025-01-08T13:15:00Z",
-    status: "processing",
-  },
-  {
-    _id: "ORD-2025-003",
-    user: { name: "Emily Rodriguez", email: "emily.rodriguez@email.com" },
-    service: { name: "Aadhaar Verification - Standard", price: 199 },
-    timestamp: "2025-01-08T12:45:00Z",
-    status: "shipped",
-  },
-  {
-    _id: "ORD-2025-004",
-    user: { name: "David Kumar", email: "david.kumar@tech.com" },
-    service: { name: "Document OCR Service", price: 149 },
-    timestamp: "2025-01-08T11:20:00Z",
-    status: "delivered",
-  },
-  {
-    _id: "ORD-2025-005",
-    user: { name: "Lisa Thompson", email: "lisa.thompson@enterprise.com" },
-    service: { name: "KYC Verification - Enterprise", price: 899 },
-    timestamp: "2025-01-08T10:30:00Z",
-    status: "completed",
-  },
-  {
-    _id: "ORD-2025-006",
-    user: { name: "James Wilson", email: "james.wilson@email.com" },
-    service: { name: "Background Check Service", price: 249 },
-    timestamp: "2025-01-08T09:15:00Z",
-    status: "processing",
-  },
-  {
-    _id: "ORD-2025-007",
-    user: { name: "Amanda Foster", email: "amanda.foster@biometric.com" },
-    service: { name: "Biometric Verification", price: 399 },
-    timestamp: "2025-01-08T08:45:00Z",
-    status: "shipped",
-  },
-  {
-    _id: "ORD-2025-008",
-    user: { name: "Robert Garcia", email: "robert.garcia@business.com" },
-    service: { name: "GST Verification Service", price: 179 },
-    timestamp: "2025-01-08T07:30:00Z",
-    status: "failed", // Added a failed status for demonstration
-  },
-]
+
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-IN", {
@@ -311,7 +254,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
   )
 }
 
-export default function RecentlyPurchased() {
+export default function PurchaseHistory() {
   const [searchTerm, setSearchTerm] = useState("")
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [isMobile, setIsMobile] = useState(false)
@@ -322,13 +265,8 @@ export default function RecentlyPurchased() {
     isLoading,
     isError,
     error,
-  } = useGetAllTransactionsQuery();
+  } = useGetMyTransactionsQuery();
 
-  // Mock data for demonstration purposes
-  // const transactionsResponse = { data: mockTransactions }
-  // const isLoading = false
-  // const isError = false
-  // const error = null
 
   const buyers = useMemo(() => {
     if (!transactionsResponse?.data) {
@@ -459,56 +397,10 @@ export default function RecentlyPurchased() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Recent Purchases</h1>
-          <p className="text-gray-600">Track your latest sales and customer information</p>
+          <p className="text-gray-600">Track your latest Purchase</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#1987BF]/10 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-[#1987BF]" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                  <User className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Buyers</p>
-                  <p className="text-2xl font-bold text-gray-900">{buyers.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Package className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Avg. Order Value</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalRevenue / buyers.length || 0)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
+       
         {/* Search and Filters */}
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">

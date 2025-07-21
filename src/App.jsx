@@ -1,15 +1,12 @@
-// File: App.jsx (Corrected)
+import { createBrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/index.jsx"; 
 
-import { BrowserRouter as Router } from 'react-router-dom';
-import AppRoutes from './routes/index'; // Make sure this path points to your routes/index.jsx
-import './App.css';
 
-function App() {
-  return (
-    <Router>
-      <AppRoutes />
-    </Router>
-  );
-}
+const App = createBrowserRouter([
+  {
+    path: "*",
+    Component: AppRoutes,
+  },
+]);
 
 export default App;

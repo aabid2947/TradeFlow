@@ -1,72 +1,65 @@
-"use client"
+
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Lock } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { setCredentials } from "@/features/auth/authSlice"
-import { useAdminLoginMutation } from "@/app/api/adminApiSlice"
 import { useDispatch } from "react-redux"
+import { setCredentials } from "@/features/auth/authSlice"
+import { useLoginMutation } from "@/app/api/authApiSlice" // <-- Use the standard login mutation
+
 
 export default function AdminLoginPage() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [login, { isLoading }] = useLoginMutation()
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [Error,setError] = useState("")
-    const [login, { isLoading, error: apiError }] = useAdminLoginMutation()
-  const navigate = useNavigate()
+  const [formErrors, setFormErrors] = useState({})
+  const [apiError, setApiError] = useState("")
 
-  const validateForm = (formData) => {
+  const validateForm = () => {
     const newErrors = {}
-
-    if (!formData.email) {
+    if (!email) {
       newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "Please enter a valid email"
     }
-
-    if (!formData.password) {
+    if (!password) {
       newErrors.password = "Password is required"
     }
-   
-
-    setError(newErrors)
+    setFormErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-   const handleSubmit = async (e) => {
-    setLoading(true)
-     e.preventDefault()
-     const formData = {
-       "email":email,
-       "password":password
-     }
-     if (!validateForm(formData)) return
- 
-     try {
-       // Call the login mutation and `unwrap` it to handle success/error with try/catch.
-       const response = await login(formData).unwrap()
-       
-       // On success, dispatch the `setCredentials` action.
-       // The backend returns { success: true, data: { user, token } }
-       // We pass the inner 'data' object to our action.
-       dispatch(setCredentials({ admin: response.data, accessToken: response.data.token }))
-       
-       // Navigate the user to the home page or dashboard.
-       navigate("/admin")
-       
-     } catch (err) {
-       // RTK Query places API error details in `err.data`.
-       console.error("Failed to log in:", err)
-       // The error can be displayed using the `apiError` object.
-     }
-     finally{
-      setLoading(false)
-     }
-   }
- 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setApiError("")
+    if (!validateForm()) return
+
+    const formData = { email, password }
+
+    try {
+      const response = await login(formData).unwrap()
+      
+      if (response.data.role !== 'admin') {
+        setApiError("Access denied. You do not have admin privileges.")
+        return; 
+      }
+
+      dispatch(setCredentials(response))
+      
+      // Navigate the admin to their dashboard on success
+      navigate("/admin")
+      
+    } catch (err) {
+      const errorMessage = err.data?.message || 'Login failed. Please check your credentials.'
+      setApiError(errorMessage)
+      console.error("Failed to log in as admin:", err)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center px-4">
@@ -103,10 +96,10 @@ export default function AdminLoginPage() {
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-xl transition-transform transform hover:scale-[1.02]"
           >
-            {loading ? "Logging in..." : "Log In"}
+            {isLoading ? "Logging in..." : "Log In"}
           </Button>
         </form>
       </div>

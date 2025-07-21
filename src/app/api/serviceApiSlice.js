@@ -1,22 +1,15 @@
-// src/app/api/serviceApiSlice.js
+
 import { apiSlice } from './apiSlice';
 
-// Assuming your apiSlice looks something like this:
-// const apiSlice = createApi({
-//   ...
-//   tagTypes: ['Service', 'User'], // Make sure 'Service' tag is defined
-// });
-
+const SERVICES_URL = '/services';
 
 export const serviceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getServices: builder.query({
       query: () => ({
-        url: '/services',
+        url: SERVICES_URL,
         method: 'GET',
       }),
-      // Provides a 'Service' tag to the cached data.
-      // This allows us to invalidate this data later.
       providesTags: (result) =>
         result && result.data
           ? [
@@ -28,24 +21,48 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
     }),
     getServiceById: builder.query({
       query: (serviceId) => ({
-        url: `/services/${serviceId}`,
+        url: `${SERVICES_URL}/${serviceId}`,
         method: 'GET',
       }),
        providesTags: (result, error, id) => [{ type: 'Service', id }],
     }),
     createService: builder.mutation({
       query: (serviceData) => ({
-        url: `/services`,
+        // The backend expects an array of services for bulk creation
+        url: `${SERVICES_URL}/create`,
         method: 'POST',
-        // The backend expects an array of services.
-        body: [serviceData],
+        body: serviceData, 
       }),
-      // After a successful creation, invalidate the 'LIST' tag
-      // to force a refetch of the services list.
       invalidatesTags: [{ type: 'Service', id: 'LIST' }],
+    }),
+    updateService: builder.mutation({
+      query: ({ id, ...changes }) => ({
+        url: `${SERVICES_URL}/${id}`,
+        method: 'PUT',
+        body: changes,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Service', id },
+        { type: 'Service', id: 'LIST' },
+      ],
+    }),
+    deleteService: builder.mutation({
+      query: (serviceId) => ({
+        url: `${SERVICES_URL}/${serviceId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, serviceId) => [
+        { type: 'Service', id: serviceId },
+        { type: 'Service', id: 'LIST' },
+      ],
     }),
   }),
 });
 
-// Export the new mutation hook along with the existing query hooks.
-export const { useGetServicesQuery, useGetServiceByIdQuery, useCreateServiceMutation } = serviceApiSlice;
+export const {
+  useGetServicesQuery,
+  useGetServiceByIdQuery,
+  useCreateServiceMutation,
+  useUpdateServiceMutation,
+  useDeleteServiceMutation,
+} = serviceApiSlice;

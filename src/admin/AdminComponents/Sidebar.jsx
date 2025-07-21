@@ -28,30 +28,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import sidebarLogo from "@/assets/sidebarLogo.svg"
+import { useSelector } from "react-redux"
+import { selectCurrentUser } from "../../features/auth/authSlice"
 
-// Navigation items array for easy mapping.
+
 const navigationItems = [
   { title: "Dashboard", icon: Home, key: "dashboard" },
   { title: "Analytics", icon: BarChart2, key: "analytics" },
   { title: "Clients", icon: Users, key: "clients" },
   { title: "Coupon", icon: ClipboardList, key: "coupons" },
   { title: "Services", icon: Info, key: "services" },
+  { title: "Register", icon: MessageCircle, key: "register" },
   { title: "Feedback", icon: MessageCircle, key: "feedback" },
 ];
 
 export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, onNavigate }) {
+  const user = useSelector(selectCurrentUser)
   return (
     <>
-      {/* Sidebar container.
-        Key changes for responsiveness:
-        - `fixed`: Keeps the sidebar in place during scroll.
-        - `inset-y-0 left-0`: Pins the sidebar to the left edge of the viewport.
-        - `z-40`: Ensures the sidebar appears above the main content.
-        - `transform transition-transform`: Enables smooth sliding animation.
-        - `lg:translate-x-0`: On large screens, the sidebar is always visible.
-        - `isOpen ? 'translate-x-0' : '-translate-x-full'`: On smaller screens, this toggles
-          the sidebar's visibility by sliding it in and out from the left.
-      */}
+
 
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64  bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
@@ -94,7 +89,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                 </SidebarMenu>
               </SidebarGroup>
 
-              <div className="p-2 mt-4">
+              <div className="p-2 ">
                 <Card className="shadow-sm bg-gray-50 border-gray-200">
                   <CardContent className="flex flex-col items-start gap-2 p-4">
                     <Sparkles className="w-5 h-5 text-gray-600" />
@@ -103,7 +98,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="justify-center w-full mt-2 text-xs text-gray-700 hover:bg-gray-100"
+                      className="justify-center w-full  text-xs text-gray-700 hover:bg-gray-100"
                     >
                       Renew Now
                     </Button>
@@ -116,12 +111,12 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-9 h-9">
-                    <AvatarImage src="https://placehold.co/36x36/E2E8F0/4A5568?text=RC" alt="Riley Carter" />
+                    <AvatarImage src="https://placehold.co/36x36/E2E8F0/4A5568?text=RC" alt={user?.name} />
                     <AvatarFallback>RC</AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">Riley Carter</p>
-                    <p className="text-xs text-gray-600 truncate">riley@email.com</p>
+                  <div className="flex-1 max-w-36 overflow-hidden">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+                    <p className="text-xs text-gray-600 truncate">{user?.email}</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" className="w-8 h-8 p-0">

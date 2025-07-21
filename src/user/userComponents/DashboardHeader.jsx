@@ -7,18 +7,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 // import userPic from "@/assets/UserImage.svg" // Assuming this path is correct for your project
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
-// Assuming logOut and navigate are correctly imported or defined elsewhere in your actual project
 import { logOut } from "@/features/auth/authSlice"
- import { useNavigate } from "react-router-dom" // Example for react-router-dom
+ import { useNavigate } from "react-router-dom"
 import  userPic from "@/assets/UserImage.svg"
-// Mock logOut and navigate for v0 preview
+import { useSelector } from 'react-redux';
+import { selectCurrentUser, selectCurrentUserRole } from '@/features/auth/authSlice';
 
 
 export default function DashboardHeader({ onMenuClick }) {
   const [welcomeText, setWelcomeText] = useState("")
-  const fullText = "Welcome Back, Rahul Singh"
-  const dispatch = useDispatch() // This will be a no-op in v0 preview without Redux setup
+  const user = useSelector(selectCurrentUser)
+  const fullText = `Welcome Back, ${user?.name}`
+  const dispatch = useDispatch() 
   const navigate = useNavigate()
+
   useEffect(() => {
     let currentIndex = 0
     const typingInterval = setInterval(() => {
@@ -28,28 +30,27 @@ export default function DashboardHeader({ onMenuClick }) {
       } else {
         clearInterval(typingInterval)
       }
-    }, 100) // Adjust typing speed here
+    }, 100) 
 
     return () => clearInterval(typingInterval)
   }, [])
 
   const handleLogout = async () => {
     try {
-      // In a real app, dispatch(logOut()) would be used
-      await logOut() // Using mock logOut for v0 preview
-      navigate("/") // Using mock navigate for v0 preview
+       await dispatch(logOut())
+      navigate("/") 
     } catch (error) {
       console.error("Logout failed:", error)
     }
   }
 
   return (
-    <header className="w-full bg-white/80 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm transition-all duration-300 ease-in-out md:ml-16">
-      <div className="flex items-center justify-between h-full">
+    <header className=" bg-white/80 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm transition-all duration-300 ease-in-out ">
+      <div className="flex items-center justify-between h-full md:ml-16">
         {/* Left Section: Includes hamburger for mobile and welcome text */}
         <div className="flex items-center gap-3 md:gap-4">
           {/* Hamburger button, visible on mobile screens */}
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             onClick={onMenuClick}
@@ -57,7 +58,7 @@ export default function DashboardHeader({ onMenuClick }) {
             aria-label="Toggle mobile menu"
           >
             <Menu className="h-5 w-5" />
-          </Button>
+          </Button> */}
 
           {/* Welcome Text */}
           <div className="hidden md:flex flex-col">
@@ -104,10 +105,10 @@ export default function DashboardHeader({ onMenuClick }) {
                 aria-label="User profile menu"
               >
                 <Avatar className="h-7 w-7 border border-gray-200">
-                  <AvatarImage src={userPic}alt="Rahul Singh" />
+                  <AvatarImage src={userPic}alt={user?.name} />
                   <AvatarFallback className="bg-[#1987BF]/10 text-[#1987BF] text-xs font-medium">RS</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium text-gray-700 hidden lg:inline">Rahul Singh</span>
+                <span className="text-sm font-medium text-gray-700 hidden lg:inline">{user?.name} </span>
                 <ChevronDown className="h-3 w-3 text-gray-500 hidden lg:inline" />
                 <MoreVertical className="h-4 w-4 text-gray-500 lg:hidden" /> {/* More icon for smaller screens */}
               </Button>

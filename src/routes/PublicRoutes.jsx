@@ -7,19 +7,18 @@ import ErrorPage from "@/pages/ErrorPage";
 import HomePage from "@/home/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUpPage from "@/pages/SignUpPage";
-import AdminLoginPage from "@/admin/AdminLoginPage";
-
+import AdminLoginPage from '@/admin/AdminLoginPage';
 export const publicRoutes = [
   {
     path: '/',
     element: <HomePage />,
     errorElement: <ErrorPage />
   },
-  {
-        path: '/admin-login',
-    element: <AdminLoginPage />,
-    errorElement: <ErrorPage />
-  },
+   {
+      path: '/admin-login',
+      element: <AdminLoginPage />,
+      errorElement: <ErrorPage />
+    },
   {
     path: '/login',
     element: <LoginPage />,
@@ -30,11 +29,9 @@ export const publicRoutes = [
     element: <SignUpPage />,
     errorElement: <ErrorPage />
   },
-
-
    {
       path: '*',
-      element: <ErrorPage/>, // Add a 404 page
+      element: <ErrorPage/>, 
     },
 ];
 
@@ -50,4 +47,3 @@ export const PublicRoute = () => {
   // If not logged in, render the child component (the public page)
   return <Outlet />;
 };
-

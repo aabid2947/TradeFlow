@@ -6,10 +6,7 @@ import { Mail, Lock, User, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AuthCard } from "@/cards/AuthCard"
 import { FloatingLabel } from "@/components/FloatingLabel"
-
-// --- API INTEGRATION: STEP 1 ---
-// Import the necessary hooks using the new, correct paths
-import { useSignupMutation } from "@/app/api/authApiSlice" // Corrected path
+import { useSignupMutation } from "@/app/api/authApiSlice" 
 
 export function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -21,9 +18,6 @@ export function SignUpForm() {
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  
-  // --- API INTEGRATION: STEP 2 ---
-  // Instantiate hooks for navigation and our API mutation.
   const navigate = useNavigate()
   const [signup, { isLoading, error: apiError }] = useSignupMutation()
 
@@ -39,25 +33,20 @@ export function SignUpForm() {
     return Object.keys(newErrors).length === 0
   }
 
-  // --- API INTEGRATION: STEP 3 ---
-  // Update the handleSubmit function to call the real API.
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
 
     try {
       const { name, email, password } = formData
-      
-      // Call the signup mutation. Your backend for signup doesn't return a token,
-      // so we don't need to dispatch credentials here.
+ 
       await signup({ name, email, password }).unwrap()
       
       // On success, navigate the user to the login page to sign in.
-      // We can pass a success message via location state if we want to display it.
       navigate("/login", { state: { message: "Signup successful! Please log in." } })
       
     } catch (err) {
-      // The error handling remains the same.
       console.error("Failed to sign up:", err)
     }
   }
@@ -74,7 +63,6 @@ export function SignUpForm() {
       <div className="w-full max-w-md">
         <AuthCard title="Create Account" subtitle="Join thousands of users who trust our platform">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* --- API INTEGRATION: STEP 4 (Display API Errors) --- */}
             {apiError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-center text-sm" role="alert">
                 {apiError.data?.message || "An error occurred during signup."}

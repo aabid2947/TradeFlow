@@ -9,6 +9,7 @@ export const protectedUserRoutes = [
     element: <UserDashBoard />,
     errorElement: <ErrorPage />
   },
+   
   {
     // This route is for displaying the details of a single service.
     path: '/user/service/:serviceId',
