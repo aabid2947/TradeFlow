@@ -9,13 +9,11 @@ import ServiceCardsViewer from "./userComponents/ServiceCardsViewer";
 import Profile from "./userComponents/Profile";
 import PurchaseHistory from "./userComponents/PurchaseHistory";
 
-// 1. IMPORT THE HOOKS FOR FETCHING SERVICES AND TRANSACTIONS
+//  IMPORT THE HOOKS FOR FETCHING SERVICES AND TRANSACTIONS
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
 import ReviewDashboard from "./userComponents/ReviewSection";
 
-// This function determines which main component to render.
-// It now accepts transaction data to pass to the dashboard.
 const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions) => {
   switch (activeView) {
     case "dashboard":
@@ -38,7 +36,7 @@ export default function UserDashBoard() {
   const [categoryFilter, setCategoryFilter] = useState("All Services");
   const location = useLocation();
 
-  // --- API CALLS ---
+  //  API CALLS 
   // Fetch services for the services viewer
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
   const services = servicesResponse?.data || [];
@@ -46,7 +44,7 @@ export default function UserDashBoard() {
   // 2. FETCH THE USER'S TRANSACTION HISTORY
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
   const transactions = transactionsResponse?.data || [];
-  // --- END OF API CALLS ---
+  //  END OF API CALLS 
 
   useEffect(() => {
     if (location.state?.view) {

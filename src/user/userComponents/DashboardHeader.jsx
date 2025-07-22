@@ -50,15 +50,15 @@ export default function DashboardHeader({ onMenuClick }) {
         {/* Left Section: Includes hamburger for mobile and welcome text */}
         <div className="flex items-center gap-3 md:gap-4">
           {/* Hamburger button, visible on mobile screens */}
-          {/* <Button
+          <Button
             variant="ghost"
             size="icon"
             onClick={onMenuClick}
-            className="  h-9 w-9 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors duration-150"
+            className="  h-9 w-9 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors duration-150 lg:hidden"
             aria-label="Toggle mobile menu"
           >
             <Menu className="h-5 w-5" />
-          </Button> */}
+          </Button>
 
           {/* Welcome Text */}
           <div className="hidden md:flex flex-col">
