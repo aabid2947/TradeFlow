@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
@@ -21,6 +20,7 @@ import {
   Award,
   Zap
 } from 'lucide-react';
+
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, threshold: 0.1 });
@@ -37,6 +37,7 @@ const AnimatedSection = ({ children, className = "" }) => {
     </motion.div>
   );
 };
+
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -106,128 +107,130 @@ const ContactUs = () => {
 
       {/* Contact Form and Info Section */}
       <section className="py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <AnimatedSection>
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Your full name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company Name
-                      </label>
-                      <input
-                        type="text"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Your company"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="+91 12345 67890"
-                      />
-                    </div>
-                  </div>
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Main container for layout sections */}
+          <div className="flex flex-col gap-8">
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Subject *
-                    </label>
-                    <select
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            {/* --- TOP ROW: FORM AND OFFICE INFO --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Contact Form */}
+              <AnimatedSection className="lg:col-span-5">
+                <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="Your full name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="your@email.com"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Company Name
+                        </label>
+                        <input
+                          type="text"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="Your company"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="+91 12345 67890"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Subject *
+                      </label>
+                      <select
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      >
+                        <option value="">Select a subject</option>
+                        <option value="api-integration">API Integration Support</option>
+                        <option value="pricing">Pricing and Plans</option>
+                        <option value="custom-solution">Custom Verification Solutions</option>
+                        <option value="bulk-verification">Bulk Verification Needs</option>
+                        <option value="technical-support">Technical Support</option>
+                        <option value="partnership">Partnership Opportunities</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Message *
+                      </label>
+                      <textarea
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        required
+                        rows={5}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        placeholder="Tell us about your verification needs..."
+                      ></textarea>
+                    </div>
+
+                    <motion.button
+                      type="submit"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
                     >
-                      <option value="">Select a subject</option>
-                      <option value="api-integration">API Integration Support</option>
-                      <option value="pricing">Pricing and Plans</option>
-                      <option value="custom-solution">Custom Verification Solutions</option>
-                      <option value="bulk-verification">Bulk Verification Needs</option>
-                      <option value="technical-support">Technical Support</option>
-                      <option value="partnership">Partnership Opportunities</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Message *
-                    </label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      required
-                      rows={5}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                      placeholder="Tell us about your verification needs..."
-                    ></textarea>
-                  </div>
-
-                  <motion.button
-                    type="submit"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
-                  >
-                    <Send className="w-5 h-5" />
-                    <span>Send Message</span>
-                  </motion.button>
-                </form>
-              </div>
-            </AnimatedSection>
-
-            {/* Contact Information */}
-            <AnimatedSection>
-              <div className="space-y-8">
-                {/* Office Info */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                      <Send className="w-5 h-5" />
+                      <span>Send Message</span>
+                    </motion.button>
+                  </form>
+                </div>
+              </AnimatedSection>
+              
+              {/* Office Info Card */}
+              <AnimatedSection className="lg:col-span-7">
+                <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Visit Our Office</h3>
                   <div className="space-y-4">
                     <div className="flex items-start space-x-4">
@@ -260,12 +263,11 @@ const ContactUs = () => {
                     </div>
                   </div>
 
-                  {/* Map placeholder */}
-                  <div className="mt-6 h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <div className="mt-6 h-48 bg-gray-200 rounded-lg overflow-hidden">
                     <img 
                       src="https://images.unsplash.com/photo-1524813686514-a57563d2a80f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80" 
                       alt="Office building"
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
 
@@ -278,9 +280,29 @@ const ContactUs = () => {
                     </ul>
                   </div>
                 </div>
+              </AnimatedSection>
+            </div>
 
-                {/* Quick Contact */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+            {/* --- MAP ROW: FULL WIDTH --- */}
+            <AnimatedSection>
+              <div className="w-full bg-white rounded-2xl shadow-xl p-8 overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.0184801166723!2d77.36493931492027!3d28.627338382418994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce5081e611bfb%3A0x37f95780f9c6a61e!2sSector%2062%2C%20Noida%2C%20Uttar%20Pradesh%20201309!5e0!3m2!1sen!2sin!4v1627900126520!5m2!1sen!2sin"
+                  width="100%"
+                  height="400"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  className="rounded-lg"
+                ></iframe>
+              </div>
+            </AnimatedSection>
+
+            {/* --- MIDDLE ROW: QUICK AND DEPARTMENT CONTACTS --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Quick Contact */}
+              <AnimatedSection>
+                <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Quick Contact</h3>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
@@ -292,7 +314,6 @@ const ContactUs = () => {
                         <p className="text-blue-600">hello@verifykyc.com</p>
                       </div>
                     </div>
-
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                         <Phone className="w-5 h-5 text-green-600" />
@@ -302,7 +323,6 @@ const ContactUs = () => {
                         <p className="text-green-600">+91-120-456-7890</p>
                       </div>
                     </div>
-
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                         <MessageCircle className="w-5 h-5 text-purple-600" />
@@ -314,9 +334,11 @@ const ContactUs = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Department Contacts */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+              </AnimatedSection>
+              
+              {/* Department Contacts */}
+              <AnimatedSection>
+                <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Department Contacts</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
@@ -333,50 +355,53 @@ const ContactUs = () => {
                     </div>
                   </div>
                 </div>
+              </AnimatedSection>
+            </div>
 
-                {/* Social Media */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
-                  <h3 className="text-2xl font-bold mb-6">Follow Us</h3>
-                  <div className="flex space-x-4">
-                    <motion.a
-                      href="#"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
-                    >
-                      <Linkedin className="w-6 h-6" />
-                    </motion.a>
-                    <motion.a
-                      href="#"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
-                    >
-                      <Twitter className="w-6 h-6" />
-                    </motion.a>
-                    <motion.a
-                      href="#"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
-                    >
-                      <Facebook className="w-6 h-6" />
-                    </motion.a>
-                    <motion.a
-                      href="#"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
-                    >
-                      <Globe className="w-6 h-6" />
-                    </motion.a>
-                  </div>
-                  <p className="mt-4 text-white/80">
-                    Stay updated with our latest features and industry insights
-                  </p>
+            {/* --- BOTTOM ROW: SOCIAL MEDIA --- */}
+            <AnimatedSection>
+              <div className="w-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-6">Follow Us</h3>
+                <div className="flex space-x-4">
+                  <motion.a
+                    href="#"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
+                  >
+                    <Linkedin className="w-6 h-6" />
+                  </motion.a>
+                  <motion.a
+                    href="#"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
+                  >
+                    <Twitter className="w-6 h-6" />
+                  </motion.a>
+                  <motion.a
+                    href="#"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
+                  >
+                    <Facebook className="w-6 h-6" />
+                  </motion.a>
+                  <motion.a
+                    href="#"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
+                  >
+                    <Globe className="w-6 h-6" />
+                  </motion.a>
                 </div>
+                <p className="mt-4 text-white/80">
+                  Stay updated with our latest features and industry insights
+                </p>
               </div>
             </AnimatedSection>
+
           </div>
         </div>
       </section>
@@ -464,6 +489,5 @@ const ContactUs = () => {
     </div>
   );
 };
-
 
 export default ContactUs;

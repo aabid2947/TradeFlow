@@ -304,8 +304,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Spacer to prevent content from hiding behind fixed header */}
-      <div className="h-20" />
+ 
     </>
   )
 }
