@@ -10,6 +10,7 @@ import SubscriptionSection from "./homeComponents/SubsciptionSection"
 import FAQSection from "./homeComponents/FAQSection"
 import ServicesShowcase from "./homeComponents/ServiceShowCaseComponent"
 import HeroSection from "./homeComponents/HeroSection"
+import TopBar from "./homeComponents/TopBar"
 export default function HomePage() {
 
   return (
@@ -18,6 +19,7 @@ export default function HomePage() {
       {/* Main content area, with a left margin on desktop to make space for the sidebar */}
     
         {/* A single, unified header that handles its own responsiveness */}
+        <TopBar/>
         <HomePageHeader />
         <HeroSection/>
         <ServicesSection/>

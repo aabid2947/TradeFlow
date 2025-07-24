@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useNavigate } from "react-router-dom"
 import AppLogo from "@/assets/sidebarLogo.svg"
+
 const navigationItems = [
   {
     name: "Products",
@@ -34,12 +35,17 @@ const navigationItems = [
       { name: "Real Estate", href: "#", description: "Property transaction verification" },
     ],
   },
-  { name: "Pricing", hasDropdown: true,  items: [
+  { 
+    name: "Pricing", 
+    hasDropdown: false,  
+    href:"/pricing",
+    items: [
       { name: "Financial Services", href: "#", description: "Banking & fintech solutions" },
       { name: "Healthcare", href: "#", description: "HIPAA compliant verification" },
       { name: "E-commerce", href: "#", description: "Online marketplace security" },
       { name: "Real Estate", href: "#", description: "Property transaction verification" },
-    ], },
+    ], 
+  },
   {
     name: "Resources",
     hasDropdown: true,
@@ -54,17 +60,19 @@ const navigationItems = [
     name: "Company",
     hasDropdown: true,
     items: [
-      { name: "About Us", href: "#", description: "Our mission and team" },
+      { name: "About Us", href: "about-us", description: "Our mission and team" },
       { name: "Careers", href: "#", description: "Join our growing team" },
       { name: "Press", href: "#", description: "News and media resources" },
-      { name: "Contact", href: "#", description: "Get in touch with us" },
+      { name: "Contact", href: "contact-us", description: "Get in touch with us" },
     ],
   },
 ]
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [hoveredItem, setHoveredItem] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -80,58 +88,44 @@ export default function Header() {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  const handleNavigation = (href) => {
+    if (href.startsWith('/') || href === 'about-us' || href === 'contact-us') {
+      navigate(`/${href}`)
+    } else if (href !== '#') {
+      window.location.href = href
+    }
+  }
+
   return (
     <>
-      <header
-        className={`
-        fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out
-        ${
-          isScrolled
-            ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100"
-            : "bg-white border-b-2 border-blue-400"
-        }
-      `}
-      >
+           <header
+       className={`
+       sticky top-0 z-50 transition-all duration-300 ease-out
+       ${
+         isScrolled
+           ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100"
+           : "bg-white border-b-2 border-blue-400"
+       }
+     `}
+     >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Increased height from h-20 to h-24 */}
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div className="flex items-center gap-3 group cursor-pointer">
-              {/* <div
-                className={`
-                w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center 
-                shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110
-                ${isScrolled ? "shadow-md" : "shadow-lg"}
-              `}
-              > */}
-               
-                {/* Increased icon size */}
-                <img src={AppLogo} className="w-32 h-32 text-white" />
-              {/* </div> */}
-              {/* <div>
-                <span className="text-xl font-bold text-gray-900 group-hover:text-[#1987BF] transition-colors duration-200">
-                  Verify Me KYC
-                </span>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Shield className="w-4 h-4 text-green-500" />
-            
-                  <span className="text-base text-green-600 font-medium">Trusted Platform</span>
-                </div>
-              </div> */}
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={()=> navigate("/")}>
+              <img src={AppLogo} className="w-32 h-32 text-white" />
             </div>
 
             {/* Desktop Navigation */}
             <NavigationMenu className="hidden lg:flex">
-              {/* Increased spacing between items */}
-              <NavigationMenuList className="flex items-center space-x-6">
-                {navigationItems.map((item) => (
+              <NavigationMenuList className="flex items-center space-x-6 relative">
+                {navigationItems.map((item, index) => (
                   <NavigationMenuItem key={item.name}>
                     {item.hasDropdown ? (
                       <>
                         <NavigationMenuTrigger
                           className={`
                           bg-transparent hover:bg-gray-50 data-[active]:bg-transparent data-[state=open]:bg-gray-50
-                          text-gray-700 hover:text-[#1987BF] font-md text-[1.1rem] px-5 py-3 rounded-lg /* Increased text-base to text-lg */
+                          text-gray-700 hover:text-[#1987BF] font-md text-[1.1rem] px-5 py-3 rounded-lg
                           transition-all duration-200 border border-transparent hover:border-gray-200
                           ${isScrolled ? "hover:shadow-sm" : ""}
                         `}
@@ -141,16 +135,18 @@ export default function Header() {
                           </span>
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
-                          {/* Increased dropdown width and text */}
-                          <div className="w-[480px] p-5 bg-white shadow-xl rounded-xl">
+                          <div className="w-[480px] p-5 bg-white shadow-xl rounded-xl border border-gray-100">
                             <div className="space-y-3">
                               {item.items?.map((subItem) => (
                                 <NavigationMenuLink key={subItem.name} asChild>
                                   <a
                                     href={subItem.href}
-                                    className="block p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      handleNavigation(subItem.href)
+                                    }}
+                                    className="block p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
                                   >
-                                    {/* Increased dropdown item title size */}
                                     <div className="font-semibold text-gray-900 group-hover:text-[#1987BF] transition-colors duration-200 text-lg">
                                       {subItem.name}
                                     </div>
@@ -164,16 +160,20 @@ export default function Header() {
                       </>
                     ) : (
                       <NavigationMenuLink asChild>
-                        <a
-                          href={item.href}
-                          className={`
-                            text-gray-700 hover:text-[#1987BF] font-medium text-lg px-5 py-3 rounded-lg /* Increased text-base to text-lg */
-                            hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200
-                            ${isScrolled ? "hover:shadow-sm" : ""}
-                          `}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            navigate(item.href)
+                          }}
+                            className={`
+                          bg-transparent font-semibold hover:bg-gray-50 data-[active]:bg-transparent data-[state=open]:bg-gray-50
+                          text-gray-700 hover:text-[#1987BF] font-md text-[1.1rem] px-5 py-3 rounded-lg
+                          transition-all duration-200 border border-transparent hover:border-gray-200
+                          ${isScrolled ? "hover:shadow-sm" : ""}
+                        `}
                         >
                           {item.name}
-                        </a>
+                        </button>
                       </NavigationMenuLink>
                     )}
                   </NavigationMenuItem>
@@ -183,56 +183,34 @@ export default function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-5">
-              {/* Contact Sales Button - Hidden on mobile */}
-              {/* <Button
-                variant="outline"
-                className="hidden md:flex items-center gap-2 bg-transparent border-gray-300 text-gray-700 hover:border-[#1987BF] hover:text-[#1987BF] hover:bg-[#1987BF]/5 transition-all duration-200 rounded-lg text-base px-6 py-6" 
-              >
-                <Phone className="w-5 h-5" />
-                Contact Sales
-              </Button> */}
-
               {/* Demo Button */}
               <div className="hidden lg:block">
-
-              <Button
-                className={`
-                bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
-                text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl /* Increased padding */
-                transition-all duration-200 transform hover:scale-105 active:scale-95
-                flex items-center gap-2 group text-[1.1rem]
-              `}
-              type="button"
-              onClick={()=>navigate('/signup')}
-              >
-                Get Started
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </Button>
-              </div>
-
-              {/* Search Button - Desktop */}
-              {/* <Button
-                variant="ghost"
-                size="sm"
-                className={`
-                  hidden md:flex h-12 w-12 p-0 hover:bg-gray-100 rounded-lg transition-all duration-200 
-                  ${isScrolled ? "hover:shadow-sm" : ""}
+                <Button
+                  className={`
+                  bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
+                  text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl
+                  transition-all duration-200 transform hover:scale-105 active:scale-95
+                  flex items-center gap-2 group text-[1.1rem] 
                 `}
-              >
-                <Search className="h-6 w-6 text-gray-600" />
-              </Button> */}
+                  type="button"
+                  onClick={() => navigate('/signup')}
+                >
+                  Get Started
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
+                </Button>
+              </div>
 
               {/* Mobile Menu Button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden h-12 w-12 p-0 hover:bg-gray-100 rounded-lg" /* Increased size */
+                className="lg:hidden h-12 w-12 p-0 hover:bg-gray-100 rounded-lg"
                 onClick={toggleMobileMenu}
               >
                 {isMobileMenuOpen ? (
-                  <X className="h-7 w-7 text-gray-600" />
+                  <X  size={4000} className=" text-gray-600" />
                 ) : (
-                  <Menu className="h-7 w-7 text-gray-600" />
+                  <Menu size={4000}  className=" text-gray-600" />
                 )}
               </Button>
             </div>
@@ -242,7 +220,7 @@ export default function Header() {
         {/* Mobile Menu */}
         <div
           className={`
-          lg:hidden overflow-hidden transition-all duration-300 ease-out bg-white border-t border-gray-100
+          lg:hidden overflow-hidden transition-all duration-300 ease-out bg-white border-t border-gray-100 px-4
           ${isMobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"}
         `}
         >
@@ -253,7 +231,6 @@ export default function Header() {
                   <div>
                     <button
                       onClick={() => setActiveDropdown(activeDropdown === item.name ? null : item.name)}
-                      /* Increased font size */
                       className="flex items-center justify-between w-full text-left font-semibold text-xl text-gray-900 hover:text-[#1987BF] transition-colors duration-200 py-3"
                     >
                       {item.name}
@@ -272,9 +249,12 @@ export default function Header() {
                           <a
                             key={subItem.name}
                             href={subItem.href}
-                            /* Increased font size */
-                            className="block py-3 text-lg text-gray-600 hover:text-[#1987BF] transition-colors duration-200"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              handleNavigation(subItem.href)
+                              setIsMobileMenuOpen(false)
+                            }}
+                            className="block py-3 text-lg text-gray-600 hover:text-[#1987BF] transition-colors duration-200 cursor-pointer"
                           >
                             {subItem.name}
                           </a>
@@ -283,14 +263,16 @@ export default function Header() {
                     </div>
                   </div>
                 ) : (
-                  <a
-                    href={item.href}
-                    /* Increased font size */
-                    className="block font-semibold text-xl text-gray-900 hover:text-[#1987BF] transition-colors duration-200 py-3"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleNavigation(item.href)
+                      setIsMobileMenuOpen(false)
+                    }}
+                    className="flex items-center justify-between w-full text-left font-semibold text-xl text-gray-900 hover:text-[#1987BF] transition-colors duration-200 py-3"
                   >
                     {item.name}
-                  </a>
+                  </button>
                 )}
               </div>
             ))}
@@ -300,19 +282,29 @@ export default function Header() {
               <Button
                 variant="outline"
                 className="w-full justify-center bg-transparent border-gray-200 text-gray-700 hover:border-[#1987BF] hover:text-[#1987BF] hover:bg-[#1987BF]/5 text-lg py-6"
+                onClick={() => {
+                  navigate('/contact-us')
+                  setIsMobileMenuOpen(false)
+                }}
               >
                 <Phone className="w-5 h-5 mr-3" />
                 Contact Sales
               </Button>
-              <Button className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold text-lg py-4">
-                Book Demo
+              <Button 
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold text-lg py-4"
+                onClick={() => {
+                  navigate('/signup')
+                  setIsMobileMenuOpen(false)
+                }}
+              >
+                Get Started
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Spacer to prevent content from hiding behind fixed header, matched to new height */}
+      {/* Spacer to prevent content from hiding behind fixed header */}
       <div className="h-20" />
     </>
   )

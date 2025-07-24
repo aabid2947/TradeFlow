@@ -20,7 +20,7 @@ export default function TypeformSignup() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+    <div className="h-full bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex flex-col items-center justify-center p-8 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-3xl" />

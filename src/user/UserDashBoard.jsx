@@ -112,13 +112,15 @@ export default function UserDashBoard() {
               key={activeView + categoryFilter}
               className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
             >
-              {/* 3. PASS ALL NECESSARY DATA TO THE RENDER FUNCTION */}
               {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions)}
             </div>
           </main>
-          <aside className="hidden lg:block w-full lg:w-64 lg:max-w-xs flex-shrink-0">
-            <Profile />
-          </aside>
+          {/* Conditionally render the Profile sidebar only for the dashboard view */}
+          {activeView === "dashboard" && (
+            <aside className="hidden lg:block w-full lg:w-64 lg:max-w-xs flex-shrink-0 animate-in slide-in-from-right-5 fade-in-0 duration-500">
+              <Profile />
+            </aside>
+          )}
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+// src/app/api/verificationApiSlice.js
 
 import { apiSlice } from './apiSlice';
 
@@ -11,11 +12,14 @@ export const verificationApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: { serviceKey, payload },
       }),
-       keepUnusedDataFor: 0,
-       refetchOnMountOrArgChange: true,
+      keepUnusedDataFor: 0,
+      refetchOnMountOrArgChange: true,
 
-      // After a successful verification, refetch the user's profile.
-      invalidatesTags: ['User'],
+
+      invalidatesTags: (result, error, arg) => [
+        'User', 
+        { type: 'Transaction', id: 'LIST' }
+      ],
     }),
   }),
 });

@@ -8,10 +8,35 @@ import HomePage from "@/home/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUpPage from "@/pages/SignUpPage";
 import AdminLoginPage from '@/admin/AdminLoginPage';
+import AboutUsPage from '@/home/AboutUsPage';
+import ContactUsPage from '@/home/ContactUsPage';
+import ProductPage from '@/home/ProductPage'
+import PricingPage from '@/home/PricingPage';
+import ResetPasswordPage from '@/components/ResetPasswordPage';
 export const publicRoutes = [
   {
     path: '/',
     element: <HomePage />,
+    errorElement: <ErrorPage />
+  },
+   {
+    path: '/about-us',
+    element:<AboutUsPage/>,
+    errorElement: <ErrorPage />
+  },
+   {
+    path: '/contact-us',
+    element:<ContactUsPage/>,
+    errorElement: <ErrorPage />
+  },
+    {
+    path: '/product/:id',
+    element:<ProductPage/>,
+    errorElement: <ErrorPage />
+  },
+   {
+    path: '/pricing',
+    element:<PricingPage/>,
     errorElement: <ErrorPage />
   },
    {
@@ -27,6 +52,11 @@ export const publicRoutes = [
   {
     path: '/signup',
     element: <SignUpPage />,
+    errorElement: <ErrorPage />
+  },
+    {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
     errorElement: <ErrorPage />
   },
    {

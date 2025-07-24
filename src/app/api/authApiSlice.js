@@ -10,10 +10,19 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: credentials,
       }),
     }),
+    loginWithGoogle: builder.mutation({
+      query: (credentials) => {
+          console.log(credentials)
+          return{
+        
+        url: '/auth/google-signin',
+        method: 'POST',
+        body: credentials,
+      }},
+    }),
     signup: builder.mutation({
    
       query: (userInfo) =>  {
-           console.log(userInfo)
         return {
         url: '/auth/register',
         method: 'POST',
@@ -29,12 +38,11 @@ export const authApiSlice = apiSlice.injectEndpoints({
         url: '/users/all',
         method: 'GET',
       }),
-      providesTags: ['User'], // Optional: for caching
+      providesTags: ['User'], 
     }),
     signupAdmin: builder.mutation({
    
-      query: (adminInfo) =>  {
-           console.log(adminInfo)
+    query: (adminInfo) =>  {
         return {
         url: '/admin/register',
         method: 'POST',
@@ -46,9 +54,45 @@ export const authApiSlice = apiSlice.injectEndpoints({
         url: '/admin/all',
         method: 'GET',
       }),
-      providesTags: ['User'], // Optional: for caching
+      providesTags: ['User'],
     }),
+    verifyEmailOtp: builder.mutation({
+    query: (body) =>  {
+        return {
+        url: '/auth/verify-email-otp',
+        method: 'POST',
+        body: body,
+      }},
+    }),
+    forgotPassword: builder.mutation({
+    query: (adminInfo) =>  {
+        return {
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body: adminInfo,
+      }},
+    }),
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'PUT',
+        body: body,
+      }),
+    }),
+
+    
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useGetProfileQuery, useGetAllUsersQuery,useSignupAdminMutation,useGetAllAdminQuery  } = authApiSlice;
+export const { 
+  useLoginMutation, 
+  useSignupMutation, 
+  useGetProfileQuery, 
+  useGetAllUsersQuery,
+  useSignupAdminMutation,
+  useGetAllAdminQuery,
+  useLoginWithGoogleMutation,
+  useVerifyEmailOtpMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation, 
+} = authApiSlice;

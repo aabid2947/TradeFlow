@@ -13,7 +13,7 @@ export const reviewApiSlice = apiSlice.injectEndpoints({
         return{
         url: REVIEWS_URL,
         method: 'POST',
-        body: reviewData, // { transactionId, rating, comment }
+        body: reviewData, 
       }},
       // Invalidates lists to refetch after creation
       invalidatesTags: (result, error, arg) => [
@@ -52,10 +52,10 @@ export const reviewApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'Review', id: 'ME' }],
     }),
 
-    // ** NEW ** Query for admin to get ALL reviews
+ 
     getAllReviews: builder.query({
         query: () => ({
-            // Assuming an admin-only endpoint like this exists or will be created
+           
             url: `${REVIEWS_URL}/all`, 
             method: 'GET',
         }),
@@ -69,10 +69,7 @@ export const reviewApiSlice = apiSlice.injectEndpoints({
     }),
 
 
-    // Query to get all reviews for a specific service (public)
-
-
-    // Mutation to delete a review (by user or admin)
+    
     deleteReview: builder.mutation({
       query: (reviewId) => ({
         url: `${REVIEWS_URL}/${reviewId}`,
@@ -82,13 +79,12 @@ export const reviewApiSlice = apiSlice.injectEndpoints({
         { type: 'Review', id: reviewId },
         { type: 'Review', id: 'LIST' },
         { type: 'Review', id: 'ME' },
-        { type: 'Transaction', id: 'LIST' } // Invalidate transactions to reflect reviewed status
+        { type: 'Transaction', id: 'LIST' } 
       ],
     }),
   }),
 });
 
-// Export the auto-generated hooks for use in components
 export const {
   useCreateReviewMutation,
   useUpdateReviewMutation,

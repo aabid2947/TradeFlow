@@ -1,3 +1,5 @@
+// src/components/PurchaseHistory.jsx
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -22,7 +24,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice"
 
-// Mock data for demonstration since RTK Query setup is not provided in this context
 
 
 const formatCurrency = (amount) => {
@@ -278,20 +279,13 @@ export default function PurchaseHistory() {
       orderId: transaction._id,
       productName: transaction.service?.name || "Unknown Service",
       amount: transaction.service?.price || 0,
-      purchaseDate: transaction.timestamp,
+      purchaseDate: transaction.createdAt, // Using createdAt for a more reliable timestamp
       email: transaction.user?.email || "N/A",
-      phone: "N/A", 
-      paymentMethod: "Card",
-      shippingAddress: {
-        street: "Digital Service / Not Applicable",
-        city: "N/A",
-        state: "N/A",
-        zipCode: "N/A",
-        country: "N/A",
-      },
+      phone: transaction.user?.mobile || "N/A", 
+      paymentMethod: transaction.paymentMethod || "Card", // Fallback to "Card"
       status: transaction.status,
     }))
-  }, []) 
+  }, [transactionsResponse]) // FIX: Added transactionsResponse to the dependency array
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)

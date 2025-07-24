@@ -435,7 +435,7 @@ export default function HeroSection() {
             </div>
           </div>
           {/* Enhanced Carousel Navigation */}
-          <div className="flex items-center justify-center gap-6 mt-16">
+          <div className="flex items-center justify-center gap-6 ">
             <Button
               onClick={prevSlide}
               disabled={isAnimating}

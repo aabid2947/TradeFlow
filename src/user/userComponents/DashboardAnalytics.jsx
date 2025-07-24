@@ -5,7 +5,7 @@ import { TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { CardSkeleton,ChartSkeleton } from "@/components/skeletons/Skeletons";
 const chartData = [
   { date: "14 Jun", kyc: 0.4, business: 0.3 }, { date: "15 Jun", kyc: 0.5, business: 0.4 }, { date: "16 Jun", kyc: 0.6, business: 0.5 }, { date: "17 Jun", kyc: 0.8, business: 0.6 }, { date: "18 Jun", kyc: 0.9, business: 0.7 }, { date: "19 Jun", kyc: 1.0, business: 0.8 }, { date: "20 Jun", kyc: 1.1, business: 0.9 }, { date: "21 Jun", kyc: 1.2, business: 1.0 }, { date: "22 Jun", kyc: 1.3, business: 1.1 }, { date: "23 Jun", kyc: 1.2, business: 1.2 }, { date: "24 Jun", kyc: 1.1, business: 1.3 }, { date: "25 Jun", kyc: 1.0, business: 1.2 }, { date: "26 Jun", kyc: 1.1, business: 1.1 }, { date: "27 Jun", kyc: 1.2, business: 1.0 }, { date: "28 Jun", kyc: 1.4, business: 1.1 },
 ];
@@ -67,15 +67,61 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   }, [transactions]); 
 
 
-  if (isLoading) {
+    if (isLoading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+        {/* Loading Header */}
+        <div className="mb-8">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <CardSkeleton key={i} />
           ))}
         </div>
-        <Skeleton className="h-96 w-full" />
+
+        {/* Chart Skeleton */}
+        <ChartSkeleton />
+
+        {/* Additional loading indicators */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-6 w-36" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                  <Skeleton className="h-2 w-full rounded-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
