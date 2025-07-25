@@ -10,11 +10,11 @@ import {
   Linkedin,
   Instagram,
 } from "lucide-react"
-import Header from "./homeComponents/Header" // Cleaned up import
-import Footer from "./homeComponents/Footer" // Cleaned up import
+import Header from "./homeComponents/Header" 
+import Footer from "./homeComponents/Footer" 
 import HeroSection from "./homeComponents/HeroSection"
-import ContactUs from "./Contact"
-// --- SectionHeader Component (Helper for ContactUsPage) ---
+import ContactUs from "./homeComponents/Contact"
+//  SectionHeader Component (Helper for ContactUsPage) 
 const SectionHeader = ({ title, subtitle }) => (
   <motion.div
     initial={{ opacity: 0, y: 50 }}
@@ -28,7 +28,7 @@ const SectionHeader = ({ title, subtitle }) => (
   </motion.div>
 )
 
-// --- InfoCard Component ---
+//  InfoCard Component 
 const InfoCard = ({ icon: Icon, title, content, animationDelay }) => (
   <motion.div
     initial={{ opacity: 0, y: 50 }}
@@ -45,7 +45,7 @@ const InfoCard = ({ icon: Icon, title, content, animationDelay }) => (
   </motion.div>
 )
 
-// --- ContactForm Component ---
+//  ContactForm Component 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -146,7 +146,7 @@ const ContactForm = () => {
   )
 }
 
-// --- SocialMediaLinks Component ---
+//  SocialMediaLinks Component 
 const SocialMediaLinks = () => (
   <motion.div
     initial={{ opacity: 0, y: 50 }}
@@ -194,7 +194,7 @@ const SocialMediaLinks = () => (
   </motion.div>
 )
 
-// --- ContactUsPage Component ---
+//  ContactUsPage Component 
 export default function ContactUsPage() {
   return (
     <div className="flex flex-col min-h-screen">

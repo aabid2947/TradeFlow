@@ -17,7 +17,7 @@ import {
 import Header from "./homeComponents/Header" 
 import Footer from "./homeComponents/Footer" 
 import HeroSection from "./homeComponents/HeroSection"
-import AboutUs from "./About"
+import AboutUs from "./homeComponents/About"
 import { useEffect } from "react"
 
 const SectionHeader = ({ title, subtitle }) => (

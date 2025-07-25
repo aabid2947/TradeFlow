@@ -13,6 +13,9 @@ import ContactUsPage from '@/home/ContactUsPage';
 import ProductPage from '@/home/ProductPage'
 import PricingPage from '@/home/PricingPage';
 import ResetPasswordPage from '@/components/ResetPasswordPage';
+import BlogPage from '../home/BlogPage';
+import {  selectCurrentUserRole } from '@/features/auth/authSlice'; 
+
 export const publicRoutes = [
   {
     path: '/',
@@ -44,6 +47,12 @@ export const publicRoutes = [
       element: <AdminLoginPage />,
       errorElement: <ErrorPage />
     },
+       {
+      path: '/blog',
+      element: <BlogPage />,
+      errorElement: <ErrorPage />
+    },
+
   {
     path: '/login',
     element: <LoginPage />,
@@ -67,11 +76,13 @@ export const publicRoutes = [
 
 export const PublicRoute = () => {
   const token = useSelector(selectCurrentToken);
+  const role = useSelector(selectCurrentUserRole); // Get the user's role
   const location = useLocation();
 
   if (token) {
-    // If the user is logged in, redirect them to the user dashboard.
-    return <Navigate to="/user" state={{ from: location }} replace />;
+    // If the user is logged in, redirect them based on their role.
+    const redirectTo = role === 'admin' ? '/admin' : '/user';
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   // If not logged in, render the child component (the public page)
