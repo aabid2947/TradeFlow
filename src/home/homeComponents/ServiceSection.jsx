@@ -196,14 +196,14 @@ export default function ServicesSection() {
           </main>
 
           {/* Service count info */}
-          {filteredServices.length > 0 && (
+          {/* {filteredServices.length > 0 && (
             <div className="mt-8 text-center">
               <p className="text-gray-600">
                 Showing {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} 
                 {activeCategory !== "All" && ` in "${activeCategory}"`}
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </section>

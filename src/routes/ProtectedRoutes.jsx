@@ -23,7 +23,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   if (!isAuthorized) {
     // If the user is logged in but their role is not permitted,
-    // send them to a generic "Unauthorized" page.
     return <Navigate to="/unauthorized" state={{ from: location }} replace />;
   }
 
