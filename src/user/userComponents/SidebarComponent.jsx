@@ -3,7 +3,7 @@
 import {
   LayoutDashboard, Shield, Users, BarChart3, PieChart, Settings, LogOut,
   ChevronDown, X, Tag, User, Building, Scale, FileText, Scan, Database,
-  AlertTriangle, MapPin, Menu // Import Menu icon
+  AlertTriangle, MapPin
 } from "lucide-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -111,18 +111,17 @@ export default function SidebarComponent({
       <aside
         className={`fixed inset-y-0 left-0 z-50 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${isOpen ? "w-72" : "w-20"} md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        {/* Header with Menu Toggle and Logo */}
-        <div className="h-16 flex items-center border-b border-gray-100 bg-white/80 backdrop-blur-sm px-4">
+        <div className="h-16 flex items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-sm px-4">
+          <div className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "w-auto opacity-100" : "w-0 opacity-0"}`}>
+            <img src={sidebarLogo} alt="Logo" className="h-10 w-auto" />
+          </div>
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Toggle sidebar"
+            aria-label={isOpen ? "Close sidebar" : "Expand sidebar"}
           >
-            <Menu className="w-6 h-6 text-gray-600" />
+            <X className="w-6 h-6 text-gray-600" />
           </button>
-          <div className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "w-auto opacity-100 ml-3" : "w-0 opacity-0"}`}>
-            <img src={sidebarLogo} alt="Logo" className="h-10 w-auto" />
-          </div>
         </div>
 
         <div className="flex-1 flex flex-col h-[calc(100vh-4rem)]">

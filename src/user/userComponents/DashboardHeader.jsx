@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, RotateCcw, ChevronDown, MoreVertical } from "lucide-react" // Removed Menu
+import { Search, RotateCcw, ChevronDown, MoreVertical, Menu } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -12,7 +12,7 @@ import userPic from "@/assets/UserImage.svg"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 
-export default function DashboardHeader() { // onMenuClick prop removed
+export default function DashboardHeader({ setSidebarOpen }) {
   const [welcomeText, setWelcomeText] = useState("");
   const user = useSelector(selectCurrentUser);
   const fullText = `Welcome Back, ${user?.name || 'User'}`;
@@ -47,7 +47,15 @@ export default function DashboardHeader() { // onMenuClick prop removed
       <div className="flex items-center justify-between h-full">
         {/* Left Section: Welcome text */}
         <div className="flex items-center gap-3 md:gap-4">
-          {/* Hamburger button has been removed */}
+          {/* Hamburger button for mobile */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden p-2 -ml-2 text-gray-600 rounded-lg hover:bg-gray-100"
+            aria-label="Open menu"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          
           <div className="flex flex-col">
             <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
               <span className="text-gray-900">{welcomeText.substring(0, 13)}</span>

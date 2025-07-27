@@ -28,7 +28,6 @@ const renderContent = (activeView, services, isLoadingServices, transactions, is
 };
 
 export default function UserDashBoard() {
-  // Default sidebar state based on screen width
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [activeView, setActiveView] = useState("dashboard");
   const [categoryFilter, setCategoryFilter] = useState("All Services");
@@ -46,14 +45,17 @@ export default function UserDashBoard() {
     }
   }, [location.state]);
 
-  // Adjust sidebar visibility on window resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true);
+      } else {
         setSidebarOpen(false);
       }
     };
     window.addEventListener('resize', handleResize);
+    // Initial check
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -108,9 +110,8 @@ export default function UserDashBoard() {
         onCategorySelect={handleCategorySelect}
       />
 
-      {/* Main content wrapper with dynamic padding that adjusts to the sidebar */}
       <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:pl-72' : 'md:pl-20'}`}>
-        <DashboardHeader />
+        <DashboardHeader setSidebarOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6">
           <main className="flex-1 overflow-hidden">
             <div
