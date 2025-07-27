@@ -3,24 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { 
-  Shield, 
-  Clock, 
-  CheckCircle, 
-  Users, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Send,
-  MessageCircle,
-  Linkedin,
-  Twitter,
-  Facebook,
-  Globe,
+
   Target,
   Eye,
   Award,
   Zap
 } from 'lucide-react';
+import CompanyIntro from './Intro';
+import FounderProfile from './FounderProfile';
 
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
@@ -114,7 +104,7 @@ const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
+      {/* <section className="relative overflow-hidden py-20">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="text-center">
             <motion.h1 
@@ -149,10 +139,10 @@ const AboutUs = () => {
             </motion.div>
           </AnimatedSection>
         </div>
-      </section>
+      </section> */}
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      {/* <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Thousands</h2>
@@ -166,7 +156,9 @@ const AboutUs = () => {
             <StatsCard icon={Shield} number="99.9%" label="Accuracy Rate" delay={600} />
           </div>
         </div>
-      </section>
+      </section> */}
+      <CompanyIntro />
+      <FounderProfile />
 
       {/* Problem Solution Section */}
       <section className="py-20 bg-gradient-to-r from-gray-900 to-blue-900 text-white">

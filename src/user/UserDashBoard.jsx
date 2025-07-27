@@ -8,8 +8,6 @@ import DashboardAnalytics from "./userComponents/DashboardAnalytics";
 import ServiceCardsViewer from "./userComponents/ServiceCardsViewer";
 import Profile from "./userComponents/Profile";
 import PurchaseHistory from "./userComponents/PurchaseHistory";
-
-//  IMPORT THE HOOKS FOR FETCHING SERVICES AND TRANSACTIONS
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
 import ReviewDashboard from "./userComponents/ReviewSection";
@@ -17,7 +15,6 @@ import ReviewDashboard from "./userComponents/ReviewSection";
 const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions) => {
   switch (activeView) {
     case "dashboard":
-      // Pass transaction data and loading state to the analytics component
       return <DashboardAnalytics transactions={transactions} isLoading={isLoadingTransactions} />;
     case "services":
       return <ServiceCardsViewer services={services} isLoading={isLoadingServices} />;
@@ -31,26 +28,34 @@ const renderContent = (activeView, services, isLoadingServices, transactions, is
 };
 
 export default function UserDashBoard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Default sidebar state based on screen width
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [activeView, setActiveView] = useState("dashboard");
   const [categoryFilter, setCategoryFilter] = useState("All Services");
   const location = useLocation();
 
-  //  API CALLS 
-  // Fetch services for the services viewer
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
   const services = servicesResponse?.data || [];
   
-  // 2. FETCH THE USER'S TRANSACTION HISTORY
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
   const transactions = transactionsResponse?.data || [];
-  //  END OF API CALLS 
 
   useEffect(() => {
     if (location.state?.view) {
       setActiveView(location.state.view);
     }
   }, [location.state]);
+
+  // Adjust sidebar visibility on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const uniqueCategories = useMemo(() => {
     const categories = new Set(services.map(s => s.category).filter(Boolean));
@@ -79,7 +84,6 @@ export default function UserDashBoard() {
     }
   };
   
-   // Handle errors from either API call
    if (isErrorServices || isErrorTransactions) {
     const error = servicesError || transactionsError;
     return (
@@ -104,9 +108,10 @@ export default function UserDashBoard() {
         onCategorySelect={handleCategorySelect}
       />
 
-      <div className="flex flex-col flex-1">
-        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6 md:ml-16">
+      {/* Main content wrapper with dynamic padding that adjusts to the sidebar */}
+      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:pl-72' : 'md:pl-20'}`}>
+        <DashboardHeader />
+        <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6">
           <main className="flex-1 overflow-hidden">
             <div
               key={activeView + categoryFilter}
@@ -115,7 +120,6 @@ export default function UserDashBoard() {
               {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions)}
             </div>
           </main>
-          {/* Conditionally render the Profile sidebar only for the dashboard view */}
           {activeView === "dashboard" && (
             <aside className="hidden lg:block w-full lg:w-64 lg:max-w-xs flex-shrink-0 animate-in slide-in-from-right-5 fade-in-0 duration-500">
               <Profile />

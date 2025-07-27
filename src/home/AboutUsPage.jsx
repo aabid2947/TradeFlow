@@ -37,10 +37,11 @@ const SectionHeader = ({ title, subtitle }) => (
 export default function AboutUsPage() {
   useEffect(()=>{
      window.scrollTo({
-    top: document.body.scrollHeight / 2,
-    behavior: "smooth", // optional for smooth scrolling
+    top: 0,
+    behavior: "smooth", 
   });
   },[])
+
   const textAnimationProps = {
     initial: { opacity: 0, y: 50 },
     whileInView: { opacity: 1, y: 0 },

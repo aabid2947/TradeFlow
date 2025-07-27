@@ -41,6 +41,7 @@ const defaultServiceState = {
     description: '',
     category:'',
     price: 0,
+    combo_price: 0,
     imageUrl: '',
     endpoint: '',
     apiType: 'json',
@@ -50,20 +51,14 @@ const defaultServiceState = {
 
 // Static list of categories based on the Gridlines API documentation
 const serviceCategories = [
-    { value: 'Bank Account', label: 'Bank Account Verification' },
-    { value: 'PAN', label: 'PAN Verification' },
-    { value: 'Aadhaar', label: 'Aadhaar Verification' },
-    { value: 'Voter ID', label: 'Voter ID Verification' },
-    { value: 'Driving License', label: 'Driving License Verification' },
-    { value: 'Vehicle RC', label: 'Vehicle RC Verification' },
-    { value: 'Passport', label: 'Passport Verification' },
-    { value: 'GSTIN', label: 'GSTIN Verification' },
-    { value: 'CIN', label: 'Corporate Identification Number (CIN)' },
-    { value: 'FSSAI', label: 'FSSAI License Verification' },
-    { value: 'Udyam', label: 'Udyam Registration Verification' },
-    { value: 'Employment', label: 'Employment Verification' },
-    { value: 'Address', label: 'Address Verification' },
-    { value: 'Other', label: 'Other' }
+  { value: 'Identity Verification', label: 'Identity Verification' },
+  { value: 'Financial & Business Checks', label: 'Financial & Business Checks' },
+  { value: 'Legal & Compliance Checks', label: 'Legal & Compliance Checks' },
+  { value: 'Health & Government Records', label: 'Health & Government Records' },
+  { value: 'Biometric & AI-Based Verification', label: 'Biometric & AI-Based Verification' },
+  { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup' },
+  { value: 'Criminal Verification', label: 'Criminal Verification' },
+  { value: 'Land Record Check', label: 'Land Record Check' }
 ];
 
 
@@ -160,6 +155,8 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Service Name" name="name" value={service.name} onChange={handleChange} required />
                                 <Input label="Service Key" name="service_key" value={service.service_key} onChange={handleChange} required />
                                 <Input label="Price" name="price" type="number" value={service.price} onChange={handleChange} required />
+                                <Input label="Combo Price" name="combo_price" type="number" value={service.combo_price} onChange={handleChange} required />
+
                                 <Input label="Image URL" name="imageUrl" value={service.imageUrl} onChange={handleChange} />
                                 <Select label="Category" name="category" value={service.category} onChange={handleChange} required>
                                     <option value="" disabled>Select a category</option>

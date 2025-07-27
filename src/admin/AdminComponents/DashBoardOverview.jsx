@@ -3,63 +3,50 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { LineChart, Line, ResponsiveContainer } from "recharts"
+import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts"
 import { ArrowRight, Sparkles, Users, DollarSign, CheckSquare } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton";
 
-
-/**
- * @param {object} props
- * @param {Array} props.users - An array of all user objects.
- * @param {Array} props.transactions - An array of all transaction objects.
- * @param {boolean} props.isLoading - The combined loading state.
- */
 export default function DashboardOverview({ users, transactions, isLoading }) {
 
-  const overviewData = useMemo(() => {
+  const { overviewData, chartData } = useMemo(() => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
-    // Filter users registered this month
-    const newUsersThisMonth = users.filter(user => 
-        new Date(user.createdAt) >= startOfMonth
-    );
+    const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
+        date: new Date(now.getFullYear(), now.getMonth(), i + 1).toLocaleDateString('en-US', { day: 'numeric' }),
+        users: 0,
+        revenue: 0,
+        verifications: 0,
+    }));
 
-    // Filter transactions that happened this month
-    const transactionsThisMonth = transactions.filter(t => 
-        new Date(t.timestamp) >= startOfMonth
-    );
+    const newUsersThisMonth = users.filter(user => new Date(user.createdAt) >= startOfMonth);
+    newUsersThisMonth.forEach(user => {
+        const dayIndex = new Date(user.createdAt).getDate() - 1;
+        if (dailyData[dayIndex]) dailyData[dayIndex].users += 1;
+    });
 
-    // Calculate revenue generated this month
-    const revenueThisMonth = transactionsThisMonth.reduce((acc, curr) => {
-        return acc + (curr.service?.price || 0);
-    }, 0);
+    const transactionsThisMonth = transactions.filter(t => new Date(t.timestamp) >= startOfMonth);
+    transactionsThisMonth.forEach(t => {
+        const dayIndex = new Date(t.timestamp).getDate() - 1;
+        if (dailyData[dayIndex]) {
+            dailyData[dayIndex].verifications += 1;
+            dailyData[dayIndex].revenue += t.service?.price || 0;
+        }
+    });
 
-    return [
-        {
-            title: "New Users This Month",
-            value: newUsersThisMonth.length.toLocaleString(),
-            Icon: Users,
-            chartColor: "#3b82f6", 
-        },
-        {
-            title: "Revenue This Month",
-            // Format to currency
-            value: `₹${revenueThisMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            Icon: DollarSign,
-            chartColor: "#22c55e",
-        },
-        {
-            title: "Verifications This Month",
-            value: transactionsThisMonth.length.toLocaleString(),
-            Icon: CheckSquare,
-            chartColor: "#f97316", 
-        },
+    const totalRevenue = transactionsThisMonth.reduce((acc, curr) => acc + (curr.service?.price || 0), 0);
+
+    const overview = [
+        { title: "New Users This Month", value: newUsersThisMonth.length.toLocaleString(), Icon: Users, chartKey: "users", chartColor: "#3b82f6" },
+        { title: "Revenue This Month", value: `₹${totalRevenue.toLocaleString('en-IN')}`, Icon: DollarSign, chartKey: "revenue", chartColor: "#22c55e" },
+        { title: "Verifications This Month", value: transactionsThisMonth.length.toLocaleString(), Icon: CheckSquare, chartKey: "verifications", chartColor: "#f97316" },
     ];
+
+    return { overviewData: overview, chartData: dailyData };
   }, [users, transactions]);
 
-
-  // Show skeletons while data is being fetched
   if (isLoading) {
     return (
         <div className="p-6">
@@ -70,7 +57,6 @@ export default function DashboardOverview({ users, transactions, isLoading }) {
         </div>
     );
   }
-
 
   return (
     <div className="p-6">
@@ -87,15 +73,9 @@ export default function DashboardOverview({ users, transactions, isLoading }) {
             </CardHeader>
             <CardContent className="h-20 p-0">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={[{uv:0}, {uv:20}, {uv:15}, {uv:40}, {uv:50}]}>
-                  <Line
-                    type="monotone"
-                    dataKey="uv"
-                    stroke={item.chartColor}
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
+                <LineChart data={chartData}>
+                  <Tooltip contentStyle={{ backgroundColor: 'white', borderRadius: '10px', border: '1px solid #ccc' }} />
+                  <Line type="monotone" dataKey={item.chartKey} stroke={item.chartColor} strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>

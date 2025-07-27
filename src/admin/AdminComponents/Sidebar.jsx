@@ -88,13 +88,12 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                   ))}
                 </SidebarMenu>
               </SidebarGroup>
-
+{/* 
               <div className="p-2 mt-4">
                 <Card className="shadow-sm bg-gray-700 border-gray-600 text-white">
                   {" "}
-                  {/* Darker card for dark theme */}
                   <CardContent className="flex flex-col items-start gap-2 p-4">
-                    <Sparkles className="w-5 h-5 text-yellow-400" /> {/* Changed icon color for visibility */}
+                    <Sparkles className="w-5 h-5 text-yellow-400" /> 
                     <h4 className="text-sm font-semibold text-white">Plan about to expire</h4>
                     <p className="text-xs text-gray-300">Enjoy 10% off when renewing your plan today.</p>
                     <Button
@@ -106,10 +105,10 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                     </Button>
                   </CardContent>
                 </Card>
-              </div>
+              </div> */}
             </SidebarContent>
 
-            <SidebarFooter className="p-4 border-t border-gray-700 bg-[#222736]">
+            <SidebarFooter className="p-4 border-t border-gray-700 bg-[#222736] fixed bottom-0 w-full">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="relative">

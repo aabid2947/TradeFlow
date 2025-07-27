@@ -33,6 +33,15 @@ export const authApiSlice = apiSlice.injectEndpoints({
       query: () => '/users/profile',
       providesTags: ['User']
     }),
+    updateProfile: builder.mutation({
+   
+      query: (userInfo) =>  {
+        return {
+        url: '/auth/profile',
+        method: 'PUT',
+        body: userInfo,
+      }},
+    }),
       getAllUsers: builder.query({
       query: () => ({
         url: '/users/all',
@@ -95,4 +104,5 @@ export const {
   useVerifyEmailOtpMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation, 
+  useUpdateProfileMutation
 } = authApiSlice;

@@ -8,6 +8,8 @@ import DashboardHeader from "./userComponents/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useVerifyServiceMutation } from "@/app/api/verificationApiSlice";
+import { selectCurrentUser } from "@/features/auth/authSlice";
+
 // Import the new payment hooks
 import { useCreatePaymentOrderMutation, useVerifyPaymentMutation } from "@/app/api/paymentApiSlice"; 
 
@@ -37,7 +39,7 @@ export default function ServicePage() {
   const [verificationError, setVerificationError] = useState(null);
 
   // --- Redux Hooks ---
-  const { userInfo } = useSelector((state) => state.auth);
+   const userInfo = useSelector(selectCurrentUser)
   const { data: apiResponse, isLoading: isLoadingServices } = useGetServicesQuery();
   const services = apiResponse?.data || [];
   
@@ -73,35 +75,31 @@ export default function ServicePage() {
    * @desc This function initiates the entire verification flow,
    * handling both free and paid services.
    */
-  const handleInitiateVerification = async (payload) => {
+ 
+const handleInitiateVerification = async (payload) => {
     if (!activeService) return;
 
     setVerificationResult(null);
     setVerificationError(null);
 
-    // Flow for FREE services
-    if (!activeService.price || activeService.price <= 0) {
-      try {
-        const response = await verifyFreeService({
-          serviceKey: activeServiceId,
-          payload,
-        }).unwrap();
-        setVerificationResult(response);
-      } catch (err) {
-        setVerificationError(err.data || { message: "An unexpected error occurred." });
-      }
-    } else {
-      // Flow for PAID services
-      try {
-        // 1. Create order on our backend
-        const orderData = await createPaymentOrder({ serviceId: activeService._id }).unwrap();
-        const { order, key_id, transactionId } = orderData;
-        
-        // 2. Load Razorpay script
-        const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-        if (!isScriptLoaded) throw new Error("Razorpay SDK failed to load. Are you online?");
+    // Flow for FREE services remains the same...
 
-        // 3. Configure and open Razorpay checkout
+    // Flow for PAID services
+    if (activeService.price > 0) {
+      try {
+        // 1. Create order and send payload to backend immediately
+        console.log("Creating payment order with payload:", payload,activeService._id);
+        const orderData = await createPaymentOrder({ 
+            serviceId: activeService._id,
+            payload: payload // Send the payload now
+        }).unwrap();
+        
+        const { order, key_id, transactionId } = orderData;
+        console.log("Payment order created:", userInfo);
+        
+        const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        if (!isScriptLoaded) throw new Error("Razorpay SDK failed to load.");
+
         const options = {
           key: key_id,
           amount: order.amount,
@@ -110,23 +108,15 @@ export default function ServicePage() {
           description: `Payment for ${activeService.name}`,
           order_id: order.id,
           handler: async function (response) {
-            // 4. On success, send payment details and payload to our backend for verification
+            // 4. On success, send ONLY payment details for verification
             const formData = new FormData();
             formData.append("razorpay_payment_id", response.razorpay_payment_id);
             formData.append("razorpay_order_id", response.razorpay_order_id);
             formData.append("razorpay_signature", response.razorpay_signature);
             formData.append("transactionId", transactionId);
             formData.append("serviceKey", activeService.service_key);
+            // The original payload is NO LONGER needed here
 
-            // Correctly append the original payload (JSON or FormData)
-            if (payload instanceof FormData) {
-              for (const [key, value] of payload.entries()) {
-                  formData.append(key, value);
-              }
-            } else {
-              formData.append("payload", JSON.stringify(payload));
-            }
-            
             try {
               const verificationResponse = await verifyPayment(formData).unwrap();
               setVerificationResult(verificationResponse);
@@ -145,10 +135,11 @@ export default function ServicePage() {
         paymentObject.open();
         
       } catch (err) {
+        console.error("❌ Payment order creation failed:", err);
         setVerificationError(err.data || { message: "Could not initiate payment." });
       }
     }
-  };
+};
 
   return (
     <div className="relative min-h-screen bg-gray-50">

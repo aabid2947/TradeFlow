@@ -30,9 +30,7 @@ export default function ServiceCard({
     e.stopPropagation();
     e.preventDefault();
 
-    if (!isPurchased && onSubscribeClick) {
-      onSubscribeClick(serviceId);
-    }
+    navigate(`/login`);
   };
 
   return (
@@ -88,7 +86,7 @@ export default function ServiceCard({
             onClick={handleSubscribeButton}
           >
             {isPurchased && <Check className="w-4 h-4" />}
-            {isPurchased ? "Purchased" : "Subscribe"}
+            Buy Now
           </Button>
         </div>
       </CardContent>

@@ -11,7 +11,15 @@ import FAQSection from "./homeComponents/FAQSection"
 import ServicesShowcase from "./homeComponents/ServiceShowCaseComponent"
 import HeroSection from "./homeComponents/HeroSection"
 import TopBar from "./homeComponents/TopBar"
+import { useEffect } from "react"
+
 export default function HomePage() {
+useEffect(()=>{
+     window.scrollTo({
+    top: 0,
+    behavior: "smooth", 
+  });
+  },[])
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30">

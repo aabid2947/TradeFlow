@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import {
   MapPin,
@@ -14,6 +14,7 @@ import Header from "./homeComponents/Header"
 import Footer from "./homeComponents/Footer" 
 import HeroSection from "./homeComponents/HeroSection"
 import ContactUs from "./homeComponents/Contact"
+
 //  SectionHeader Component (Helper for ContactUsPage) 
 const SectionHeader = ({ title, subtitle }) => (
   <motion.div
@@ -196,6 +197,14 @@ const SocialMediaLinks = () => (
 
 //  ContactUsPage Component 
 export default function ContactUsPage() {
+
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

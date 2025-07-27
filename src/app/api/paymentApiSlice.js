@@ -1,6 +1,6 @@
 import { apiSlice } from './apiSlice';
 
-const PAYMENT_URL = '/api/payment';
+const PAYMENT_URL = '/payment';
 
 /**
  * @file Payment API Slice
@@ -13,12 +13,14 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
      * @param {string} serviceId - The ID of the service being purchased.
      */
     createPaymentOrder: builder.mutation({
-      query: ({ serviceId }) => ({
+    // Update to accept both serviceId and payload
+    query: ({ serviceId, payload }) => ({
         url: `${PAYMENT_URL}/order`,
         method: 'POST',
-        body: { serviceId },
-      }),
+        // Send them both in the body
+        body: { serviceId, payload },
     }),
+}),
     /**
      * @desc Mutation to verify a payment after Razorpay checkout.
      * This sends payment details and the original service payload to the backend.

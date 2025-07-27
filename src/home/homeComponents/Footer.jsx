@@ -1,5 +1,3 @@
-
-
 import { useState, useRef, useEffect } from "react"
 import {
   CheckCircle,
@@ -27,18 +25,23 @@ const footerData = {
     description:
       "Leading identity verification platform trusted by 10,000+ businesses worldwide. Secure, fast, and compliant verification solutions for the digital age.",
     contact: {
-      email: "hello@verifymykyc.com",
-      phone: "+1 (555) 123-4567",
-      address: "123 Tech Street, Innovation District, San Francisco, CA 94105",
+      email: "verifymykyc@gmail.com",
+      secEmail:"verifymykyc@navigantinc.com",
+      phone: "+91 95606 52708",
+      address: " A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044 ",
     },
   },
   links: {
     products: [
-      { name: "KYC Verification", href: "#" },
-      { name: "Document Verification", href: "#" },
-      { name: "Biometric Verification", href: "#" },
-      { name: "Business Verification", href: "#" },
-      { name: "API Documentation", href: "#", external: true },
+      { name: "Identity Verification", href: "/product/identity-verification" },
+      { name: "Financial & Business Checks", href: "/product/financial-business-checks" },
+      { name: "Legal & Compliance Checks", href: "/product/legal-compliance-checks" },
+      { name: "Health & Government Records", href: "/product/health-government-records" },
+      { name: "Biometric & AI-Based Verification", href: "/product/biometric-ai-verification" },
+      { name: "Profile & Database Lookup", href: "/product/profile-database-lookup" },
+      { name: "Criminal Verification", href: "/product/criminal-verification" },
+      { name: "Land Record Check", href: "/product/land-record-check" },
+
     ],
     solutions: [
       { name: "Financial Services", href: "#" },
@@ -48,15 +51,14 @@ const footerData = {
       { name: "Government", href: "#" },
     ],
     company: [
-      { name: "About Us", href: "#" },
+      { name: "About Us", href: "/about-us" },
       { name: "Careers", href: "#" },
       { name: "Press Kit", href: "#" },
       { name: "Partner Program", href: "#" },
-      { name: "Contact Sales", href: "#" },
+      { name: "Contact Sales", href: "/contact-us" },
     ],
     resources: [
       { name: "Help Center", href: "#" },
-      { name: "API Reference", href: "#", external: true },
       { name: "Status Page", href: "#", external: true },
       { name: "Security", href: "#" },
       { name: "Compliance", href: "#" },
@@ -70,11 +72,11 @@ const footerData = {
     ],
   },
   social: [
-    { name: "Twitter", icon: Twitter, href: "#", color: "hover:text-blue-400" },
-    { name: "LinkedIn", icon: Linkedin, href: "#", color: "hover:text-blue-600" },
-    { name: "Facebook", icon: Facebook, href: "#", color: "hover:text-blue-500" },
-    { name: "Instagram", icon: Instagram, href: "#", color: "hover:text-pink-500" },
-    { name: "YouTube", icon: Youtube, href: "#", color: "hover:text-red-500" },
+    { name: "Twitter", icon: Twitter, href: "https://www.X.com", color: "hover:text-blue-400" },
+    { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com", color: "hover:text-blue-600" },
+    { name: "Facebook", icon: Facebook, href: "https://www.facebook.com/profile.php?id=61576760613090", color: "hover:text-blue-500" },
+    { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/verifymykyc/", color: "hover:text-pink-500" },
+    { name: "YouTube", icon: Youtube, href: "https://www.youtube.com", color: "hover:text-red-500" },
   ],
   certifications: [
     { name: "ISO 27001", icon: Shield },
@@ -141,7 +143,7 @@ const NewsletterSignup = () => {
               }}
               placeholder="Enter your email"
               className={`
-                pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-200 
+                pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-200
                 focus:bg-white/20 focus:border-white/40 rounded-lg h-11
                 ${error ? "border-red-400" : ""}
               `}
@@ -251,6 +253,12 @@ export default function Footer() {
                 </a>
               </div>
               <div className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
+                <Mail className="w-4 h-4 text-blue-300" />
+                <a href={`mailto:${footerData.company.contact.secEmail}`} className="text-sm">
+                  {footerData.company.contact.secEmail}
+                </a>
+              </div>
+              <div className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
                 <Phone className="w-4 h-4 text-blue-300" />
                 <a href={`tel:${footerData.company.contact.phone}`} className="text-sm">
                   {footerData.company.contact.phone}
@@ -275,6 +283,7 @@ export default function Footer() {
                       transition-all duration-200 hover:scale-110 ${social.color}
                     `}
                     aria-label={social.name}
+                    target="_blank"
                   >
                     <social.icon className="w-5 h-5" />
                   </a>

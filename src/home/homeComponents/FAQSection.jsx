@@ -2,9 +2,6 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Plus, Minus, HelpCircle, Search, MessageCircle, Phone, Mail, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
 
 const faqData = [
   {
@@ -96,8 +93,8 @@ const FAQItem = ({
   }
 
   return (
-    <Card className="group overflow-hidden border border-gray-200 hover:border-[#1987BF]/30 transition-all duration-300 hover:shadow-lg bg-white">
-      <CardContent className="p-0">
+    <div className="group overflow-hidden border border-gray-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg bg-white rounded-lg">
+      <div className="p-0">
         <button
           onClick={onToggle}
           className="w-full text-left p-6 hover:bg-gray-50/50 transition-colors duration-200 focus:outline-none focus:bg-gray-50"
@@ -106,27 +103,27 @@ const FAQItem = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 {faq.popular && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#1987BF]/10 text-[#1987BF] border border-[#1987BF]/20">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 border border-blue-500/20">
                     Popular
                   </span>
                 )}
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{faq.category}</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-[#1987BF] transition-colors duration-200 pr-4">
+              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 pr-4">
                 {highlightText(faq.question, searchTerm)}
               </h3>
             </div>
             <div
               className={`
                 flex-shrink-0 w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center
-                transition-all duration-300 group-hover:border-[#1987BF] group-hover:bg-[#1987BF]/10
-                ${isOpen ? "border-[#1987BF] bg-[#1987BF]/10 rotate-180" : ""}
+                transition-all duration-300 group-hover:border-blue-500 group-hover:bg-blue-500/10
+                ${isOpen ? "border-blue-500 bg-blue-500/10 rotate-180" : ""}
               `}
             >
               {isOpen ? (
-                <Minus className="w-4 h-4 text-[#1987BF]" />
+                <Minus className="w-4 h-4 text-blue-600" />
               ) : (
-                <Plus className="w-4 h-4 text-gray-600 group-hover:text-[#1987BF]" />
+                <Plus className="w-4 h-4 text-gray-600 group-hover:text-blue-600" />
               )}
             </div>
           </div>
@@ -145,8 +142,8 @@ const FAQItem = ({
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -173,12 +170,12 @@ export default function FAQSection() {
     <section className="w-full bg-gradient-to-b from-white to-gray-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          {/* Left Column - Content */}
+          {/* Left Column - Content (Not Sticky) */}
           <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-8 space-y-8">
+            <div className="space-y-8">
               {/* Header */}
               <div>
-                <div className="inline-flex items-center gap-2 bg-[#1987BF]/10 text-[#1987BF] px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold mb-6">
                   <HelpCircle className="w-4 h-4" />
                   Support Center
                 </div>
@@ -190,22 +187,22 @@ export default function FAQSection() {
                   popular and trusted verification solution. Check out some answers you're looking for.
                 </p>
 
-                <Button className="bg-[#1987BF] hover:bg-[#1987BF]/90 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                   <span className="flex items-center gap-2">
                     View All Documentation
                     <ChevronRight className="w-4 h-4" />
                   </span>
-                </Button>
+                </button>
               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-6">
                 <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                  <div className="text-3xl font-bold text-[#1987BF] mb-2">24/7</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">24/7</div>
                   <div className="text-gray-600 text-sm font-medium">Support Available</div>
                 </div>
                 <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                  <div className="text-3xl font-bold text-[#1987BF] mb-2">2min</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">2min</div>
                   <div className="text-gray-600 text-sm font-medium">Avg Response Time</div>
                 </div>
               </div>
@@ -214,68 +211,57 @@ export default function FAQSection() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Still need help?</h3>
                 <div className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start bg-white hover:bg-gray-50 border-gray-200 hover:border-[#1987BF]/30 text-gray-700 hover:text-[#1987BF] transition-all duration-200"
-                  >
+                  {/* <button className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
                     <MessageCircle className="w-4 h-4 mr-3" />
                     Start Live Chat
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start bg-white hover:bg-gray-50 border-gray-200 hover:border-[#1987BF]/30 text-gray-700 hover:text-[#1987BF] transition-all duration-200"
-                  >
+                  </button> */}
+                  <button className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
                     <Mail className="w-4 h-4 mr-3" />
                     Send Email
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start bg-white hover:bg-gray-50 border-gray-200 hover:border-[#1987BF]/30 text-gray-700 hover:text-[#1987BF] transition-all duration-200"
-                  >
+                  </button>
+                  {/* <button className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
                     <Phone className="w-4 h-4 mr-3" />
                     Schedule Call
-                  </Button>
+                  </button> */}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - FAQ Items */}
+          {/* Right Column - FAQ Items (Sticky) */}
           <div className="lg:col-span-7">
-            <div className="space-y-8">
+            <div className="lg:sticky lg:top-8 space-y-8 max-h-screen overflow-y-auto">
               {/* Search and Filters */}
               <div className="space-y-4">
                 {/* Search Bar */}
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
+                  <input
                     type="text"
                     placeholder="Search frequently asked questions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 bg-white border-gray-200 focus:border-[#1987BF] focus:ring-[#1987BF]/20 rounded-xl shadow-sm"
+                    className="pl-12 h-12 w-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl shadow-sm outline-none"
                   />
                 </div>
 
                 {/* Category Filters */}
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => (
-                    <Button
+                    <button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
-                      variant={selectedCategory === category ? "default" : "outline"}
-                      size="sm"
                       className={`
-                        rounded-full transition-all duration-200
+                        px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium
                         ${
                           selectedCategory === category
-                            ? "bg-[#1987BF] hover:bg-[#1987BF]/90 text-white shadow-md"
-                            : "bg-white hover:bg-gray-50 text-gray-700 border-gray-200 hover:border-[#1987BF]/30"
+                            ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                            : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-blue-500/30"
                         }
                       `}
                     >
                       {category}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -284,7 +270,7 @@ export default function FAQSection() {
               {searchTerm === "" && selectedCategory === "All" && (
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#1987BF] rounded-full"></span>
+                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
                     Most Popular Questions
                   </h3>
                   <div className="space-y-4">

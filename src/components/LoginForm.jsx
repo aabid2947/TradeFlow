@@ -252,8 +252,8 @@ export function LoginForm() {
             {/* Alternative sign-in options */}
             <div className="relative my-8"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div><div className="relative flex justify-center text-sm"><span className="px-4 bg-white text-gray-500 font-medium">or continue with</span></div></div>
             <div className="space-y-4">
-              <button onClick={handleGoogleSignIn} disabled={isGoogleLoading} className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl bg-white"><GoogleLogo /> <span className="text-gray-700 font-medium">Continue with Google</span></button>
               <button onClick={() => setCurrentFlow('phone')} className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl bg-white"><Phone className="w-5 h-5 text-green-600 mr-3" /> <span className="text-gray-700 font-medium">Continue with Phone</span></button>
+              <button onClick={handleGoogleSignIn} disabled={isGoogleLoading} className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl bg-white"><GoogleLogo /> <span className="text-gray-700 font-medium">Continue with Google</span></button>
             </div>
           </>
         );

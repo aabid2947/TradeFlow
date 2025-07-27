@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
     Star,
     Shield,
@@ -31,6 +31,7 @@ const ProductPage = ({ serviceId }) => {
     const currentServiceId = serviceId || window.location.pathname.split('/').pop();
     const navigate = useNavigate()
     const [selectedTab, setSelectedTab] = useState("overview");
+    
 
     // Fetch service data from the API using the generated hook from the serviceApiSlice.
     const {
@@ -58,6 +59,14 @@ const ProductPage = ({ serviceId }) => {
         processingTime: "2-5 minutes",
         successRate: "99.9%",
     };
+
+    useEffect(()=>{
+         window.scrollTo({
+        top: 0,
+        behavior: "smooth", 
+      });
+      },[])
+    
 
     // Helper function to calculate the final price after applying a discount.
     const calculateDiscountedPrice = (originalPrice, discount) => {

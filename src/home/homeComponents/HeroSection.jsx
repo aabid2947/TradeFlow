@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-
+import { useNavigate } from "react-router-dom"
 const heroSlides = [
   {
     id: 1,
@@ -97,6 +97,7 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [direction, setDirection] = useState(null)
+  const navigate = useNavigate()
 
   const nextSlide = () => {
     if (isAnimating) return
@@ -312,6 +313,7 @@ export default function HeroSection() {
                 <Button
                   className="group relative overflow-hidden text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: currentHero.accentColor }}
+                  onClick ={()=> navigate("/pricing")}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     View Pricing

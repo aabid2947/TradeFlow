@@ -433,6 +433,16 @@ export function SignUpForm() {
               {/* Alternative sign-in options */}
               <div className="space-y-4">
                 {/* Google Sign-in */}
+                {/* Phone option */}
+                <button
+                  onClick={() => { setPhoneFlow(true); setStep(1); setErrors({}) }}
+                  className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 transform hover:scale-[1.02] bg-white hover:bg-gray-50 group"
+                >
+                  <Phone className="w-5 h-5 text-green-600 mr-3 group-hover:text-green-700 transition-colors" />
+                  <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors">
+                    Continue with Phone
+                  </span>
+                </button>
                 <button
                   onClick={handleGoogleSignIn}
                   disabled={isGoogleLoading}
@@ -450,16 +460,6 @@ export function SignUpForm() {
                   )}
                 </button>
 
-                {/* Phone option */}
-                <button
-                  onClick={() => { setPhoneFlow(true); setStep(1); setErrors({}) }}
-                  className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 transform hover:scale-[1.02] bg-white hover:bg-gray-50 group"
-                >
-                  <Phone className="w-5 h-5 text-green-600 mr-3 group-hover:text-green-700 transition-colors" />
-                  <span className="text-gray-700 font-medium group-hover:text-gray-900 transition-colors">
-                    Continue with Phone
-                  </span>
-                </button>
               </div>
 
               {/* Additional info */}

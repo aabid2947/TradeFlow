@@ -114,7 +114,7 @@ const ContactUs = () => {
             {/* --- TOP ROW: FORM AND OFFICE INFO --- */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Contact Form */}
-              <AnimatedSection className="lg:col-span-5">
+              <AnimatedSection className="lg:col-span-6">
                 <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -229,7 +229,7 @@ const ContactUs = () => {
               </AnimatedSection>
               
               {/* Office Info Card */}
-              <AnimatedSection className="lg:col-span-7">
+              <AnimatedSection className="lg:col-span-6">
                 <div className="bg-white rounded-2xl shadow-xl p-8 h-full">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6">Visit Our Office</h3>
                   <div className="space-y-4">

@@ -4,17 +4,21 @@ import { protectedUserRoutes } from './ProtectedUserRoute';
 import ErrorPage from "../pages/ErrorPage";
 import ProtectedRoute from './ProtectedRoutes';
 import {PublicRoute,publicRoutes} from './PublicRoutes';
+import PublicLayout from './PublicLayout';
+import usePageTracking from '../hooks/usePageTracking';
 
 const AppRoutes = () => {
- 
+  usePageTracking();
   return (
     <Routes>
  
       {/* Not accessible to logged-in users */}
       <Route element={<PublicRoute />}>
+      <Route element={<PublicLayout />}>
         {publicRoutes.map((route, idx) => (
           <Route key={`public-${idx}`} path={route.path} element={route.element} />
         ))}
+        </Route>
       </Route>
 
 

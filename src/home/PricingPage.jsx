@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Check, Shield, Zap, Star, ArrowRight, Globe, Lock } from "lucide-react"
 import Footer from "./homeComponents/Footer"
 import Header from "./homeComponents/Header"
+import { useEffect } from "react"
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -17,6 +18,7 @@ const itemVariants = {
 }
 
 const PricingPage = () => {
+
   const [selectedPlan, setSelectedPlan] = useState("professional")
 
   // Pricing data - easily replaceable for dynamic content
@@ -113,6 +115,14 @@ const PricingPage = () => {
       description: "No data storage policy ensures complete privacy",
     },
   ]
+
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
 
   return (
     <div className="min-h-screen bg-white text-gray-800">

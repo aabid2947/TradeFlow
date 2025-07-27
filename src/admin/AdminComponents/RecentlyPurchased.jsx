@@ -522,13 +522,13 @@ export default function RecentlyPurchased() {
                   className="pl-10 h-12 bg-white border-gray-200 focus:border-[#1987BF] focus:ring-[#1987BF]/20 rounded-xl"
                 />
               </div>
-              <Button
+              {/* <Button
                 variant="outline"
                 className="h-12 px-6 border-gray-200 hover:border-[#1987BF] hover:text-[#1987BF] rounded-xl bg-transparent"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 Filters
-              </Button>
+              </Button> */}
             </div>
           </CardContent>
         </Card>

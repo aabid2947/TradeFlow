@@ -16,8 +16,14 @@ import TrustFeatures from "./BlogComponents/TrustSection"
 import VerificationFeatures from "./BlogComponents/VerificationFeature"
 import HowIDVWorks from "./BlogComponents/HowIdvWorks"
 import ProductBenefitsCarousel from "./BlogComponents/ProductBenefit"
-
+import { useEffect } from "react"
 export default function BlogPage() {
+ useEffect(()=>{
+     window.scrollTo({
+    top: 0,
+    behavior: "smooth", 
+  });
+  },[])
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30">

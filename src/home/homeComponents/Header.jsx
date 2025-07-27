@@ -1,16 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ChevronDown, Search, CheckCircle, Menu, X, Phone, ArrowRight, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
 import { useNavigate } from "react-router-dom"
 import AppLogo from "@/assets/sidebarLogo.svg"
 
@@ -18,11 +10,15 @@ const navigationItems = [
   {
     name: "Products",
     hasDropdown: true,
-    items: [
-      { name: "KYC Verification", href: "#", description: "Identity verification solutions" },
-      { name: "Document Verification", href: "#", description: "Secure document validation" },
-      { name: "Biometric Verification", href: "#", description: "Advanced biometric checks" },
-      { name: "Business Verification", href: "#", description: "Company credential validation" },
+      items: [
+      { name: "Identity Verification", href: "/product/identity-verification", description: "Aadhaar, PAN, Passport, and more" },
+      { name: "Financial & Business Checks", href: "/product/financial-business-checks", description: "Bank account, GSTIN, and company verification" },
+      { name: "Legal & Compliance Checks", href: "/product/legal-compliance-checks", description: "Criminal record and background checks" },
+      { name: "Health & Government Records", href: "/product/health-government-records", description: "Verification of health and government records" },
+      { name: "Biometric & AI-Based Verification", href: "/product/biometric-ai-verification", description: "Liveness checks and facematching" },
+      { name: "Profile & Database Lookup", href: "/product/profile-database-lookup", description: "Comprehensive profile and database lookups" },
+      { name: "Criminal Verification", href: "/product/criminal-verification", description: "Screen individuals for criminal history" },
+      { name: "Land Record Check", href: "/product/land-record-check", description: "Verify property and land ownership records" },
     ],
   },
   {
@@ -39,20 +35,14 @@ const navigationItems = [
     name: "Pricing", 
     hasDropdown: false,  
     href:"/pricing",
-    items: [
-      { name: "Financial Services", href: "#", description: "Banking & fintech solutions" },
-      { name: "Healthcare", href: "#", description: "HIPAA compliant verification" },
-      { name: "E-commerce", href: "#", description: "Online marketplace security" },
-      { name: "Real Estate", href: "#", description: "Property transaction verification" },
-    ], 
+    items: [], 
   },
   {
     name: "Resources",
     hasDropdown: true,
     items: [
-      { name: "Documentation", href: "#", description: "API guides and tutorials" },
       { name: "Case Studies", href: "#", description: "Customer success stories" },
-      { name: "Blog", href: "#", description: "Industry insights and updates" },
+      { name: "Blog", href: "/blog", description: "Industry insights and updates" },
       { name: "Help Center", href: "#", description: "Support and FAQs" },
     ],
   },
@@ -60,10 +50,9 @@ const navigationItems = [
     name: "Company",
     hasDropdown: true,
     items: [
-      { name: "About Us", href: "about-us", description: "Our mission and team" },
+      { name: "About Us", href: "/about-us", description: "Our mission and team" },
       { name: "Careers", href: "#", description: "Join our growing team" },
-      { name: "Press", href: "#", description: "News and media resources" },
-      { name: "Contact", href: "contact-us", description: "Get in touch with us" },
+      { name: "Contact", href: "/contact-us", description: "Get in touch with us" },
     ],
   },
 ]
@@ -73,6 +62,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [hoveredItem, setHoveredItem] = useState(null)
+  const dropdownRefs = useRef({})
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -84,30 +74,49 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown && !Object.values(dropdownRefs.current).some(ref => 
+        ref && ref.contains(event.target)
+      )) {
+        setActiveDropdown(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [activeDropdown])
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
   const handleNavigation = (href) => {
     if (href.startsWith('/') || href === 'about-us' || href === 'contact-us') {
-      navigate(`/${href}`)
+      navigate(href.startsWith('/') ? href : `/${href}`);
     } else if (href !== '#') {
       window.location.href = href
     }
+    setActiveDropdown(null)
+  }
+
+  const handleDropdownToggle = (itemName) => {
+    setActiveDropdown(activeDropdown === itemName ? null : itemName)
   }
 
   return (
     <>
-           <header
-       className={`
-       sticky top-0 z-50 transition-all duration-300 ease-out
-       ${
-         isScrolled
-           ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100"
-           : "bg-white border-b-2 border-blue-400"
-       }
-     `}
-     >
+      <header
+        className={`
+        sticky top-0 z-50 transition-all duration-300 ease-out
+        ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100"
+            : "bg-white border-b-2 border-blue-400"
+        }
+      `}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
@@ -116,70 +125,77 @@ export default function Header() {
             </div>
 
             {/* Desktop Navigation */}
-            <NavigationMenu className="hidden lg:flex">
-              <NavigationMenuList className="flex items-center space-x-6 relative">
+            <nav className="hidden lg:flex">
+              <ul className="flex items-center space-x-6 relative">
                 {navigationItems.map((item, index) => (
-                  <NavigationMenuItem key={item.name}>
+                  <li key={item.name} className="relative">
                     {item.hasDropdown ? (
-                      <>
-                        <NavigationMenuTrigger
+                      <div
+                        ref={el => dropdownRefs.current[item.name] = el}
+                        className="relative"
+                      >
+                        <button
+                          onClick={() => handleDropdownToggle(item.name)}
                           className={`
-                          bg-transparent hover:bg-gray-50 data-[active]:bg-transparent data-[state=open]:bg-gray-50
-                          text-gray-700 hover:text-[#1987BF] font-md text-[1.1rem] px-5 py-3 rounded-lg
-                          transition-all duration-200 border border-transparent hover:border-gray-200
-                          ${isScrolled ? "hover:shadow-sm" : ""}
-                        `}
+                            bg-transparent hover:bg-gray-50 
+                            text-gray-700 hover:text-[#1987BF] font-bold text-base px-5 py-3 rounded-lg
+                            transition-all duration-200 border border-transparent hover:border-gray-200
+                            flex items-center gap-1
+                            ${activeDropdown === item.name ? 'bg-gray-50 text-[#1987BF]' : ''}
+                            ${isScrolled ? "hover:shadow-sm" : ""}
+                          `}
                         >
-                          <span className="flex items-center gap-1">
-                            {item.name}
-                          </span>
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="w-[480px] p-5 bg-white shadow-xl rounded-xl border border-gray-100">
-                            <div className="space-y-3">
+                          {item.name}
+                          <ChevronDown 
+                            className={`w-4 h-4 transition-transform duration-200 ${
+                              activeDropdown === item.name ? 'rotate-180' : ''
+                            }`} 
+                          />
+                        </button>
+                        
+                        {/* Custom Dropdown */}
+                        {activeDropdown === item.name && (
+                          <div className="absolute top-full left-0 mt-2 min-w-full bg-white shadow-xl rounded-xl border border-gray-100 py-3 px-3 z-50">
+                            <div className="space-y-1">
                               {item.items?.map((subItem) => (
-                                <NavigationMenuLink key={subItem.name} asChild>
-                                  <a
-                                    href={subItem.href}
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      handleNavigation(subItem.href)
-                                    }}
-                                    className="block p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
-                                  >
-                                    <div className="font-semibold text-gray-900 group-hover:text-[#1987BF] transition-colors duration-200 text-lg">
-                                      {subItem.name}
-                                    </div>
-                                    <div className="text-base text-gray-600 mt-1">{subItem.description}</div>
-                                  </a>
-                                </NavigationMenuLink>
+                                <a
+                                  key={subItem.name}
+                                  href={subItem.href}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    handleNavigation(subItem.href)
+                                  }}
+                                  className="block p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
+                                >
+                                  <div className="font-semibold text-gray-800 group-hover:text-[#1987BF] transition-colors duration-200 text-sm whitespace-nowrap">
+                                    {subItem.name}
+                                  </div>
+                                </a>
                               ))}
                             </div>
                           </div>
-                        </NavigationMenuContent>
-                      </>
+                        )}
+                      </div>
                     ) : (
-                      <NavigationMenuLink asChild>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(item.href)
-                          }}
-                            className={`
-                          bg-transparent font-semibold hover:bg-gray-50 data-[active]:bg-transparent data-[state=open]:bg-gray-50
-                          text-gray-700 hover:text-[#1987BF] font-md text-[1.1rem] px-5 py-3 rounded-lg
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          navigate(item.href)
+                        }}
+                        className={`
+                          bg-transparent font-bold hover:bg-gray-50 
+                          text-gray-700 hover:text-[#1987BF] text-base px-5 py-3 rounded-lg
                           transition-all duration-200 border border-transparent hover:border-gray-200
                           ${isScrolled ? "hover:shadow-sm" : ""}
                         `}
-                        >
-                          {item.name}
-                        </button>
-                      </NavigationMenuLink>
+                      >
+                        {item.name}
+                      </button>
                     )}
-                  </NavigationMenuItem>
+                  </li>
                 ))}
-              </NavigationMenuList>
-            </NavigationMenu>
+              </ul>
+            </nav>
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-5">
@@ -190,7 +206,7 @@ export default function Header() {
                   bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
                   text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl
                   transition-all duration-200 transform hover:scale-105 active:scale-95
-                  flex items-center gap-2 group text-[1.1rem] 
+                  flex items-center gap-2 text-[1.1rem] 
                 `}
                   type="button"
                   onClick={() => navigate('/signup')}
@@ -208,9 +224,9 @@ export default function Header() {
                 onClick={toggleMobileMenu}
               >
                 {isMobileMenuOpen ? (
-                  <X  size={4000} className=" text-gray-600" />
+                  <X size={24} className="text-gray-600" />
                 ) : (
-                  <Menu size={4000}  className=" text-gray-600" />
+                  <Menu size={24} className="text-gray-600" />
                 )}
               </Button>
             </div>
@@ -303,8 +319,6 @@ export default function Header() {
           </div>
         </div>
       </header>
-
- 
     </>
   )
 }
