@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useMemo } from "react";
-import { TrendingUp, Users, CheckCircle, BarChart2 } from "lucide-react" 
+import { TrendingUp, TrendingDown, Package } from "lucide-react" 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,64 +14,73 @@ const chartData = [
 /**
  * An analytics component for the Admin Dashboard.
  * @param {object} props
- * @param {Array} props.transactions - An array containing ALL transactions from ALL users.
+ * @param {Array} props.services - An array containing ALL available services.
  * @param {boolean} props.isLoading - The loading state from the API query.
  */
-export default function Analytics({ transactions, isLoading }) {
+export default function Analytics({ services, isLoading }) {
 
   const statsData = useMemo(() => {
-    if (!transactions || transactions.length === 0) {
-      return [
-        { title: "Total Verifications", value: "0", Icon: CheckCircle, color: "bg-blue-500", textColor: "text-white" },
-        { title: "Top Service Used", value: "N/A", Icon: TrendingUp, color: "bg-green-500", textColor: "text-white" },
-        { title: "2nd Most Used", value: "N/A", Icon: TrendingUp, color: "bg-orange-500", textColor: "text-white" },
-        { title: "3rd Most Used", value: "N/A", Icon: TrendingUp, color: "bg-red-500", textColor: "text-white" },
-      ];
+    const placeholder = [
+        { title: "Total Services", name: null, value: "0", Icon: Package, color: "bg-blue-500", textColor: "text-white" },
+        { title: "Top Used Service", name: "N/A", value: "", Icon: TrendingUp, color: "bg-green-500", textColor: "text-white" },
+        { title: "2nd Most Used", name: "N/A", value: "", Icon: TrendingUp, color: "bg-orange-500", textColor: "text-white" },
+        { title: "Least Used Service", name: "N/A", value: "", Icon: TrendingDown, color: "bg-red-500", textColor: "text-white" },
+    ];
+      
+    if (!services || services.length === 0) {
+      return placeholder;
     }
 
-    const totalVerifications = transactions.length;
+    const totalServices = services.length;
 
+    // Sort services by usage in descending order to find the most used
+    const sortedByMostUsed = [...services]
+      .sort((a, b) => (b.globalUsageCount || 0) - (a.globalUsageCount || 0));
 
-    const serviceCounts = transactions.reduce((acc, transaction) => {
-      const serviceName = transaction.service?.name || 'Unknown Service';
-      acc[serviceName] = (acc[serviceName] || 0) + 1;
-      return acc;
-    }, {});
+    // Filter out unused services and sort by usage in ascending order to find the least used
+    const usedServices = services.filter(s => s.globalUsageCount > 0);
+    const sortedByLeastUsed = [...usedServices]
+      .sort((a, b) => (a.globalUsageCount || 0) - (b.globalUsageCount || 0));
+      
+    const topService = sortedByMostUsed[0];
+    const secondTopService = sortedByMostUsed[1];
+    const leastUsedService = sortedByLeastUsed[0];
 
-    //SORT SERVICES BY USAGE to find the top ones
-    const sortedServices = Object.entries(serviceCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-
-    const topServiceCards = [
-      { Icon: TrendingUp, color: "bg-green-500", textColor: "text-white" },
-      { Icon: TrendingUp, color: "bg-orange-500", textColor: "text-white" },
-      { Icon: TrendingUp, color: "bg-red-500", textColor: "text-white" },
-    ].map((card, index) => {
-      if (sortedServices[index]) {
-        // Return a card with real data if a top service exists at this index
-        return {
-          ...card,
-          title: sortedServices[index].name,
-          value: sortedServices[index].count.toLocaleString(),
-        };
-      }
-      // Return a placeholder card if there are fewer than 3 unique services used
-      return { ...card, title: `Top Service #${index + 2}`, value: '0' };
-    });
-
- 
     return [
       {
-        title: "Total Verifications",
-        value: totalVerifications.toLocaleString(),
-        Icon: CheckCircle,
+        title: "Total Services",
+        name: null, // No name for this card
+        value: totalServices.toLocaleString(),
+        Icon: Package,
         color: "bg-blue-500",
         textColor: "text-white"
       },
-      ...topServiceCards
+      {
+        title: "Top Used Service",
+        name: topService ? topService.name : "N/A",
+        value: topService ? topService.globalUsageCount.toLocaleString() : "",
+        Icon: TrendingUp,
+        color: "bg-green-500",
+        textColor: "text-white"
+      },
+      {
+        title: "2nd Most Used",
+        name: secondTopService ? secondTopService.name : "N/A",
+        value: secondTopService ? secondTopService.globalUsageCount.toLocaleString() : "",
+        Icon: TrendingUp,
+        color: "bg-orange-500",
+        textColor: "text-white"
+      },
+      {
+        title: "Least Used Service",
+        name: leastUsedService ? leastUsedService.name : "N/A",
+        value: leastUsedService ? leastUsedService.globalUsageCount.toLocaleString() : "",
+        Icon: TrendingDown,
+        color: "bg-red-500",
+        textColor: "text-white"
+      },
     ];
-  }, [transactions]);
+  }, [services]);
 
 
   // Display skeleton loaders while fetching data
@@ -79,7 +89,7 @@ export default function Analytics({ transactions, isLoading }) {
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <Skeleton key={i} className="h-28 w-full" />
           ))}
         </div>
         <Skeleton className="h-96 w-full" />
@@ -93,14 +103,19 @@ export default function Analytics({ transactions, isLoading }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statsData.map((stat, index) => (
           <Card key={index} className={`${stat.color} border-0 shadow-sm`}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-medium ${stat.textColor} opacity-90 mb-1`}>{stat.title}</p>
-                  <p className={`text-3xl font-bold ${stat.textColor}`}>{stat.value}</p>
-                </div>
-                {stat.Icon && <stat.Icon className={`w-8 h-8 ${stat.textColor} opacity-80`} />}
+            <CardContent className="p-4 flex flex-col justify-between h-28">
+              <div className="flex items-start justify-between">
+                  <div>
+                      <p className={`text-sm font-medium ${stat.textColor} opacity-90 mb-1`}>{stat.title}</p>
+                      {/* If the card has a name, display it with a smaller font */}
+                      {stat.name && (
+                          <p className={`text-sm font-semibold ${stat.textColor} truncate `}>{stat.name}</p>
+                      )}
+                  </div>
+                  {stat.Icon && <stat.Icon className={`w-8 h-8 ${stat.textColor} opacity-80 flex-shrink-0`} />}
               </div>
+              {/* Display the count with a larger font at the bottom */}
+              <p className={`text-3xl font-bold ${stat.textColor} self-start`}>{stat.value}</p>
             </CardContent>
           </Card>
         ))}

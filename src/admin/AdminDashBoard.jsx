@@ -1,8 +1,10 @@
+
 "use client"
 
 import { useState } from "react";
 import { useGetAllUsersQuery } from "@/app/api/authApiSlice"; 
 import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"; 
+import { useGetServicesQuery } from "@/app/api/serviceApiSlice"; // Import the service query hook
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert" 
 import { Terminal } from "lucide-react"
 
@@ -14,31 +16,32 @@ import RecentlyPurchased from "./AdminComponents/RecentlyPurchased";
 import CouponsOffers from "./AdminComponents/CouponOffer";
 import Analytics from "./AdminComponents/Analytics";
 import DashboardOverview from "./AdminComponents/DashBoardOverview";
-import DashboardCharts from "./AdminComponents/DashBoardCharts"; 
 import RegisterAdmin from "./AdminComponents/RegisterAdmin";
 import Feedback from "./AdminComponents/Feedback"
 import UsersDisplay from "./AdminComponents/AllUser";
+import FirebaseUserActivityDashboard from "./AdminComponents/DashBoardCharts";
 
 /**
- * The DashboardHome component  receives users and transactions
+ * The DashboardHome component receives users and transactions
  * to pass down to the overview component.
  */
 const DashboardHome = ({ users, transactions, isLoading }) => (
   <div className="space-y-6 bg-white">
     <DashboardOverview users={users} transactions={transactions} isLoading={isLoading} />
-    <DashboardCharts />
+    <FirebaseUserActivityDashboard />
   </div>
 );
 
 /**
- * The renderContent function  passes all necessary data down to its children.
+ * The renderContent function passes all necessary data down to its children.
  */
-const renderContent = (activeView, users, transactions, isLoading) => {
+const renderContent = (activeView, users, services, transactions, isLoading) => {
   switch (activeView) {
     case "dashboard":
       return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
     case "analytics":
-      return <Analytics transactions={transactions} isLoading={isLoading} />;
+      // Pass users and services data to the Analytics component
+      return <Analytics users={users} services={services} isLoading={isLoading} />;
     case "clients":
       return <UsersDisplay/>
     case "orders":
@@ -59,16 +62,23 @@ const renderContent = (activeView, users, transactions, isLoading) => {
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeView, setActiveView] =useState("dashboard");
+  const [activeView, setActiveView] = useState("dashboard");
+
+  // Fetch all necessary data
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetAllTransactionsQuery();
   const { data: usersResponse, isLoading: isLoadingUsers, isError: isErrorUsers, error: usersError } = useGetAllUsersQuery();
+  const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
 
-  const isLoading = isLoadingTransactions || isLoadingUsers;
-  const isError = isErrorTransactions || isErrorUsers;
-  const error = transactionsError || usersError;
+  // Combine loading and error states
+  const isLoading = isLoadingTransactions || isLoadingUsers || isLoadingServices;
+  const isError = isErrorTransactions || isErrorUsers || isErrorServices;
+  const error = transactionsError || usersError || servicesError;
 
+  // Extract data from responses, providing default empty arrays
   const allTransactions = transactionsResponse?.data || [];
   const allUsers = usersResponse?.data || [];
+  const allServices = servicesResponse?.data || [];
+
 
   const handleNavigate = (view) => {
     setActiveView(view);
@@ -77,19 +87,19 @@ export default function AdminDashboard() {
     }
   };
 
-  // if (isError) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen p-4">
-  //       <Alert variant="destructive" className="max-w-lg">
-  //           <Terminal className="h-4 w-4" />
-  //           <AlertTitle>Error Fetching Platform Data</AlertTitle>
-  //           <AlertDescription>
-  //               Could not load admin dashboard. {error?.data?.message || "Please try again later."}
-  //           </AlertDescription>
-  //       </Alert>
-  //     </div>
-  //   );
-  // }
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Alert variant="destructive" className="max-w-lg">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Error Fetching Platform Data</AlertTitle>
+            <AlertDescription>
+                Could not load admin dashboard. {error?.data?.message || "Please try again later."}
+            </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -108,7 +118,7 @@ export default function AdminDashboard() {
             key={activeView}
             className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
           >
-            {renderContent(activeView, allUsers, allTransactions, isLoading)}
+            {renderContent(activeView, allUsers, allServices, allTransactions, isLoading)}
           </div>
         </main>
       </div>

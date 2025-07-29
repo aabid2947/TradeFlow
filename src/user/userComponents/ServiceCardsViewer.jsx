@@ -132,6 +132,7 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
                 onVerify={handleExecuteVerification}
                 isVerifying={isVerifying}
                 userInfo={userInfo}
+                isSubscribed={userInfo?.promotedCategories?.includes(serviceForVerification.category)}
               />
               {(verificationResult || verificationError) && (
                 <UserDetailsCard 
