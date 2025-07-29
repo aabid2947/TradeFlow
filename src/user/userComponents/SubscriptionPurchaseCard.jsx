@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Shield, Award, Loader2, Tag, X, Zap, Check, Star, Crown } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion"; // Import motion from framer-motion
 
 import { useLazyValidateCouponCodeQuery } from "@/app/api/couponApiSlice";
 import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice";
@@ -161,12 +162,15 @@ export default function SubscriptionPurchaseCard({ categoryData, userInfo, onClo
         <Card className="w-full bg-white shadow-2xl border-0 overflow-hidden">
           {/* Header Section */}
           <CardHeader className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-6 text-center">
-            <button
+            <motion.button
               onClick={onClose}
-              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-10 p-2 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-blue-700"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Close modal"
             >
-              <X className="w-6 h-6" />
-            </button>
+              <X className="h-5 w-5" />
+            </motion.button>
             <div className="mb-3">
               <Crown className="w-10 h-10 mx-auto mb-2 text-yellow-300" />
               <CardTitle className="text-xl font-bold mb-1">

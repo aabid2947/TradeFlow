@@ -141,7 +141,15 @@ export default function DashboardOverview() {
       const transactionDate = new Date(t.createdAt);
       return transactionDate >= startDate;
     });
-    const totalRevenue = filteredTransactions.reduce((sum, t) => sum + (t.status == 'completed' ? t.amount : 0), 0);
+    console.log('Debugging transactions:');
+
+
+const totalRevenue = filteredTransactions.reduce((sum, t) => {
+  if (t.status === 'completed' && t.amount && !isNaN(Number(t.amount))) {
+    return sum + Number(t.amount);
+  }
+  return sum;
+}, 0);
     const totalTransactions = filteredTransactions.length;
     const completedTransactions = filteredTransactions.filter(t => t.status == 'completed').length;
     const successRate = totalTransactions > 0 ? (completedTransactions / totalTransactions * 100).toFixed(1) : 0;

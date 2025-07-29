@@ -1,19 +1,25 @@
 "use client"
 
 import { useMemo } from "react";
-import { TrendingUp } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts"
+import { TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CardSkeleton,ChartSkeleton } from "@/components/skeletons/Skeletons";
+import { CardSkeleton, ChartSkeleton } from "@/components/skeletons/Skeletons";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/features/auth/authSlice";
+
+// Mock chart data, can be replaced with real data if available
 const chartData = [
-  { date: "14 Jun", kyc: 0.4, business: 0.3 }, { date: "15 Jun", kyc: 0.5, business: 0.4 }, { date: "16 Jun", kyc: 0.6, business: 0.5 }, { date: "17 Jun", kyc: 0.8, business: 0.6 }, { date: "18 Jun", kyc: 0.9, business: 0.7 }, { date: "19 Jun", kyc: 1.0, business: 0.8 }, { date: "20 Jun", kyc: 1.1, business: 0.9 }, { date: "21 Jun", kyc: 1.2, business: 1.0 }, { date: "22 Jun", kyc: 1.3, business: 1.1 }, { date: "23 Jun", kyc: 1.2, business: 1.2 }, { date: "24 Jun", kyc: 1.1, business: 1.3 }, { date: "25 Jun", kyc: 1.0, business: 1.2 }, { date: "26 Jun", kyc: 1.1, business: 1.1 }, { date: "27 Jun", kyc: 1.2, business: 1.0 }, { date: "28 Jun", kyc: 1.4, business: 1.1 },
+    { date: "14 Jun", kyc: 0.4, business: 0.3 }, { date: "15 Jun", kyc: 0.5, business: 0.4 }, { date: "16 Jun", kyc: 0.6, business: 0.5 }, { date: "17 Jun", kyc: 0.8, business: 0.6 }, { date: "18 Jun", kyc: 0.9, business: 0.7 }, { date: "19 Jun", kyc: 1.0, business: 0.8 }, { date: "20 Jun", kyc: 1.1, business: 0.9 }, { date: "21 Jun", kyc: 1.2, business: 1.0 }, { date: "22 Jun", kyc: 1.3, business: 1.1 }, { date: "23 Jun", kyc: 1.2, business: 1.2 }, { date: "24 Jun", kyc: 1.1, business: 1.3 }, { date: "25 Jun", kyc: 1.0, business: 1.2 }, { date: "26 Jun", kyc: 1.1, business: 1.1 }, { date: "27 Jun", kyc: 1.2, business: 1.0 }, { date: "28 Jun", kyc: 1.4, business: 1.1 },
 ];
 
 export default function DashboardAnalytics({ transactions, isLoading }) {
+  const userInfo = useSelector(selectCurrentUser);
 
   const statsData = useMemo(() => {
-    if (!transactions || transactions.length === 0) {
+    console.log(userInfo);
+    if (!userInfo || !userInfo.usedServices || userInfo.usedServices.length === 0) {
       return [
         { title: "Total Verifications", value: "0", change: "+0%", color: "bg-orange-500", textColor: "text-white" },
         { title: "Top Service Used", value: "N/A", change: "", color: "bg-blue-500", textColor: "text-white" },
@@ -22,28 +28,36 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
       ];
     }
 
-    // Calculate total verifications
-    const totalVerifications = transactions.length;
-
-    // Calculate usage count for each service
-    const serviceCounts = transactions.reduce((acc, transaction) => {
-      const serviceName = transaction.service?.name || 'Unknown Service';
-      acc[serviceName] = (acc[serviceName] || 0) + 1;
-      return acc;
+    // Create a map of service IDs to service names from the transactions list
+    const serviceNameMap = transactions.reduce((map, transaction) => {
+        if (transaction.service && transaction.service._id && transaction.service.name) {
+            map[transaction.service._id] = transaction.service.name;
+        }
+        return map;
     }, {});
 
-    // Sort the services by usage count in descending order
-    const sortedServices = Object.entries(serviceCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+    // Calculate total verifications from userInfo.usedServices
+    const totalVerifications = userInfo.usedServices.reduce((acc, service) => acc + service.usageCount, 0);
 
+    // Sort services from userInfo.usedServices by usage count
+    const sortedServices = [...userInfo.usedServices]
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .map(service => ({
+          // The user mentioned serviceName will be added in the future.
+          // For now, we look it up from the transactions prop.
+          // 'service' from usedServices is assumed to be the service ID.
+          name: serviceNameMap[service.service] || service.serviceName || 'Unknown Service',
+          count: service.usageCount
+      }));
+
+    // Create the top service cards
     const topServiceCards = [
-      { color: "bg-blue-500", textColor: "text-white" },
-      { color: "bg-red-500", textColor: "text-white" },
-      { color: "bg-green-500", textColor: "text-white" },
+      { title: "Top Service Used", color: "bg-blue-500", textColor: "text-white" },
+      { title: "2nd Most Used", color: "bg-red-500", textColor: "text-white" },
+      { title: "3rd Most Used", color: "bg-green-500", textColor: "text-white" },
     ].map((card, index) => {
       if (sortedServices[index]) {
-        const percentage = ((sortedServices[index].count / totalVerifications) * 100).toFixed(1);
+        const percentage = totalVerifications > 0 ? ((sortedServices[index].count / totalVerifications) * 100).toFixed(1) : "0";
         return {
           ...card,
           title: sortedServices[index].name,
@@ -51,20 +65,20 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
           change: `${percentage}%`,
         };
       }
-      return { ...card, title: `Top Service #${index + 2}`, value: '0', change: "0%" };
+      return { ...card, value: '0', change: "0%" };
     });
 
     return [
       {
         title: "Total Verifications",
         value: totalVerifications.toLocaleString(),
-        change: "+100%", 
+        change: "+100%", // This can be adjusted based on a comparison period if available
         color: "bg-orange-500",
         textColor: "text-white"
       },
       ...topServiceCards
     ];
-  }, [transactions]); 
+  }, [userInfo, transactions]); 
 
 
     if (isLoading) {

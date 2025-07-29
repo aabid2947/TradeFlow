@@ -24,7 +24,6 @@ export default function ServiceCard({
 
   const handleCardClick = () => {
     // Only navigate if the user is not an admin.
-    console.log(isAdmin)
     if (!isAdmin) {
       navigate(`/user/service/${encodeURIComponent(service.category)}`);
     }

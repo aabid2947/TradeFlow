@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion"; // Import motion
 import ServiceCard from "@/cards/ServiceCard";
 import PANCardImage from "@/assets/PANCardImage.svg";
 import AadharCardImage from "@/assets/AadharCardImage.svg";
@@ -11,7 +12,7 @@ import { UserDetailsCard } from "./UserDetailsCard";
 import { Button } from "@/components/ui/button";
 import SubscriptionPurchaseCard from "./SubscriptionPurchaseCard";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
-
+import { useGetProfileQuery } from "@/app/api/authApiSlice";
 const fallbackImages = [ PANCardImage, AadharCardImage, VoterCardImage, PassportCardImage ];
 const demandLevels = ["Most Demanding", "Average Demanding", "Less Demanding"];
 
@@ -26,6 +27,7 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
   const [serviceForVerification, setServiceForVerification] = useState(null);
   const [categoryForPurchase, setCategoryForPurchase] = useState(null);
   
+  const { refetch: refetchUserProfile } = useGetProfileQuery()
   const [verificationResult, setVerificationResult] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
   const [inputData, setInputData] = useState(null);
@@ -68,6 +70,9 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
         
         setVerificationResult(result);
         toast.success(result.message || "Verification successful!");
+        await refetchUserProfile();
+
+
 
       } catch (err) {
         console.error("Service execution failed:", err);
@@ -122,10 +127,16 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
           
           <div className="relative z-10 w-full max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
-            <Button variant="ghost" size="icon" onClick={handleCloseModal} className="absolute top-2 right-2 z-20 rounded-full text-gray-500 hover:text-gray-800">
+            <motion.button
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Close modal"
+            >
               <XIcon className="h-5 w-5" />
-            </Button>
-            <div className="overflow-y-auto p-6 space-y-6">
+            </motion.button>
+            <div className="overflow-y-auto p-6 pt-12 space-y-6"> {/* Added pt-12 to avoid overlap with new close button */}
               <UserInfoCard
                 services={services}
                 activeServiceId={serviceForVerification.service_key}
@@ -151,7 +162,7 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
       {categoryForPurchase && (
          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
-            <div className="relative z-10 w-full max-w-md bg-transparent rounded-xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
+            <div className="relative z-10 w-full max-w-lg bg-transparent rounded-xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
                 <SubscriptionPurchaseCard
                     categoryData={categoryForPurchase}
                     userInfo={userInfo}

@@ -10,7 +10,8 @@ import { useCreateReviewMutation, useUpdateReviewMutation } from "@/app/api/revi
 import { useGetMyReviewsQuery } from "../../app/api/reviewApiSlice";
 
 
-// Mock UI components for demo
+// --- UI COMPONENTS ---
+// These are mock components. In a real application, you would import these from your UI library.
 const Button = ({ children, className, ...props }) => (
   <button className={`px-4 py-2 rounded ${className}`} {...props}>
     {children}
@@ -43,7 +44,7 @@ const CardFooter = ({ children, className }) => (
 
 const Select = ({ children, onValueChange, value }) => (
   <div className="relative">
-    <select 
+    <select
       className="w-full p-3 border rounded-lg bg-white appearance-none"
       onChange={(e) => onValueChange(e.target.value)}
       value={value}
@@ -65,7 +66,7 @@ function StarRatingInput({ rating, setRating }) {
       {[...Array(5)].map((_, i) => {
         const ratingValue = i + 1;
         const isActive = ratingValue <= (hoveredRating || rating);
-        
+
         return (
           <motion.button
             type="button"
@@ -79,7 +80,7 @@ function StarRatingInput({ rating, setRating }) {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <motion.div
-              animate={{ 
+              animate={{
                 scale: isActive ? 1.1 : 1,
                 rotate: isActive ? [0, -5, 5, 0] : 0
               }}
@@ -87,8 +88,8 @@ function StarRatingInput({ rating, setRating }) {
             >
               <Star
                 className={`h-9 w-9 cursor-pointer transition-all duration-300 ${
-                  isActive 
-                    ? "text-yellow-400 fill-yellow-400 drop-shadow-lg" 
+                  isActive
+                    ? "text-yellow-400 fill-yellow-400 drop-shadow-lg"
                     : "text-gray-300 hover:text-yellow-300"
                 }`}
               />
@@ -100,6 +101,8 @@ function StarRatingInput({ rating, setRating }) {
   );
 }
 
+
+// --- MAIN COMPONENT ---
 export default function ReviewModal({ existingReview, onClose }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -108,24 +111,46 @@ export default function ReviewModal({ existingReview, onClose }) {
 
   const isEditing = !!existingReview;
 
+  // --- DATA FETCHING ---
   const [createReview, { isLoading: isCreating }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdating }] = useUpdateReviewMutation();
   const { data: transactionsData } = useGetMyTransactionsQuery();
-  const {data:reviewData} = useGetMyReviewsQuery()
+  const { data: myReviewsData } = useGetMyReviewsQuery();
   const isSubmitting = isCreating || isUpdating;
 
+  // --- UPDATED LOGIC ---
+  // Filter transactions to only show those linked to unreviewed services.
   const unreviewedTransactions = useMemo(() => {
-    if (!transactionsData?.data) return [];
-    // Filter all user's transactions to find ones that are completed and don't have a review.
-    return transactionsData.data.filter(
-      (t) => t.status === 'completed' && !t.hasReview
+    if (!transactionsData?.data || !myReviewsData?.data) return [];
+
+    // Create a Set of all service IDs the user has already reviewed
+    const reviewedServiceIds = new Set(
+        myReviewsData.data
+            .filter(review => review.service)
+            .map(review => typeof review.service === 'string' ? review.service : review.service._id)
     );
-  }, [transactionsData]);
+
+    // Create a Set of all transaction IDs that have been used for a review
+    const reviewedTransactionIds = new Set(
+      myReviewsData.data.map(review => review.transaction)
+    );
+
+    return transactionsData.data.filter(t => {
+      const isCompleted = t.status === 'completed';
+      // A transaction is reviewable if its service hasn't been reviewed AND the transaction itself hasn't been used for a review.
+      const isServiceUnreviewed = t.service ? !reviewedServiceIds.has(t.service._id) : true;
+      const isTransactionUnreviewed = !reviewedTransactionIds.has(t._id);
+
+      return isCompleted && isServiceUnreviewed && isTransactionUnreviewed;
+    });
+  }, [transactionsData, myReviewsData]);
 
   useEffect(() => {
     if (isEditing) {
       setRating(existingReview.rating || 0);
       setComment(existingReview.comment || "");
+      // In edit mode, we don't need to select a transaction
+      setSelectedTransaction(existingReview.transaction);
     }
   }, [existingReview, isEditing]);
 
@@ -144,10 +169,22 @@ export default function ReviewModal({ existingReview, onClose }) {
 
     try {
       if (isEditing) {
+        // Update functionality remains unchanged
         await updateReview({ reviewId: existingReview._id, rating, comment }).unwrap();
         toast.success("Review updated successfully!");
       } else {
-        await createReview({ transactionId: selectedTransaction, rating, comment }).unwrap();
+        // Find the full transaction object to get the service ID
+        const transaction = transactionsData.data.find(t => t._id === selectedTransaction);
+
+        const reviewPayload = {
+          transactionId: selectedTransaction,
+          rating,
+          comment,
+          // Attach the serviceId to the review
+          serviceId: transaction?.service?._id,
+        };
+
+        await createReview(reviewPayload).unwrap();
         toast.success("Thank you for your review!");
       }
       onClose();
@@ -177,9 +214,9 @@ export default function ReviewModal({ existingReview, onClose }) {
           initial={{ scale: 0.8, opacity: 0, y: 30 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ 
-            type: "spring", 
-            damping: 25, 
+          transition={{
+            type: "spring",
+            damping: 25,
             stiffness: 300,
             mass: 0.8
           }}
@@ -245,7 +282,7 @@ export default function ReviewModal({ existingReview, onClose }) {
                           {unreviewedTransactions.length > 0 ? (
                             unreviewedTransactions.map((t) => (
                               <SelectItem key={t._id} value={t._id}>
-                                {t.service?.name || 'Service'} on {new Date(t.createdAt).toLocaleDateString()}
+                                {t.service?.name || 'A Service'} on {new Date(t.createdAt).toLocaleDateString()}
                               </SelectItem>
                             ))
                           ) : (

@@ -85,12 +85,6 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
 
         {/* Right Section - Actions and Profile */}
         <div className="flex items-center gap-2 md:gap-3">
-          <Button variant="ghost" size="icon" className="hidden md:flex h-9 w-9 text-gray-600 hover:bg-gray-100" aria-label="Search">
-            <Search className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden md:flex h-9 w-9 text-gray-600 hover:bg-gray-100" aria-label="Refresh data">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 px-2 flex items-center gap-2 rounded-full hover:bg-gray-100" aria-label="User profile menu">
@@ -104,8 +98,6 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-white border rounded-lg shadow-lg p-1">
-              <DropdownMenuItem className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer">Profile</DropdownMenuItem>
-              <DropdownMenuItem className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer">Settings</DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md cursor-pointer">Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

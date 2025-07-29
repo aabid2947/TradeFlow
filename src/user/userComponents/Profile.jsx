@@ -5,9 +5,11 @@ import { selectCurrentUser } from '@/features/auth/authSlice'
 import { useUpdateProfileMutation, useRemindSubscriptionMutation } from '@/app/api/authApiSlice'
 import { toast } from "react-hot-toast"
 import userPic from "@/assets/UserImage.svg"
+import { motion, AnimatePresence } from "framer-motion" // Import motion and AnimatePresence
 
 // Helper function to format dates
 const formatDate = (dateString) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -17,7 +19,6 @@ const formatDate = (dateString) => {
 
 export default function Profile() {
     const user = useSelector(selectCurrentUser)
-    console.log(user)
     const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation()
     const [sendReminder] = useRemindSubscriptionMutation();
     
@@ -39,27 +40,25 @@ export default function Profile() {
             if (!user?._id || activeSubscriptions.length === 0) return;
 
             const now = new Date();
-            const threeDaysFromNow = new Date(now);
-            threeDaysFromNow.setDate(now.getDate() + 3);
-
             for (const sub of activeSubscriptions) {
                 const expiryDate = new Date(sub.expiresAt);
-                // if (expiryDate ) {
+                const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                
+                if (daysRemaining <= 3 && daysRemaining > 0) {
                     const reminderKey = `reminderSent_${user._id}_${sub.category}`;
                     if (!sessionStorage.getItem(reminderKey)) {
                         try {
-                            const expiresInDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
                             toast.error(
-                                `Your subscription for "${sub.category}" expires in ${expiresInDays} day(s). A reminder has been sent to your email.`,
+                                `Your subscription for "${sub.category}" expires in ${daysRemaining} day(s). A reminder has been sent to your email.`,
                                 { duration: 8000, icon: '🔔' }
                             );
-                            await sendReminder(user._id).unwrap();
+                            await sendReminder({ userId: user._id }).unwrap();
                             sessionStorage.setItem(reminderKey, 'true');
                         } catch (err) {
                             console.error(`Failed to send reminder for ${sub.category}:`, err);
                         }
                     }
-                // }
+                }
             }
         };
 
@@ -80,7 +79,6 @@ export default function Profile() {
         }
 
         try {
-            // The onQueryStarted in authApiSlice will handle updating the redux state automatically
             await updateProfile({ name: editedName.trim() }).unwrap()
             setIsEditing(false)
             setError("")
@@ -162,12 +160,12 @@ export default function Profile() {
                                                     <div className="flex items-center gap-3">
                                                         {isExpiringSoon ? <AlertTriangle className="h-5 w-5 text-orange-500"/> : <ShieldCheck className="h-5 w-5 text-green-500"/>}
                                                         <div>
-                                                            <p className={`font-semibold ${isExpiringSoon ? 'text-orange-800' : 'text-green-800'}`}>{sub.category}</p>
+                                                            <p className={`font-semibold ${isExpiringSoon ? 'text-orange-800' : 'text-green-800'}`}>{sub.category.replace(/_/g, " ")}</p>
                                                             <p className={`text-xs ${isExpiringSoon ? 'text-orange-600' : 'text-green-600'}`}>Expires on: {formatDate(sub.expiresAt)}</p>
                                                         </div>
                                                     </div>
                                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${isExpiringSoon ? 'bg-orange-200 text-orange-800' : 'bg-green-200 text-green-800'}`}>
-                                                        {isExpiringSoon ? `${daysRemaining}d left` : 'Active'}
+                                                        {isExpiringSoon && daysRemaining > 0 ? `${daysRemaining}d left` : 'Active'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -180,48 +178,80 @@ export default function Profile() {
                 </div>
             </div>
 
-            {isEditing && (
-                <div className="fixed inset-0 bg-transparent modal-overlay bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h3 className="text-xl font-semibold text-gray-900">Edit Profile</h3>
-                            <button onClick={handleCancelEdit} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <X className="h-5 w-5 text-gray-500" />
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            <div className="flex justify-center">
-                                <div className="relative">
-                                    <div className="h-20 w-20 border-4 border-white ring-2 ring-blue-500/50 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                        <img src={userPic} alt={`${user?.name} profile picture`} className="w-full h-full object-cover"/>
+            <AnimatePresence>
+                {isEditing && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        style={{
+                            background: "rgba(0, 0, 0, 0.4)",
+                            backdropFilter: "blur(12px)",
+                            WebkitBackdropFilter: "blur(12px)"
+                        }}
+                        onClick={(e) => e.target === e.currentTarget && handleCancelEdit()}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0, y: 30 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ 
+                                type: "spring", 
+                                damping: 25, 
+                                stiffness: 300,
+                                mass: 0.8
+                            }}
+                            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl"
+                        >
+                             <motion.button
+                                onClick={handleCancelEdit}
+                                className="absolute top-4 right-4 z-10 p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                                whileHover={{ scale: 1.1, rotate: 90 }}
+                                whileTap={{ scale: 0.9 }}
+                                aria-label="Close modal"
+                            >
+                                <X className="h-5 w-5" />
+                            </motion.button>
+
+                            <div className="p-6 border-b border-gray-200">
+                                <h3 className="text-xl font-semibold text-gray-900 pr-10">Edit Profile</h3>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="flex justify-center">
+                                    <div className="relative">
+                                        <div className="h-20 w-20 border-4 border-white ring-2 ring-blue-500/50 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                                            <img src={userPic} alt={`${user?.name} profile picture`} className="w-full h-full object-cover"/>
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700"><Mail className="h-4 w-4 inline mr-2" />Email</label>
+                                    <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"/>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700"><User className="h-4 w-4 inline mr-2" />Name</label>
+                                    <input type="text" value={editedName} onChange={handleNameChange} onKeyDown={handleKeyPress} className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'border-red-500' : 'border-gray-200'}`} placeholder="Enter your name" autoFocus/>
+                                    {error && (<p className="text-sm text-red-600 mt-1">{error}</p>)}
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700"><Mail className="h-4 w-4 inline mr-2" />Email</label>
-                                <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"/>
+                            <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50/50 rounded-b-2xl">
+                                <button onClick={handleCancelEdit} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium" disabled={isUpdatingProfile}>
+                                    Cancel
+                                </button>
+                                <button onClick={handleSaveName} disabled={isUpdatingProfile || !editedName.trim()} className="flex-1 px-4 py-3 bg-[#1A89C1] text-white rounded-xl hover:bg-[#1A89C1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                    {isUpdatingProfile ? (
+                                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Saving...</>
+                                    ) : (
+                                        <><Check className="h-4 w-4" />Save Changes</>
+                                    )}
+                                </button>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700"><User className="h-4 w-4 inline mr-2" />Name</label>
-                                <input type="text" value={editedName} onChange={handleNameChange} onKeyDown={handleKeyPress} className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${error ? 'border-red-500' : 'border-gray-200'}`} placeholder="Enter your name" autoFocus/>
-                                {error && (<p className="text-sm text-red-600 mt-1">{error}</p>)}
-                            </div>
-                        </div>
-                        <div className="flex gap-3 p-6 border-t border-gray-200">
-                            <button onClick={handleCancelEdit} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium" disabled={isUpdatingProfile}>
-                                Cancel
-                            </button>
-                            <button onClick={handleSaveName} disabled={isUpdatingProfile || !editedName.trim()} className="flex-1 px-4 py-3 bg-[#1A89C1] text-white rounded-xl hover:bg-[#1A89C1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                {isUpdatingProfile ? (
-                                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Saving...</>
-                                ) : (
-                                    <><Check className="h-4 w-4" />Save Changes</>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <style jsx>{`
                 @keyframes spin {

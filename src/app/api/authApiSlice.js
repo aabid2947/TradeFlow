@@ -52,7 +52,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
     // 3. UPDATE the updateProfile mutation
     updateProfile: builder.mutation({
       query: (userInfo) => ({
-        url: `${AUTH_URL}/profile`,
+        url: `${USERS_URL}/profile`,
         method: 'PUT',
         body: userInfo,
       }),

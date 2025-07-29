@@ -660,8 +660,8 @@ export function UserInfoCard({ services = [], activeServiceId, onVerify, isVerif
   };
 
   return (
-    <Card className="shadow-lg border-2 border-blue-200 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
-      <CardHeader className="pb-4 px-6 pt-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+    <Card className="shadow-lg p-4 border-2 border-blue-200 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
+      <CardHeader className="p-4 px-6 mt-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Shield className="w-5 h-5" />
           {currentService ? currentService.name : "Service Inputs"}
