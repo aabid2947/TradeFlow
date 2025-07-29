@@ -72,7 +72,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
           </div>
           
           <div className="flex flex-col">
-            <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+            <h1 className="hidden md:block text-lg font-semibold text-gray-900 md:text-xl">
               <span className="text-gray-900">{welcomeText.substring(0, 13)}</span>
               {welcomeText.length > 13 && <span className="text-[#1987BF] font-bold">{welcomeText.substring(13)}</span>}
               {welcomeText.length < fullText.length && <span className="animate-pulse text-gray-900">|</span>}
