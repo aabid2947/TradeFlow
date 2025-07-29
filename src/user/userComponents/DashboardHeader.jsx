@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, RotateCcw, ChevronDown, MoreVertical, Menu } from "lucide-react"
+import { Search, RotateCcw, ChevronDown, MoreVertical, Menu, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -11,8 +11,9 @@ import { useNavigate } from "react-router-dom"
 import userPic from "@/assets/UserImage.svg"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
+import sidebarLogo from "@/assets/sidebarLogo.svg"
 
-export default function DashboardHeader({ setSidebarOpen }) {
+export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   const [welcomeText, setWelcomeText] = useState("");
   const user = useSelector(selectCurrentUser);
   const fullText = `Welcome Back, ${user?.name || 'User'}`;
@@ -42,19 +43,33 @@ export default function DashboardHeader({ setSidebarOpen }) {
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm">
       <div className="flex items-center justify-between h-full">
-        {/* Left Section: Welcome text */}
+        {/* Left Section: Menu button and Welcome text */}
         <div className="flex items-center gap-3 md:gap-4">
-          {/* Hamburger button for mobile */}
+          {/* Menu toggle button */}
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-2 -ml-2 text-gray-600 rounded-lg hover:bg-gray-100"
-            aria-label="Open menu"
+            onClick={toggleSidebar}
+            className={`p-2 -ml-2 rounded-full transition-all duration-200 ease-in-out ${
+              sidebarOpen 
+                ? 'bg-gray-100 text-gray-700 shadow-sm' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
           >
-            <Menu className="h-6 w-6" />
+          
+              <Menu className="h-5 w-5 transition-transform duration-200" />
+            
           </button>
+
+           <div className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out w-auto opacity-100`}>
+            <img src={sidebarLogo} alt="Logo" className="h-10 w-auto" />
+          </div>
           
           <div className="flex flex-col">
             <h1 className="text-lg font-semibold text-gray-900 md:text-xl">

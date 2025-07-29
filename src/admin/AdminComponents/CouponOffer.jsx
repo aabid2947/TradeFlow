@@ -1,82 +1,26 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Star, TrendingUp } from "lucide-react"
+import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Trash2, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useGetAllCouponsQuery, useCreateCouponMutation, useDeleteCouponMutation } from "@/app/api/couponApiSlice" // <-- IMPORT API HOOKS
+import { toast } from 'react-hot-toast';
 
-
-// Mock data
-const mockOffers = [
-  {
-    id: "1",
-    title: "Summer Verification Sale",
-    description: "Get 20% off on all document verification services",
-    discountType: "percentage",
-    discountValue: 20,
-    code: "SUMMER20",
-    expiryDate: new Date("2025-07-31T23:59:59"),
-    isActive: true,
-    isPublic: true,
-    usageCount: 45,
-    maxUsage: 100,
-    minOrderValue: 100,
-  },
-  {
-    id: "2",
-    title: "New User Welcome",
-    description: "₹50 off your first verification",
-    discountType: "flat",
-    discountValue: 50,
-    code: "WELCOME50",
-    expiryDate: new Date("2025-12-31T23:59:59"),
-    isActive: true,
-    isPublic: true,
-    usageCount: 123,
-    maxUsage: 500,
-    minOrderValue: 200,
-  },
-  {
-    id: "3",
-    title: "KYC Bundle Discount",
-    description: "15% off on KYC verification packages",
-    discountType: "percentage",
-    discountValue: 15,
-    code: "KYC15",
-    expiryDate: new Date("2025-02-15T23:59:59"),
-    isActive: true,
-    isPublic: false,
-    usageCount: 28,
-    maxUsage: 50,
-    minOrderValue: 300,
-  },
-  {
-    id: "4",
-    title: "Flash Sale - 48 Hours",
-    description: "Limited time offer - ₹100 off premium services",
-    discountType: "flat",
-    discountValue: 100,
-    code: "FLASH100",
-    expiryDate: new Date("2025-01-10T23:59:59"),
-    isActive: true,
-    isPublic: true,
-    usageCount: 67,
-    maxUsage: 200,
-    minOrderValue: 500,
-  },
-]
 
 const CountdownTimer = ({ expiryDate }) => {
   const [timeLeft, setTimeLeft] = useState(null)
+  const expiry = new Date(expiryDate); // Ensure it's a Date object
 
   useEffect(() => {
+    if (isNaN(expiry.getTime())) return;
+
     const calculateTimeLeft = () => {
       const now = new Date().getTime()
-      const expiry = expiryDate.getTime()
-      const difference = expiry - now
+      const difference = expiry.getTime() - now
 
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24))
@@ -94,7 +38,11 @@ const CountdownTimer = ({ expiryDate }) => {
     const timer = setInterval(calculateTimeLeft, 1000)
 
     return () => clearInterval(timer)
-  }, [expiryDate])
+  }, [expiry])
+
+  if (isNaN(expiry.getTime())) {
+    return <Badge variant="destructive">Invalid Date</Badge>;
+  }
 
   if (!timeLeft) {
     return (
@@ -122,7 +70,7 @@ const CountdownTimer = ({ expiryDate }) => {
   )
 }
 
-const OfferCard = ({ offer, onApply, index }) => {
+const OfferCard = ({ offer, onDelete, index }) => {
   const [copied, setCopied] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const cardRef = useRef(null)
@@ -157,16 +105,6 @@ const OfferCard = ({ offer, onApply, index }) => {
     return `₹${offer.discountValue} OFF`
   }
 
-  const calculateSavings = () => {
-    if (offer.discountType === "percentage") {
-      const minSaving = offer.minOrderValue ? (offer.minOrderValue * offer.discountValue) / 100 : 0
-      return `Save up to ₹${Math.round(minSaving)}`
-    }
-    return `Save ₹${offer.discountValue}`
-  }
-
-  const usagePercentage = offer.maxUsage ? (offer.usageCount / offer.maxUsage) * 100 : 0
-
   return (
     <div
       ref={cardRef}
@@ -175,25 +113,20 @@ const OfferCard = ({ offer, onApply, index }) => {
       }`}
     >
       <Card className="group relative overflow-hidden border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] rounded-2xl">
-        {/* Glassmorphism Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-60" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* Floating Elements */}
-        <div className="absolute top-6 right-6 z-20">
-          <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-4 py-2 text-sm rounded-full shadow-lg shadow-blue-500/25 animate-pulse">
-            {formatDiscount()}
-          </Badge>
+        
+        <div className="absolute top-4 right-4 z-20">
+          <Button
+            onClick={() => onDelete(offer.id)}
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0 hover:bg-red-100/80 rounded-full transition-all duration-200 hover:scale-110"
+          >
+            <Trash2 className="w-4 h-4 text-red-500" />
+          </Button>
         </div>
 
-        {!offer.isPublic && (
-          <div className="absolute top-6 left-6 z-20">
-            <Badge className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 border border-purple-200 text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
-              <Star className="w-3 h-3 mr-1" />
-              Exclusive
-            </Badge>
-          </div>
-        )}
 
         <CardHeader className="pb-4 pt-8 px-8 relative z-10">
           <div className="flex items-start gap-4">
@@ -206,22 +139,21 @@ const OfferCard = ({ offer, onApply, index }) => {
             </div>
             <div className="flex-1 min-w-0">
               <CardTitle className="text-xl font-bold text-gray-900 mb-2 leading-tight">{offer.title}</CardTitle>
-              <p className="text-sm text-gray-600 leading-relaxed">{offer.description}</p>
             </div>
+             <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-4 py-2 text-sm rounded-full shadow-lg shadow-blue-500/25">
+                {formatDiscount()}
+            </Badge>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6 px-8 pb-8 relative z-10">
-          {/* Savings and Timer */}
+           <p className="text-sm text-gray-600 leading-relaxed -mt-4">{offer.description}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-semibold text-green-600">{calculateSavings()}</span>
             </div>
             <CountdownTimer expiryDate={offer.expiryDate} />
           </div>
 
-          {/* Usage Progress */}
           {offer.maxUsage && (
             <div className="space-y-3">
               <div className="flex justify-between text-sm text-gray-600">
@@ -234,7 +166,7 @@ const OfferCard = ({ offer, onApply, index }) => {
                 <div className="w-full bg-gray-200/60 rounded-full h-3 backdrop-blur-sm">
                   <div
                     className="bg-gradient-to-r from-[#1987BF] to-blue-600 h-3 rounded-full transition-all duration-1000 ease-out shadow-sm"
-                    style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                    style={{ width: `${Math.min((offer.usageCount / offer.maxUsage) * 100, 100)}%` }}
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full animate-pulse" />
@@ -242,8 +174,7 @@ const OfferCard = ({ offer, onApply, index }) => {
             </div>
           )}
 
-          {/* Minimum Order Value */}
-          {offer.minOrderValue && (
+          {offer.minOrderValue > 0 && (
             <div className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-[#1987BF] rounded-full" />
@@ -252,7 +183,6 @@ const OfferCard = ({ offer, onApply, index }) => {
             </div>
           )}
 
-          {/* Code and Actions */}
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
               <div className="flex items-center justify-between">
@@ -271,12 +201,6 @@ const OfferCard = ({ offer, onApply, index }) => {
                 </Button>
               </div>
             </div>
-            <Button
-              onClick={() => onApply(offer.code)}
-              className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white px-8 py-3 font-semibold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105 whitespace-nowrap"
-            >
-              Apply Now
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -284,25 +208,21 @@ const OfferCard = ({ offer, onApply, index }) => {
   )
 }
 
-const CreateOfferCard = ({ onSave, onCancel }) => {
+const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
-    title: "",
     description: "",
+    code: "",
     discountType: "percentage",
     discountValue: "",
-    code: "",
     expiryDate: "",
-    isPublic: true,
-    maxUsage: "",
-    minOrderValue: "",
+    maxUses: "",
+    minAmount: "",
   })
 
   const [errors, setErrors] = useState({})
 
   const validateForm = ()=> {
     const newErrors= {}
-
-    if (!formData.title.trim()) newErrors.title = "Title is required"
     if (!formData.description.trim()) newErrors.description = "Description is required"
     if (!formData.discountValue || Number.parseFloat(formData.discountValue) <= 0) {
       newErrors.discountValue = "Valid discount value is required"
@@ -316,13 +236,25 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      onSave(formData)
+      const dataToSubmit = {
+        description: formData.description,
+        code: formData.code.toUpperCase(),
+        discount: {
+            type: formData.discountType,
+            value: Number.parseFloat(formData.discountValue)
+        },
+        expiryDate: new Date(formData.expiryDate).toISOString(),
+        isActive: true,
+        ...(formData.maxUses && { maxUses: Number.parseInt(formData.maxUses) }),
+        ...(formData.minAmount && { minAmount: Number.parseFloat(formData.minAmount) }),
+      }
+      onSave(dataToSubmit)
     }
   }
 
   const generateCode = () => {
     const code =
-      formData.title
+      formData.description
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, "")
         .substring(0, 8) + Math.floor(Math.random() * 100)
@@ -354,35 +286,19 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
 
       <CardContent className="space-y-8 px-8 pb-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Title */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Offer Title *</label>
-            <Input
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g., Summer Sale 2025"
-              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
-                errors.title ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
-              }`}
-            />
-            {errors.title && <p className="text-red-500 text-sm mt-2 font-medium">{errors.title}</p>}
-          </div>
-
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Description *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Offer Description *</label>
             <Input
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="e.g., Get amazing discounts on all verification services"
+              placeholder="e.g., Get 20% off all verification services"
               className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
                 errors.description ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
               }`}
             />
             {errors.description && <p className="text-red-500 text-sm mt-2 font-medium">{errors.description}</p>}
           </div>
-
-          {/* Discount Type */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">Discount Type *</label>
             <Select
@@ -401,7 +317,6 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
             </Select>
           </div>
 
-          {/* Discount Value */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Discount Value * {formData.discountType === "percentage" ? "(%)" : "(₹)"}
@@ -418,7 +333,6 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
             {errors.discountValue && <p className="text-red-500 text-sm mt-2 font-medium">{errors.discountValue}</p>}
           </div>
 
-          {/* Coupon Code */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">Coupon Code *</label>
             <div className="flex gap-3">
@@ -442,7 +356,6 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
             {errors.code && <p className="text-red-500 text-sm mt-2 font-medium">{errors.code}</p>}
           </div>
 
-          {/* Expiry Date */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">Expiry Date *</label>
             <Input
@@ -456,53 +369,41 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
             {errors.expiryDate && <p className="text-red-500 text-sm mt-2 font-medium">{errors.expiryDate}</p>}
           </div>
 
-          {/* Max Usage */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">Max Usage (Optional)</label>
             <Input
               type="number"
-              value={formData.maxUsage}
-              onChange={(e) => setFormData((prev) => ({ ...prev, maxUsage: e.target.value }))}
+              value={formData.maxUses}
+              onChange={(e) => setFormData((prev) => ({ ...prev, maxUses: e.target.value }))}
               placeholder="100"
               className="bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base focus:border-[#1987BF]"
             />
           </div>
 
-          {/* Min Order Value */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Min Order Value (₹)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Min Order Value (₹, Optional)</label>
             <Input
               type="number"
-              value={formData.minOrderValue}
-              onChange={(e) => setFormData((prev) => ({ ...prev, minOrderValue: e.target.value }))}
+              value={formData.minAmount}
+              onChange={(e) => setFormData((prev) => ({ ...prev, minAmount: e.target.value }))}
               placeholder="200"
               className="bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base focus:border-[#1987BF]"
             />
           </div>
         </div>
 
-        {/* Public/Private Toggle */}
-        <div className="flex items-center gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
-          <input
-            type="checkbox"
-            id="isPublic"
-            checked={formData.isPublic}
-            onChange={(e) => setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))}
-            className="w-5 h-5 text-[#1987BF] border-gray-300 rounded focus:ring-[#1987BF] focus:ring-2"
-          />
-          <label htmlFor="isPublic" className="text-sm font-semibold text-gray-700 cursor-pointer">
-            Make this offer public (visible to all users)
-          </label>
-        </div>
-
-        {/* Actions */}
         <div className="flex gap-4 pt-6 border-t border-gray-200/50">
           <Button
             onClick={handleSubmit}
+            disabled={isLoading}
             className="flex-1 bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold h-12 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
           >
-            <Gift className="w-5 h-5 mr-2" />
-            Create Offer
+            {isLoading ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+                <Gift className="w-5 h-5 mr-2" />
+            )}
+            {isLoading ? 'Creating...' : 'Create Offer'}
           </Button>
           <Button
             onClick={onCancel}
@@ -517,47 +418,75 @@ const CreateOfferCard = ({ onSave, onCancel }) => {
   )
 }
 
+const LoadingSkeleton = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white/50 backdrop-blur-xl p-8 rounded-2xl animate-pulse">
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-14 h-14 bg-gray-200 rounded-2xl"></div>
+                    <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                </div>
+                <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
+                <div className="h-10 bg-gray-200 rounded-xl w-full"></div>
+            </div>
+        ))}
+    </div>
+);
+
+
 export default function CouponsOffers() {
-  const [offers, setOffers] = useState(mockOffers)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [appliedCode, setAppliedCode] = useState(null)
+  
+  // RTK Query Hooks
+  const { data: offersData, isLoading, isError, error } = useGetAllCouponsQuery();
+  const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
+  const [deleteCoupon] = useDeleteCouponMutation();
 
-  const handleApplyOffer = (code) => {
-    setAppliedCode(code)
-    setTimeout(() => setAppliedCode(null), 3000)
-
-  }
-
-  const handleSaveOffer = (newOfferData) => {
-    const newOffer = {
-      id: Date.now().toString(),
-      title: newOfferData.title,
-      description: newOfferData.description,
-      discountType: newOfferData.discountType,
-      discountValue: Number.parseFloat(newOfferData.discountValue),
-      code: newOfferData.code,
-      expiryDate: new Date(newOfferData.expiryDate),
-      isActive: true,
-      isPublic: newOfferData.isPublic,
-      usageCount: 0,
-      maxUsage: newOfferData.maxUsage ? Number.parseInt(newOfferData.maxUsage) : undefined,
-      minOrderValue: newOfferData.minOrderValue ? Number.parseFloat(newOfferData.minOrderValue) : undefined,
+  const handleSaveOffer = async (newOfferData) => {
+    try {
+        await createCoupon(newOfferData).unwrap();
+        toast.success("Offer created successfully!");
+        setShowCreateForm(false);
+    } catch (err) {
+        toast.error(err?.data?.message || "Failed to create offer.");
+        console.error("Failed to create coupon:", err);
     }
-
-    setOffers((prev) => [newOffer, ...prev])
-    setShowCreateForm(false)
   }
 
-  const activeOffers = offers.filter((offer) => offer.isActive)
-  const publicOffers = activeOffers.filter((offer) => offer.isPublic)
-  const privateOffers = activeOffers.filter((offer) => !offer.isPublic)
+  const handleDeleteOffer = async (couponId) => {
+    if (window.confirm("Are you sure you want to delete this offer? This action cannot be undone.")) {
+      try {
+        await deleteCoupon(couponId).unwrap();
+        toast.success("Offer deleted successfully!");
+      } catch (err) {
+        toast.error(err?.data?.message || "Failed to delete offer.");
+        console.error("Failed to delete coupon:", err);
+      }
+    }
+  }
+
+  // Map API data to the format expected by the component
+  const mappedOffers = offersData?.data?.map(offer => ({
+    id: offer._id,
+    title: offer.description,
+    description: `Code: ${offer.code} | ${offer.discount.type === 'percentage' ? `${offer.discount.value}%` : `₹${offer.discount.value}`} off`,
+    discountType: offer.discount.type,
+    discountValue: offer.discount.value,
+    code: offer.code,
+    expiryDate: offer.expiryDate,
+    isActive: offer.isActive,
+    usageCount: offer.timesUsed,
+    maxUsage: offer.maxUses,
+    minOrderValue: offer.minAmount || 0,
+  })) || [];
+  
+  const activeOffers = mappedOffers.filter((offer) => offer.isActive)
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background Elements */}
-      {/* <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(25,135,191,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(147,51,234,0.1),transparent_50%)]" /> */}
-
       <div className="relative z-10 p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -577,75 +506,54 @@ export default function CouponsOffers() {
             </Button>
           </div>
 
-          {/* Applied Code Notification */}
-          {appliedCode && (
-            <div className="mb-8 p-6 bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-xl border border-green-200/50 rounded-2xl shadow-lg shadow-green-500/10 animate-in slide-in-from-top-2 duration-500">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-green-800 font-semibold text-lg">Success!</p>
-                  <p className="text-green-700">Coupon "{appliedCode}" applied successfully!</p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Create Offer Form */}
           {showCreateForm && (
             <div className="mb-12">
-              <CreateOfferCard onSave={handleSaveOffer} onCancel={() => setShowCreateForm(false)} />
+              <CreateOfferCard 
+                onSave={handleSaveOffer} 
+                onCancel={() => setShowCreateForm(false)} 
+                isLoading={isCreating}
+              />
             </div>
           )}
+          
+          {isError && (
+              <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
+                  <div className="flex items-center gap-4">
+                      <AlertTriangle className="w-8 h-8 text-red-500"/>
+                      <div>
+                          <p className="text-red-800 font-semibold text-lg">Failed to load offers</p>
+                          <p className="text-red-700">{error?.data?.message || "An unknown error occurred."}</p>
+                      </div>
+                  </div>
+              </div>
+          )}
 
-          {/* Public Offers */}
-          {publicOffers.length > 0 && (
+          {isLoading ? (
+              <LoadingSkeleton />
+          ) : activeOffers.length > 0 ? (
             <div className="mb-12">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                   <Tag className="w-6 h-6 text-[#1987BF]" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Public Offers</h2>
+                <h2 className="text-2xl font-bold text-gray-900">All Active Offers</h2>
                 <Badge className="bg-gradient-to-r from-[#1987BF]/10 to-blue-500/10 text-[#1987BF] border border-[#1987BF]/20 font-semibold px-4 py-2 rounded-full">
-                  {publicOffers.length} available
+                  {activeOffers.length} available
                 </Badge>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                {publicOffers.map((offer, index) => (
-                  <OfferCard key={offer.id} offer={offer} onApply={handleApplyOffer} index={index} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Private Offers */}
-          {privateOffers.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <Gift className="w-6 h-6 text-purple-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">Exclusive Offers</h2>
-                <Badge className="bg-gradient-to-r from-purple-100/80 to-pink-100/80 text-purple-800 border border-purple-200/50 font-semibold px-4 py-2 rounded-full backdrop-blur-sm">
-                  {privateOffers.length} exclusive
-                </Badge>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                {privateOffers.map((offer, index) => (
-                  <OfferCard
-                    key={offer.id}
-                    offer={offer}
-                    onApply={handleApplyOffer}
-                    index={index + publicOffers.length}
+                {activeOffers.map((offer, index) => (
+                  <OfferCard 
+                    key={offer.id} 
+                    offer={offer} 
+                    onDelete={handleDeleteOffer} 
+                    index={index} 
                   />
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Empty State */}
-          {activeOffers.length === 0 && !showCreateForm && (
+          ) : !showCreateForm && (
             <div className="text-center py-20">
               <div className="w-32 h-32 bg-gradient-to-br from-gray-100/80 to-gray-200/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
                 <Gift className="w-16 h-16 text-gray-400" />

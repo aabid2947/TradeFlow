@@ -1,9 +1,9 @@
+// RecentlyPurchased.jsx
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
 import {
   Search,
-  Filter,
   ChevronDown,
   ChevronUp,
   CreditCard,
@@ -15,79 +15,23 @@ import {
   Download,
   AlertTriangle,
   Loader,
+  Tags, // <-- NEW: Icon for coupon
+  Calendar, // <-- NEW: Icon for plan
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
-
-// Mock data for demonstration since RTK Query setup is not provided in this context
-const mockTransactions = [
-  {
-    _id: "ORD-2025-001",
-    user: { name: "Sarah Johnson", email: "sarah.johnson@email.com" },
-    service: { name: "PAN Card Verification - Premium", price: 299 },
-    timestamp: "2025-01-08T14:30:00Z",
-    status: "completed",
-  },
-  {
-    _id: "ORD-2025-002",
-    user: { name: "Michael Chen", email: "michael.chen@company.com" },
-    service: { name: "Business Verification Suite", price: 599 },
-    timestamp: "2025-01-08T13:15:00Z",
-    status: "processing",
-  },
-  {
-    _id: "ORD-2025-003",
-    user: { name: "Emily Rodriguez", email: "emily.rodriguez@email.com" },
-    service: { name: "Aadhaar Verification - Standard", price: 199 },
-    timestamp: "2025-01-08T12:45:00Z",
-    status: "shipped",
-  },
-  {
-    _id: "ORD-2025-004",
-    user: { name: "David Kumar", email: "david.kumar@tech.com" },
-    service: { name: "Document OCR Service", price: 149 },
-    timestamp: "2025-01-08T11:20:00Z",
-    status: "delivered",
-  },
-  {
-    _id: "ORD-2025-005",
-    user: { name: "Lisa Thompson", email: "lisa.thompson@enterprise.com" },
-    service: { name: "KYC Verification - Enterprise", price: 899 },
-    timestamp: "2025-01-08T10:30:00Z",
-    status: "completed",
-  },
-  {
-    _id: "ORD-2025-006",
-    user: { name: "James Wilson", email: "james.wilson@email.com" },
-    service: { name: "Background Check Service", price: 249 },
-    timestamp: "2025-01-08T09:15:00Z",
-    status: "processing",
-  },
-  {
-    _id: "ORD-2025-007",
-    user: { name: "Amanda Foster", email: "amanda.foster@biometric.com" },
-    service: { name: "Biometric Verification", price: 399 },
-    timestamp: "2025-01-08T08:45:00Z",
-    status: "shipped",
-  },
-  {
-    _id: "ORD-2025-008",
-    user: { name: "Robert Garcia", email: "robert.garcia@business.com" },
-    service: { name: "GST Verification Service", price: 179 },
-    timestamp: "2025-01-08T07:30:00Z",
-    status: "failed", // Added a failed status for demonstration
-  },
-]
+import { generateInvoicePDF } from "./InvoiceGenerator"
 
 const formatCurrency = (amount) => {
+  if (typeof amount !== 'number') return "N/A";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
   }).format(amount)
-}
+};
 
 const formatDate = (date) => {
   if (!date) return "N/A"
@@ -98,24 +42,20 @@ const formatDate = (date) => {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(date))
-}
+};
 
 const getStatusColor = (status) => {
-  switch (status) {
+  switch (status?.toLowerCase()) {
     case "completed":
       return "bg-green-100 text-green-800 border-green-200"
-    case "processing":
+    case "pending":
       return "bg-yellow-100 text-yellow-800 border-yellow-200"
     case "failed":
       return "bg-red-100 text-red-800 border-red-200"
-    case "shipped":
-      return "bg-blue-100 text-blue-800 border-blue-200"
-    case "delivered":
-      return "bg-purple-100 text-purple-800 border-purple-200"
     default:
       return "bg-gray-100 text-gray-800 border-gray-200"
   }
-}
+};
 
 const getAvatarBgColor = (name) => {
   const colors = [
@@ -128,25 +68,23 @@ const getAvatarBgColor = (name) => {
   if (!name) return colors[0]
   const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
   return colors[hash % colors.length]
-}
+};
 
-const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
-  const avatarBg = getAvatarBgColor(buyer.name)
+// UPDATE: The entire BuyerRow component is updated to display more information
+const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice }) => {
+  const avatarBg = getAvatarBgColor(buyer.name);
+  const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
+  // Mobile View
   if (isMobile) {
     return (
-      <Card className="mb-4 overflow-hidden border border-gray-200 hover:border-[#1987BF]/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+      <Card className="mb-4 overflow-hidden border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
         <CardContent className="p-0">
           <div onClick={onToggle} className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
-                >
-                  {buyer.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                <div className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+                  {buyer.name?.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{buyer.name || "N/A"}</h3>
@@ -154,62 +92,55 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-[#1987BF]">{formatCurrency(buyer.amount)}</div>
+                <div className="font-bold text-blue-600">{formatCurrency(buyer.amount)}</div>
                 <Badge className={`text-xs ${getStatusColor(buyer.status)}`}>{buyer.status}</Badge>
               </div>
             </div>
-
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
               <span className="text-sm text-gray-500">{isExpanded ? "Hide details" : "View details"}</span>
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              )}
+              {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
             </div>
           </div>
 
-          {/* Expanded Details */}
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
+          {/* Expanded Details - Mobile */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
             <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-4">
-              <div className="grid grid-cols-1 gap-4">
                 <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-[#1987BF] mt-0.5" />
+                  <User className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-gray-900 mb-1">Contact Information</h4>
                     <p className="text-sm text-gray-600">{buyer.email || "N/A"}</p>
-                    <p className="text-sm text-gray-600">{buyer.phone || "N/A"}</p>
                   </div>
                 </div>
-
-                <div className="flex items-start gap-3">
-                  <CreditCard className="w-5 h-5 text-[#1987BF] mt-0.5" />
+                 <div className="flex items-start gap-3">
+                  <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Payment Method</h4>
-                    <p className="text-sm text-gray-600">{buyer.paymentMethod || "N/A"}</p>
+                    <h4 className="font-medium text-gray-900 mb-1">Pricing Details</h4>
+                     <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
+                    {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
+                    {buyer.couponCode && <p className="text-sm text-gray-600">Coupon: <Badge variant="secondary">{buyer.couponCode}</Badge></p>}
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#1987BF] mt-0.5" />
+                  <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Order ID & Date</h4>
-                    <p className="text-sm text-gray-600">{buyer.orderId}</p>
-                    <p className="text-sm text-gray-600">{formatDate(buyer.purchaseDate)}</p>
+                    <h4 className="font-medium text-gray-900 mb-1">Order Details</h4>
+                    <p className="text-sm text-gray-600 break-all">ID: {buyer.orderId}</p>
+                    <p className="text-sm text-gray-600">Plan: <Badge variant="outline">{toTitleCase(buyer.plan)}</Badge></p>
+                    <p className="text-sm text-gray-600">Date: {formatDate(buyer.purchaseDate)}</p>
+                    <p className="text-sm text-gray-600">Payment via: {buyer.paymentMethod || "N/A"}</p>
                   </div>
                 </div>
-              </div>
-
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Order
-                </Button>
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownloadInvoice(buyer.originalTransactionData);
+                  }}
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Invoice
                 </Button>
@@ -218,87 +149,88 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
+  // Desktop View
   return (
     <>
-      <tr
-        onClick={onToggle}
-        className="group cursor-pointer hover:bg-blue-50/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border-b border-gray-100"
-      >
+      <tr onClick={onToggle} className="group cursor-pointer hover:bg-blue-50/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border-b border-gray-100">
         <td className="px-6 py-4">
           <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
-            >
-              {buyer.name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")}
+            <div className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              {buyer.name?.split(" ").map((n) => n[0]).join("")}
             </div>
             <div>
               <div className="font-semibold text-gray-900">{buyer.name || "N/A"}</div>
-              <div className="font-medium text-gray-900">{buyer.productName}</div>
+              <div className="font-medium text-gray-600">{buyer.productName}</div>
             </div>
           </div>
         </td>
         <td className="px-6 py-4">
-          <div className="font-bold text-[#1987BF]">{formatCurrency(buyer.amount)}</div>
+          <Badge variant="outline" className="capitalize">{buyer.plan}</Badge>
+        </td>
+        <td className="px-6 py-4">
+          <div className="font-bold text-blue-600">{formatCurrency(buyer.amount)}</div>
         </td>
         <td className="px-6 py-4">
           <Badge className={`${getStatusColor(buyer.status)}`}>{buyer.status}</Badge>
         </td>
         <td className="px-6 py-4">
           <div className="flex items-center justify-center">
-            {isExpanded ? (
-              <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-[#1987BF] transition-colors" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#1987BF] transition-colors" />
-            )}
+            {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" /> : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />}
           </div>
         </td>
       </tr>
 
-      {/* Expanded Row Details */}
+      {/* Expanded Row Details - Desktop */}
       {isExpanded && (
         <tr className="bg-gray-50">
-          <td colSpan={4} className="px-6 py-0">
+          <td colSpan={5} className="px-6 py-0">
             <div className="animate-in slide-in-from-top-2 duration-300">
-              <div className="py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-[#1987BF] mt-0.5" />
+                  <User className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Contact Information</h4>
-                    <p className="text-sm text-gray-600 mb-1">{buyer.email || "N/A"}</p>
-                    <p className="text-sm text-gray-600">{buyer.phone || "N/A"}</p>
+                    <p className="text-sm text-gray-600">{buyer.email || "N/A"}</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
-                  <CreditCard className="w-5 h-5 text-[#1987BF] mt-0.5" />
+                  <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Payment Method</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">Order Details</h4>
+                    <p className="text-sm text-gray-600 break-all">ID: {buyer.orderId}</p>
+                    <p className="text-sm text-gray-600">Date: {formatDate(buyer.purchaseDate)}</p>
+                  </div>
+                </div>
+                 <div className="flex items-start gap-3">
+                  <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Financials</h4>
+                    <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
+                    {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
+                    <p className="text-sm text-gray-600 font-semibold">Final: {formatCurrency(buyer.amount)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CreditCard className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Payment</h4>
                     <p className="text-sm text-gray-600">{buyer.paymentMethod || "N/A"}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#1987BF] mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Order ID & Date</h4>
-                    <p className="text-sm text-gray-600">{buyer.orderId}</p>
-                    <p className="text-sm text-gray-600">{formatDate(buyer.purchaseDate)}</p>
+                    {buyer.couponCode && <p className="text-sm text-gray-600 mt-1">Coupon: <Badge variant="secondary">{buyer.couponCode}</Badge></p>}
                   </div>
                 </div>
               </div>
-
               <div className="flex gap-2 pb-6">
-                <Button size="sm" variant="outline">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Full Order
-                </Button>
-                <Button size="sm" variant="outline">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownloadInvoice(buyer.originalTransactionData);
+                  }}
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Download Invoice
                 </Button>
@@ -308,89 +240,92 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
         </tr>
       )}
     </>
-  )
-}
+  );
+};
+
 
 export default function RecentlyPurchased() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [expandedRows, setExpandedRows] = useState(new Set())
-  const [isMobile, setIsMobile] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedRows, setExpandedRows] = useState(new Set());
+  const [isMobile, setIsMobile] = useState(false);
 
- 
-  const {
-    data: transactionsResponse,
-    isLoading,
-    isError,
-    error,
-  } = useGetAllTransactionsQuery();
+  const { data: transactionsResponse, isLoading, isError, error } = useGetAllTransactionsQuery();
 
-  // Mock data for demonstration purposes
-  // const transactionsResponse = { data: mockTransactions }
-  // const isLoading = false
-  // const isError = false
-  // const error = null
-
+  // UPDATE: The data mapping is significantly improved to be more accurate and detailed
   const buyers = useMemo(() => {
-    if (!transactionsResponse?.data) {
-      return []
+    if (!transactionsResponse?.data) return [];
+    
+    const toTitleCase = (str) => {
+      if (!str) return '';
+      return str.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
     }
-    return transactionsResponse.data.map((transaction) => ({
-      id: transaction._id,
-      name: transaction.user?.name || "Unknown User",
-      orderId: transaction._id,
-      productName: transaction.service?.name || "Unknown Service",
-      amount: transaction.service?.price || 0,
-      purchaseDate: transaction.timestamp,
-      email: transaction.user?.email || "N/A",
-      phone: "N/A", 
-      paymentMethod: "Card",
-      shippingAddress: {
-        street: "Digital Service / Not Applicable",
-        city: "N/A",
-        state: "N/A",
-        zipCode: "N/A",
-        country: "N/A",
-      },
-      status: transaction.status,
-    }))
-  }, []) 
+
+    return transactionsResponse.data
+      .slice()
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by most recent first
+      .map((transaction) => ({
+        id: transaction._id,
+        name: transaction.user?.name || "Unknown User",
+        orderId: transaction._id,
+        // FIX: Product name now correctly uses category and plan
+        productName: toTitleCase(transaction.category) || "N/A",
+        plan: transaction.plan || "N/A",
+        // UPDATE: Added more financial details
+        amount: transaction.amount,
+        originalAmount: transaction.originalAmount,
+        discountApplied: transaction.discountApplied || 0,
+        couponCode: transaction.couponCode,
+        purchaseDate: transaction.createdAt,
+        email: transaction.user?.email || "N/A",
+        paymentMethod: transaction.razorpay_payment_id ? "Razorpay" : "Free/Promo",
+        status: transaction.status,
+        originalTransactionData: transaction,
+      }));
+  }, [transactionsResponse]);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const filteredBuyers = useMemo(() => {
+    if (!buyers) return [];
     return buyers.filter(
       (buyer) =>
         buyer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        buyer.productName.toLowerCase().includes(searchTerm.toLowerCase()), 
-    )
-  }, [searchTerm, buyers])
+        buyer.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        buyer.orderId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, buyers]);
 
   const toggleRow = (buyerId) => {
-    const newExpanded = new Set(expandedRows)
+    const newExpanded = new Set(expandedRows);
     if (newExpanded.has(buyerId)) {
-      newExpanded.delete(buyerId)
+      newExpanded.delete(buyerId);
     } else {
-      newExpanded.add(buyerId)
+      newExpanded.add(buyerId);
     }
-    setExpandedRows(newExpanded)
-  }
+    setExpandedRows(newExpanded);
+  };
 
-  const totalRevenue = filteredBuyers.reduce((sum, buyer) => sum + buyer.amount, 0)
+  const handleDownloadInvoice = (transaction) => {
+    generateInvoicePDF(transaction);
+  };
+
+  const totalRevenue = useMemo(() => {
+      return buyers.reduce((sum, buyer) => sum + (buyer.amount || 0), 0);
+  }, [buyers]);
 
   const renderContent = () => {
     if (isLoading) {
       return (
         <div className="text-center py-12 flex flex-col items-center">
-          <Loader className="w-12 h-12 text-[#1987BF] animate-spin mb-4" />
+          <Loader className="w-12 h-12 text-blue-600 animate-spin mb-4" />
           <h3 className="text-lg font-medium text-gray-900">Loading Transactions...</h3>
-          <p className="text-gray-600">Please wait a moment.</p>
         </div>
-      )
+      );
     }
     if (isError) {
       return (
@@ -399,21 +334,19 @@ export default function RecentlyPurchased() {
           <h3 className="text-lg font-medium mb-2">Failed to Load Transactions</h3>
           <p className="text-sm">{error?.data?.message || "An unexpected error occurred."}</p>
         </div>
-      )
+      );
     }
-
     if (filteredBuyers.length === 0) {
       return (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Search className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No buyers found</h3>
-          <p className="text-gray-600">Try adjusting your search terms or filters</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Buyers Found</h3>
+          <p className="text-gray-600">{searchTerm ? "Try adjusting your search terms." : "No transactions have been recorded yet."}</p>
         </div>
-      )
+      );
     }
-
     return isMobile ? (
       <div className="p-4">
         {filteredBuyers.map((buyer) => (
@@ -423,6 +356,7 @@ export default function RecentlyPurchased() {
             isExpanded={expandedRows.has(buyer.id)}
             onToggle={() => toggleRow(buyer.id)}
             isMobile={true}
+            onDownloadInvoice={handleDownloadInvoice}
           />
         ))}
       </div>
@@ -432,7 +366,8 @@ export default function RecentlyPurchased() {
           <thead className="bg-gray-50/50 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Buyer & Product</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Plan</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount Paid</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Details</th>
             </tr>
@@ -445,104 +380,79 @@ export default function RecentlyPurchased() {
                 isExpanded={expandedRows.has(buyer.id)}
                 onToggle={() => toggleRow(buyer.id)}
                 isMobile={false}
+                onDownloadInvoice={handleDownloadInvoice}
               />
             ))}
           </tbody>
         </table>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Recent Purchases</h1>
-          <p className="text-gray-600">Track your latest sales and customer information</p>
+          <p className="text-gray-600">Track your latest sales and customer information.</p>
         </div>
-
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#1987BF]/10 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-[#1987BF]" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                  <User className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Buyers</p>
-                  <p className="text-2xl font-bold text-gray-900">{buyers.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Package className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Avg. Order Value</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalRevenue / buyers.length || 0)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <DollarSign className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Total Revenue</p>
+                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <User className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Total Buyers</p>
+                        <p className="text-2xl font-bold text-gray-900">{buyers.length}</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <Package className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Avg. Order Value</p>
+                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(buyers.length > 0 ? totalRevenue / buyers.length : 0)}</p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
-
-        {/* Search and Filters */}
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Search by name or product..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 bg-white border-gray-200 focus:border-[#1987BF] focus:ring-[#1987BF]/20 rounded-xl"
-                />
-              </div>
-              {/* <Button
-                variant="outline"
-                className="h-12 px-6 border-gray-200 hover:border-[#1987BF] hover:text-[#1987BF] rounded-xl bg-transparent"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button> */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                placeholder="Search by name, product, or order ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
+              />
             </div>
           </CardContent>
         </Card>
-
-        {/* Buyers List */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
-          <CardHeader className=" border-b border-gray-100">
+        <Card className="bg-white/80 backdrop-blur-sm p-2 md:p-4 border-0 shadow-lg rounded-2xl overflow-hidden">
+          <CardHeader className="border-b border-gray-100">
             <CardTitle className="text-xl font-semibold text-gray-900">
-              Recent Purchases ({filteredBuyers.length})
+              Transactions ({filteredBuyers.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">{renderContent()}</CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

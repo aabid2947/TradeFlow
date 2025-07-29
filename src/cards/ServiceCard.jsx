@@ -2,7 +2,7 @@ import { Heart, Shield, Clock, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 export default function ServiceCard({
   imageSrc,
@@ -12,28 +12,41 @@ export default function ServiceCard({
   verificationCount,
   durationDays,
   price,
-  buttonState, // "purchased" | "subscribe"
-  serviceId,
-  onSubscribeClick, // Accept the handler prop
+  buttonType, // "purchase" | "verify"
+  service,
+  onButtonClick,
 }) {
-  const isPurchased = buttonState === "purchased";
+
+  const isPurchased = buttonType === "verify";
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdmin = location.pathname.includes('admin');
 
   const handleCardClick = () => {
-    navigate(`/user/service/${serviceId}`);
+    // Only navigate if the user is not an admin.
+    console.log(isAdmin)
+    if (!isAdmin) {
+      navigate(`/user/service/${encodeURIComponent(service.category)}`);
+    }
+    // If the user is an admin, clicking the card does nothing.
   };
 
-  const handleSubscribeButton = (e) => {
+  const handleActionButtonClick = (e) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!isPurchased && onSubscribeClick) {
-      onSubscribeClick(serviceId);
+    if (onButtonClick) {
+      onButtonClick(service);
     }
   };
 
+  // Conditionally set the className for the cursor style
+  const cardClassName = `overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2 ${
+    !isAdmin ? 'cursor-pointer' : 'cursor-default'
+  }`;
+
   return (
-    <Card onClick={handleCardClick} className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2 cursor-pointer">
+    <Card onClick={handleCardClick} className={cardClassName}>
       <div className="relative">
         <div className="aspect-[4/2.8] overflow-hidden">
           <img
@@ -73,7 +86,13 @@ export default function ServiceCard({
         </div>
         
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="text-xl font-bold text-orange-500">₹ {price}</div>
+          <div>
+            {isPurchased ? (
+              <Badge variant="outline" className="text-green-600 border-green-600">Subscribed</Badge>
+            ) : (
+              <div className="text-xl font-bold text-orange-500">₹ {price}</div>
+            )}
+          </div>
           <Button
             size="sm"
             className={`${
@@ -81,11 +100,10 @@ export default function ServiceCard({
                 ? "bg-green-500 hover:bg-green-600"
                 : "bg-blue-500 hover:bg-blue-600"
             } text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-1.5`}
-            //  Attach the new handler 
-            onClick={handleSubscribeButton}
+            onClick={handleActionButtonClick}
           >
             {isPurchased && <Check className="w-4 h-4" />}
-            {isPurchased ? "Purchased" : "Subscribe"}
+            {isPurchased ? "Verify" : "Purchase"}
           </Button>
         </div>
       </CardContent>

@@ -28,6 +28,7 @@ const navigationItems = [
   { title: "Dashboard", icon: Home, key: "dashboard" },
   { title: "Analytics", icon: BarChart2, key: "analytics" },
   { title: "Clients", icon: Users, key: "clients" },
+  { title: "Orders", icon: Users, key: "orders" },
   { title: "Coupon", icon: ClipboardList, key: "coupons" },
   { title: "Services", icon: Info, key: "services" },
   { title: "Register", icon: MessageCircle, key: "register" },
@@ -134,7 +135,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
       {/* Overlay for mobile view. */}
       {isOpen && (
         <div
-          className={`fixed inset-0 modal-overlay bg-black bg-opacity-30 backdrop-blur-sm z-30 lg:hidden transition-opacity ${
+          className={`fixed inset-0 modal-overlay bg-transparent blur-bg-sm bg-opacity-30 backdrop-blur-sm z-30 lg:hidden transition-opacity ${
             isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
           onClick={() => setIsOpen(false)}

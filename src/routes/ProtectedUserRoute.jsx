@@ -1,5 +1,5 @@
 import UserDashBoard from "@/user/UserDashBoard";
-import ServicePage from "@/user/ServicePage"; // The detail page is now a full page
+import ServicePage from "@/user/ServicePage";
 import ErrorPage from "@/pages/ErrorPage";
 
 export const protectedUserRoutes = [
@@ -11,8 +11,8 @@ export const protectedUserRoutes = [
   },
    
   {
-    // This route is for displaying the details of a single service.
-    path: '/user/service/:serviceId',
+    // This route is now based on the category name passed in the URL.
+    path: '/user/service/:category',
     element: <ServicePage />,
     errorElement: <ErrorPage />
   },

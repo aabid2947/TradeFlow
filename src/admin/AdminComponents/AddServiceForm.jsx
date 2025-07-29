@@ -41,7 +41,10 @@ const defaultServiceState = {
     description: '',
     category:'',
     price: 0,
-    combo_price: 0,
+    combo_price: {
+        monthly: 0,
+        yearly: 0,
+    },
     imageUrl: '',
     endpoint: '',
     apiType: 'json',
@@ -68,7 +71,16 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
 
     useEffect(() => {
         if (initialData) {
-            setService(initialData);
+            // Ensure combo_price is correctly structured, even if missing from initialData
+            const data = {
+                ...defaultServiceState,
+                ...initialData,
+                combo_price: {
+                    monthly: initialData.combo_price?.monthly || 0,
+                    yearly: initialData.combo_price?.yearly || 0,
+                }
+            };
+            setService(data);
         } else {
             setService(defaultServiceState);
         }
@@ -77,6 +89,18 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
     const handleChange = (e) => {
         const { name, value } = e.target;
         setService(prev => ({ ...prev, [name]: value }));
+    };
+
+    // New handler for nested combo_price object
+    const handleComboPriceChange = (e) => {
+        const { name, value } = e.target; // name will be 'monthly' or 'yearly'
+        setService(prev => ({
+            ...prev,
+            combo_price: {
+                ...prev.combo_price,
+                [name]: value ? parseFloat(value) : 0,
+            }
+        }));
     };
 
     const handleFieldChange = (e, index, fieldType) => {
@@ -155,8 +179,11 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Service Name" name="name" value={service.name} onChange={handleChange} required />
                                 <Input label="Service Key" name="service_key" value={service.service_key} onChange={handleChange} required />
                                 <Input label="Price" name="price" type="number" value={service.price} onChange={handleChange} required />
-                                <Input label="Combo Price" name="combo_price" type="number" value={service.combo_price} onChange={handleChange} required />
-
+                                
+                                {/* Updated Combo Price Inputs */}
+                                <Input label="Monthly Combo Price" name="monthly" type="number" value={service.combo_price.monthly} onChange={handleComboPriceChange} required />
+                                <Input label="Yearly Combo Price" name="yearly" type="number" value={service.combo_price.yearly} onChange={handleComboPriceChange} required />
+                                
                                 <Input label="Image URL" name="imageUrl" value={service.imageUrl} onChange={handleChange} />
                                 <Select label="Category" name="category" value={service.category} onChange={handleChange} required>
                                     <option value="" disabled>Select a category</option>

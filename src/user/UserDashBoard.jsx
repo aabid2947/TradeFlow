@@ -11,13 +11,16 @@ import PurchaseHistory from "./userComponents/PurchaseHistory";
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
 import ReviewDashboard from "./userComponents/ReviewSection";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/features/auth/authSlice";
+import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
 
-const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions) => {
+const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions, userInfo) => {
   switch (activeView) {
     case "dashboard":
       return <DashboardAnalytics transactions={transactions} isLoading={isLoadingTransactions} />;
     case "services":
-      return <ServiceCardsViewer services={services} isLoading={isLoadingServices} />;
+      return <ServiceCardsViewer services={services} isLoading={isLoadingServices} userInfo={userInfo} />;
     case "history":
       return <PurchaseHistory/>
     case "review":
@@ -33,6 +36,8 @@ export default function UserDashBoard() {
   const [categoryFilter, setCategoryFilter] = useState("All Services");
   const location = useLocation();
 
+  const userInfo = useSelector(selectCurrentUser);
+  // const {refetch:refetchUser}=useGetProfileQuery();
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
   const services = servicesResponse?.data || [];
   
@@ -45,6 +50,8 @@ export default function UserDashBoard() {
     }
   }, [location.state]);
 
+ 
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -54,7 +61,6 @@ export default function UserDashBoard() {
       }
     };
     window.addEventListener('resize', handleResize);
-    // Initial check
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -110,19 +116,19 @@ export default function UserDashBoard() {
         onCategorySelect={handleCategorySelect}
       />
 
-      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:pl-72' : 'md:pl-20'}`}>
+      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-60' : 'md:pl-20'}`}>
         <DashboardHeader setSidebarOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6">
-          <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-hidden mt-16">
             <div
               key={activeView + categoryFilter}
               className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
             >
-              {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions)}
+              {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions, userInfo)}
             </div>
           </main>
           {activeView === "dashboard" && (
-            <aside className="hidden lg:block w-full lg:w-64 lg:max-w-xs flex-shrink-0 animate-in slide-in-from-right-5 fade-in-0 duration-500">
+            <aside className="hidden lg:block w-full lg:w-72 lg:max-w-xs flex-shrink-0 animate-in slide-in-from-right-5 fade-in-0 duration-500 mt-16">
               <Profile />
             </aside>
           )}

@@ -17,6 +17,7 @@ import DashboardOverview from "./AdminComponents/DashBoardOverview";
 import DashboardCharts from "./AdminComponents/DashBoardCharts"; 
 import RegisterAdmin from "./AdminComponents/RegisterAdmin";
 import Feedback from "./AdminComponents/Feedback"
+import UsersDisplay from "./AdminComponents/AllUser";
 
 /**
  * The DashboardHome component  receives users and transactions
@@ -39,6 +40,8 @@ const renderContent = (activeView, users, transactions, isLoading) => {
     case "analytics":
       return <Analytics transactions={transactions} isLoading={isLoading} />;
     case "clients":
+      return <UsersDisplay/>
+    case "orders":
       return <RecentlyPurchased />;
     case "coupons":
       return <CouponsOffers />;

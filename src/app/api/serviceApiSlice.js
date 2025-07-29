@@ -1,4 +1,3 @@
-
 import { apiSlice } from './apiSlice';
 
 const SERVICES_URL = '/services';
@@ -28,7 +27,6 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
     }),
     createService: builder.mutation({
       query: (serviceData) => ({
-        // The backend expects an array of services for bulk creation
         url: `${SERVICES_URL}/create`,
         method: 'POST',
         body: serviceData, 
@@ -46,15 +44,14 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
         { type: 'Service', id: 'LIST' },
       ],
     }),
+    // ** MODIFIED ** to accept serviceKey
     deleteService: builder.mutation({
-      query: (serviceId) => ({
-        url: `${SERVICES_URL}/${serviceId}`,
+      query: (serviceKey) => ({ // Expects the unique service_key
+        url: `${SERVICES_URL}/${serviceKey}`, // Uses the key in the URL as per backend
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, serviceId) => [
-        { type: 'Service', id: serviceId },
-        { type: 'Service', id: 'LIST' },
-      ],
+      // Invalidates the whole list as we may not have the _id here easily
+      invalidatesTags: [{ type: 'Service', id: 'LIST' }],
     }),
   }),
 });
