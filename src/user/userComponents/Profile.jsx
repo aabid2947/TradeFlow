@@ -11,9 +11,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    // Return "Never" for promotional plans that don't expire
+    if (dateString === 'Never') return 'Never';
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
 export default function Profile() {
@@ -89,12 +92,27 @@ export default function Profile() {
     
     const tabs = [
         { id: 'overview', label: 'Overview', icon: User },
-        { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+        { id: 'subscriptions', label: 'Entitlements', icon: CreditCard }, // Renamed for clarity
         { id: 'services', label: 'Services Used', icon: Activity },
         { id: 'security', label: 'Security', icon: Shield }
     ];
 
-    const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U';
+    // --- NEW: Combine paid and promoted subscriptions for a unified view ---
+    const paidSubCategories = user?.activeSubscriptions?.map(sub => sub.category) || [];
+    
+    const promotedSubs = user?.promotedCategories
+        ?.filter(cat => !paidSubCategories.includes(cat)) // Exclude if already covered by a paid sub
+        .map(cat => ({
+            category: cat,
+            planType: 'Promotional',
+            expiresAt: 'Never',
+            type: 'promoted' // Add a type for styling
+        })) || [];
+        
+    const paidSubs = user?.activeSubscriptions?.map(sub => ({...sub, type: 'paid'})) || [];
+
+    const combinedSubscriptions = [...paidSubs, ...promotedSubs];
+    // --- END NEW ---
 
     return (
         <>
@@ -152,6 +170,7 @@ export default function Profile() {
                                     <div className="flex justify-between text-sm"><span className="text-gray-600">User ID:</span><span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{user?._id}</span></div>
                                     <div className="flex justify-between text-sm"><span className="text-gray-600">Joined On:</span><span className="text-gray-700">{formatDate(user?.createdAt)}</span></div>
                                 </div>
+                                {/* This section remains to give a quick overview of special promotions */}
                                 {user?.promotedCategories?.length > 0 && (
                                     <div className="md:col-span-2 space-y-3">
                                         <h4 className="font-semibold text-gray-800 flex items-center gap-2"><Award className="w-4 h-4 text-yellow-600"/>Promoted Categories</h4>
@@ -162,17 +181,30 @@ export default function Profile() {
                                 )}
                             </div>
                         )}
+                        {/* UPDATED SUBSCRIPTIONS TAB */}
                         {activeTab === 'subscriptions' && (
                             <div className="space-y-4">
-                                {user?.activeSubscriptions?.length > 0 ? user.activeSubscriptions.map(sub => (
-                                    <div key={sub.category} className="p-4 rounded-lg border bg-green-50 border-green-200">
-                                        <div className="flex justify-between items-center">
-                                            <p className="font-semibold text-green-800">{sub.category.replace(/_/g, " ")}</p>
-                                            <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-1 rounded-full">{sub.plan}</span>
+                                {combinedSubscriptions.length > 0 ? combinedSubscriptions.map(sub => (
+                                    <div key={sub.category} className={`p-4 rounded-lg border flex flex-col sm:flex-row justify-between sm:items-center gap-2
+                                        ${sub.type === 'paid' ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                                        <div className="flex items-center gap-3">
+                                            {sub.type === 'paid' 
+                                                ? <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0"/> 
+                                                : <Award className="w-6 h-6 text-amber-600 flex-shrink-0"/>}
+                                            <div>
+                                                <p className={`font-semibold ${sub.type === 'paid' ? 'text-green-900' : 'text-amber-900'}`}>
+                                                    {sub.category.replace(/_/g, " ")}
+                                                </p>
+                                                <p className={`text-xs ${sub.type === 'paid' ? 'text-green-700' : 'text-amber-700'}`}>
+                                                    Expires on: {formatDate(sub.expiresAt)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-green-600 mt-1">Expires on: {formatDate(sub.expiresAt)}</p>
+                                        <Badge variant="secondary" className={`capitalize ${sub.type === 'paid' ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'}`}>
+                                            {sub.planType} Plan
+                                        </Badge>
                                     </div>
-                                )) : <p className="text-center text-gray-500 py-8">No active subscriptions.</p>}
+                                )) : <p className="text-center text-gray-500 py-8">No active or promotional subscriptions.</p>}
                             </div>
                         )}
                         {activeTab === 'services' && (

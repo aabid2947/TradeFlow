@@ -15,7 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-
+import userPic from "@/assets/UserImage.svg"
 import { useSelector } from "react-redux"
 import { selectCurrentUser } from "../../features/auth/authSlice"
 
@@ -28,7 +28,6 @@ const navigationItems = [
   { title: "Services", icon: Info, key: "services" },
   { title: "Register Admin", icon: Users, key: "register" }, // Renamed for clarity
   { title: "Feedback", icon: MessageCircle, key: "feedback" },
-  { title: "My Profile", icon: ProfileIcon, key: "profile" }, // Added Profile
 ]
 
 export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, onNavigate }) {
@@ -95,12 +94,12 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="p-4 border-t border-gray-700">
+            <SidebarFooter className="p-4  border-t border-gray-700 absolute bottom-0 w-full">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <Avatar className="w-10 h-10">
-                      <AvatarImage src={user?.avatar || "/avatar-placeholder.png"} alt={user?.name} />
+                      <AvatarImage src={userPic} alt={user?.name} />
                       <AvatarFallback className="bg-gray-600 text-white text-sm">
                         {user?.name?.charAt(0)?.toUpperCase() || "?"}
                       </AvatarFallback>
