@@ -4,7 +4,7 @@ const WhatsAppIcon = () => {
   return (
     <a
       href="https://wa.me/919560652708"
-      className="fixed bottom-10 right-10 z-50 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 hover:scale-110 transition-all duration-300 animate-bounce"
+      className="fixed bottom-10 left-10 z-50 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 hover:scale-110 transition-all duration-300 animate-bounce"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
@@ -12,7 +12,7 @@ const WhatsAppIcon = () => {
         animation: 'bounce 2s infinite'
       }}
     >
-      {/* Proper WhatsApp SVG Icon */}
+      {/* WhatsApp SVG Icon */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="h-8 w-8"

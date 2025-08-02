@@ -3,44 +3,47 @@ import { protectedAdminRoutes } from './ProtectedAdminRoutes';
 import { protectedUserRoutes } from './ProtectedUserRoute';
 import ErrorPage from "../pages/ErrorPage";
 import ProtectedRoute from './ProtectedRoutes';
-import {PublicRoute,publicRoutes} from './PublicRoutes';
+import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
 import usePageTracking from '../hooks/usePageTracking';
+import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
 
 const AppRoutes = () => {
   usePageTracking();
+  
+  const authPaths = ['/login', '/signup', '/admin-login', '/reset-password'];
+  const generalPublicRoutes = publicRoutes.filter(r => !authPaths.includes(r.path));
+  const authRoutes = publicRoutes.filter(r => authPaths.includes(r.path));
+
   return (
-    <Routes>
- 
-      {/* Not accessible to logged-in users */}
-      <Route element={<PublicRoute />}>
-      <Route element={<PublicLayout />}>
-        {publicRoutes.map((route, idx) => (
-          <Route key={`public-${idx}`} path={route.path} element={route.element} />
-        ))}
+    <>
+      <FirebaseAuthListener /> 
+      
+      <Routes>
+        <Route element={<RedirectIfLoggedIn />}>
+          {authRoutes.map((route, idx) => (
+            <Route key={`auth-${idx}`} path={route.path} element={route.element} />
+          ))}
         </Route>
-      </Route>
-
-
-      {/* Accessible to logged-in users with roles 'user' or 'admin' */}
-      <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-        {protectedUserRoutes.map((route, idx) => (
-          <Route key={`user-${idx}`} path={route.path} element={route.element} />
-        ))}
-      </Route>
-
-      {/* Accessible only to logged-in users with the 'admin' role */}
-      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-        {protectedAdminRoutes.map((route, idx) => (
-          <Route key={`admin-${idx}`} path={route.path} element={route.element} />
-        ))}
-      </Route>
-
-      {/* Fallback Routes */}
-      <Route path="/unauthorized" element={<ErrorPage />} />
-      <Route path="*" element={<ErrorPage />} />
-    </Routes>
+        <Route element={<PublicLayout />}>
+          {generalPublicRoutes.map((route, idx) => (
+            <Route key={`public-${idx}`} path={route.path} element={route.element} />
+          ))}
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+          {protectedUserRoutes.map((route, idx) => (
+            <Route key={`user-${idx}`} path={route.path} element={route.element} />
+          ))}
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          {protectedAdminRoutes.map((route, idx) => (
+            <Route key={`admin-${idx}`} path={route.path} element={route.element} />
+          ))}
+        </Route>
+        <Route path="/unauthorized" element={<ErrorPage />} />
+      </Routes>
+    </>
   );
 };
 
-export default AppRoutes;
+export default AppRoutes

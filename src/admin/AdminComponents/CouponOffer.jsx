@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Trash2, Loader2, AlertTriangle } from "lucide-react"
+import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Trash2, Loader2, AlertTriangle, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useGetAllCouponsQuery, useCreateCouponMutation, useDeleteCouponMutation } from "@/app/api/couponApiSlice" // <-- IMPORT API HOOKS
+import { useGetAllCouponsQuery, useCreateCouponMutation, useDeleteCouponMutation, useUpdateCouponMutation } from "@/app/api/couponApiSlice" // <-- IMPORT API HOOKS
 import { toast } from 'react-hot-toast';
 
 
@@ -70,7 +70,7 @@ const CountdownTimer = ({ expiryDate }) => {
   )
 }
 
-const OfferCard = ({ offer, onDelete, index }) => {
+const OfferCard = ({ offer, onDelete, onEdit, index }) => {
   const [copied, setCopied] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const cardRef = useRef(null)
@@ -116,7 +116,15 @@ const OfferCard = ({ offer, onDelete, index }) => {
         <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-60" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-1 right-4 z-20 flex gap-2">
+           <Button
+            onClick={() => onEdit(offer)}
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0 hover:bg-blue-100/80 rounded-full transition-all duration-200 hover:scale-110"
+          >
+            <Pencil className="w-4 h-4 text-blue-500" />
+          </Button>
           <Button
             onClick={() => onDelete(offer.id)}
             variant="ghost"
@@ -208,7 +216,8 @@ const OfferCard = ({ offer, onDelete, index }) => {
   )
 }
 
-const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
+const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
+  const isEditing = !!initialData;
   const [formData, setFormData] = useState({
     description: "",
     code: "",
@@ -220,6 +229,20 @@ const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
   })
 
   const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    if (isEditing) {
+      setFormData({
+        description: initialData.title,
+        code: initialData.code,
+        discountType: initialData.discountType,
+        discountValue: initialData.discountValue.toString(),
+        expiryDate: new Date(initialData.expiryDate).toISOString().slice(0, 16),
+        maxUses: initialData.maxUsage?.toString() || "",
+        minAmount: initialData.minOrderValue?.toString() || "",
+      });
+    }
+  }, [initialData, isEditing]);
 
   const validateForm = ()=> {
     const newErrors= {}
@@ -248,7 +271,11 @@ const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
         ...(formData.maxUses && { maxUses: Number.parseInt(formData.maxUses) }),
         ...(formData.minAmount && { minAmount: Number.parseFloat(formData.minAmount) }),
       }
-      onSave(dataToSubmit)
+      if (isEditing) {
+        onSave({ id: initialData.id, ...dataToSubmit });
+      } else {
+        onSave(dataToSubmit);
+      }
     }
   }
 
@@ -269,9 +296,9 @@ const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF] to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <Plus className="w-6 h-6 text-white" />
+              {isEditing ? <Pencil className="w-6 h-6 text-white" /> : <Plus className="w-6 h-6 text-white" />}
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Create New Offer</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">{isEditing ? 'Update Offer' : 'Create New Offer'}</CardTitle>
           </div>
           <Button
             onClick={onCancel}
@@ -403,7 +430,7 @@ const CreateOfferCard = ({ onSave, onCancel, isLoading }) => {
             ) : (
                 <Gift className="w-5 h-5 mr-2" />
             )}
-            {isLoading ? 'Creating...' : 'Create Offer'}
+            {isLoading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Offer' : 'Create Offer')}
           </Button>
           <Button
             onClick={onCancel}
@@ -438,14 +465,16 @@ const LoadingSkeleton = () => (
 
 
 export default function CouponsOffers() {
-  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
   
   // RTK Query Hooks
   const { data: offersData, isLoading, isError, error } = useGetAllCouponsQuery();
   const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
+  const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponMutation();
   const [deleteCoupon] = useDeleteCouponMutation();
 
-  const handleSaveOffer = async (newOfferData) => {
+  const handleCreateOffer = async (newOfferData) => {
     try {
         await createCoupon(newOfferData).unwrap();
         toast.success("Offer created successfully!");
@@ -455,6 +484,17 @@ export default function CouponsOffers() {
         console.error("Failed to create coupon:", err);
     }
   }
+  
+  const handleUpdateOffer = async (updatedOfferData) => {
+    try {
+        await updateCoupon(updatedOfferData).unwrap();
+        toast.success("Offer updated successfully!");
+        setEditingOffer(null);
+    } catch (err) {
+        toast.error(err?.data?.message || "Failed to update offer.");
+        console.error("Failed to update coupon:", err);
+    }
+  };
 
   const handleDeleteOffer = async (couponId) => {
     if (window.confirm("Are you sure you want to delete this offer? This action cannot be undone.")) {
@@ -466,6 +506,16 @@ export default function CouponsOffers() {
         console.error("Failed to delete coupon:", err);
       }
     }
+  }
+  
+  const handleStartEdit = (offer) => {
+      setEditingOffer(offer);
+      setShowCreateForm(false); 
+  }
+
+  const handleCancelEdit = () => {
+      setEditingOffer(null);
+      setShowCreateForm(false);
   }
 
   // Map API data to the format expected by the component
@@ -498,7 +548,7 @@ export default function CouponsOffers() {
               </p>
             </div>
             <Button
-              onClick={() => setShowCreateForm(true)}
+              onClick={() => { setShowCreateForm(true); setEditingOffer(null); }}
               className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105 whitespace-nowrap"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -506,13 +556,14 @@ export default function CouponsOffers() {
             </Button>
           </div>
 
-          {/* Create Offer Form */}
-          {showCreateForm && (
+          {/* Create or Update Offer Form */}
+          {(showCreateForm || editingOffer) && (
             <div className="mb-12">
-              <CreateOfferCard 
-                onSave={handleSaveOffer} 
-                onCancel={() => setShowCreateForm(false)} 
-                isLoading={isCreating}
+              <OfferFormCard 
+                onSave={editingOffer ? handleUpdateOffer : handleCreateOffer} 
+                onCancel={handleCancelEdit} 
+                isLoading={isCreating || isUpdating}
+                initialData={editingOffer}
               />
             </div>
           )}
@@ -547,13 +598,14 @@ export default function CouponsOffers() {
                   <OfferCard 
                     key={offer.id} 
                     offer={offer} 
-                    onDelete={handleDeleteOffer} 
+                    onDelete={handleDeleteOffer}
+                    onEdit={handleStartEdit}
                     index={index} 
                   />
                 ))}
               </div>
             </div>
-          ) : !showCreateForm && (
+          ) : !showCreateForm && !editingOffer && (
             <div className="text-center py-20">
               <div className="w-32 h-32 bg-gradient-to-br from-gray-100/80 to-gray-200/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
                 <Gift className="w-16 h-16 text-gray-400" />
@@ -563,7 +615,7 @@ export default function CouponsOffers() {
                 Create your first promotional offer to start engaging customers with amazing deals
               </p>
               <Button
-                onClick={() => setShowCreateForm(true)}
+                onClick={() => { setShowCreateForm(true); setEditingOffer(null); }}
                 className="bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold px-10 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
               >
                 <Plus className="w-5 h-5 mr-2" />

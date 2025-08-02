@@ -15,8 +15,8 @@ import {
   Download,
   AlertTriangle,
   Loader,
-  Tags, // <-- NEW: Icon for coupon
-  Calendar, // <-- NEW: Icon for plan
+  Tags,
+  Calendar,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
 import { generateInvoicePDF } from "./InvoiceGenerator"
+// import {UserDetailCard} from "./UserDetailsCard"
 
 const formatCurrency = (amount) => {
   if (typeof amount !== 'number') return "N/A";
@@ -70,24 +71,38 @@ const getAvatarBgColor = (name) => {
   return colors[hash % colors.length]
 };
 
-// UPDATE: The entire BuyerRow component is updated to display more information
-const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice }) => {
+// UPDATE: BuyerRow now accepts an onUserClick handler
+const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, onUserClick }) => {
   const avatarBg = getAvatarBgColor(buyer.name);
   const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
+  // NEW: Handler to open user details without toggling the row
+  const handleNameClick = (e) => {
+    e.stopPropagation();
+    if (buyer.originalTransactionData?.user) {
+      onUserClick(buyer.originalTransactionData.user);
+    }
+  };
 
   // Mobile View
   if (isMobile) {
     return (
-      <Card className="mb-4 overflow-hidden border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+      <Card className="mb-4 overflow-hidden border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <CardContent className="p-0">
-          <div onClick={onToggle} className="p-4">
+          <div onClick={onToggle} className="p-4 cursor-pointer">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                   {buyer.name?.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{buyer.name || "N/A"}</h3>
+                  {/* UPDATE: Name is now clickable */}
+                  <h3
+                    className="font-semibold text-gray-900 hover:text-blue-700 hover:underline cursor-pointer"
+                    onClick={handleNameClick}
+                  >
+                    {buyer.name || "N/A"}
+                  </h3>
                   <p className="text-sm text-gray-500 truncate">{buyer.productName}</p>
                 </div>
               </div>
@@ -162,7 +177,13 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice }) 
               {buyer.name?.split(" ").map((n) => n[0]).join("")}
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{buyer.name || "N/A"}</div>
+              {/* UPDATE: Name is now clickable */}
+              <div
+                className="font-semibold text-gray-900 hover:text-blue-700 hover:underline cursor-pointer"
+                onClick={handleNameClick}
+              >
+                {buyer.name || "N/A"}
+              </div>
               <div className="font-medium text-gray-600">{buyer.productName}</div>
             </div>
           </div>
@@ -248,10 +269,12 @@ export default function RecentlyPurchased() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isMobile, setIsMobile] = useState(false);
+  // NEW: State for UserDetailsCard
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isUserCardOpen, setIsUserCardOpen] = useState(false);
 
   const { data: transactionsResponse, isLoading, isError, error } = useGetAllTransactionsQuery();
 
-  // UPDATE: The data mapping is significantly improved to be more accurate and detailed
   const buyers = useMemo(() => {
     if (!transactionsResponse?.data) return [];
     
@@ -262,15 +285,13 @@ export default function RecentlyPurchased() {
 
     return transactionsResponse.data
       .slice()
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by most recent first
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .map((transaction) => ({
         id: transaction._id,
         name: transaction.user?.name || "Unknown User",
         orderId: transaction._id,
-        // FIX: Product name now correctly uses category and plan
         productName: toTitleCase(transaction.category) || "N/A",
         plan: transaction.plan || "N/A",
-        // UPDATE: Added more financial details
         amount: transaction.amount,
         originalAmount: transaction.originalAmount,
         discountApplied: transaction.discountApplied || 0,
@@ -308,6 +329,17 @@ export default function RecentlyPurchased() {
       newExpanded.add(buyerId);
     }
     setExpandedRows(newExpanded);
+  };
+  
+  // NEW: Handlers to open/close the user details card
+  const handleUserClick = (user) => {
+    setSelectedUser(user);
+    setIsUserCardOpen(true);
+  };
+
+  const handleCloseUserCard = () => {
+    setIsUserCardOpen(false);
+    setTimeout(() => setSelectedUser(null), 300); // Allow for outro animation
   };
 
   const handleDownloadInvoice = (transaction) => {
@@ -357,6 +389,7 @@ export default function RecentlyPurchased() {
             onToggle={() => toggleRow(buyer.id)}
             isMobile={true}
             onDownloadInvoice={handleDownloadInvoice}
+            onUserClick={handleUserClick} // <-- Pass handler
           />
         ))}
       </div>
@@ -381,6 +414,7 @@ export default function RecentlyPurchased() {
                 onToggle={() => toggleRow(buyer.id)}
                 isMobile={false}
                 onDownloadInvoice={handleDownloadInvoice}
+                onUserClick={handleUserClick} // <-- Pass handler
               />
             ))}
           </tbody>
@@ -391,6 +425,12 @@ export default function RecentlyPurchased() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6">
+      {/* NEW: Render UserDetailsCard */}
+      <UserDetailsCard 
+        user={selectedUser} 
+        isOpen={isUserCardOpen}
+        onClose={handleCloseUserCard}
+      />
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Recent Purchases</h1>

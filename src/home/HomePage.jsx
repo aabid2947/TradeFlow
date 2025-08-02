@@ -12,6 +12,7 @@ import ServicesShowcase from "./homeComponents/ServiceShowCaseComponent"
 import HeroSection from "./homeComponents/HeroSection"
 import TopBar from "./homeComponents/TopBar"
 import { useEffect } from "react"
+import GoToTopButton from "./homeComponents/GoToTopButton"
 
 export default function HomePage() {
 useEffect(()=>{
@@ -39,6 +40,7 @@ useEffect(()=>{
         <FAQSection/>
         <SubscriptionSection/>
         <LandingPageFooter/>
+        <GoToTopButton/>
 
 
     </div>

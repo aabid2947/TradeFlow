@@ -47,7 +47,8 @@ export default function ServiceCard({
   return (
     <Card onClick={handleCardClick} className={cardClassName}>
       <div className="relative">
-        <div className="aspect-[4/2.8] overflow-hidden">
+        {/* MODIFIED: Changed aspect ratio to make image shorter */}
+        <div className="aspect-video overflow-hidden">
           <img
             src={imageSrc}
             alt={alt || serviceName}
@@ -56,7 +57,8 @@ export default function ServiceCard({
         </div>
       </div>
 
-      <CardContent className="p-3 space-y-3">
+      {/* MODIFIED: Reduced padding and vertical spacing */}
+      <CardContent className="p-2 space-y-2">
         <div className="flex items-center justify-between gap-4 ">
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
             {demandLevel}
@@ -84,7 +86,8 @@ export default function ServiceCard({
             </div>
         </div>
         
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        {/* MODIFIED: Reduced top padding */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-gray-100">
           <div>
             {isPurchased ? (
               <Badge variant="outline" className="text-green-600 border-green-600">Subscribed</Badge>
@@ -94,11 +97,12 @@ export default function ServiceCard({
           </div>
           <Button
             size="sm"
+            // MODIFIED: Reduced button padding
             className={`${
               isPurchased
                 ? "bg-green-500 hover:bg-green-600"
                 : "bg-blue-500 hover:bg-blue-600"
-            } text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-1.5`}
+            } text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5`}
             onClick={handleActionButtonClick}
           >
             {isPurchased && <Check className="w-4 h-4" />}

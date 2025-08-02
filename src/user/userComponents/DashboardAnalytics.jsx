@@ -18,7 +18,6 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   const userInfo = useSelector(selectCurrentUser);
 
   const statsData = useMemo(() => {
-    console.log(userInfo);
     if (!userInfo || !userInfo.usedServices || userInfo.usedServices.length === 0) {
       return [
         { title: "Total Verifications", value: "0", change: "+0%", color: "bg-orange-500", textColor: "text-white" },

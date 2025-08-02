@@ -23,6 +23,8 @@ import { toast } from 'react-hot-toast';
 import { useGetAllUsersQuery, usePromoteUserCategoryMutation, useDemoteUserCategoryMutation } from '@/app/api/authApiSlice';
 import { useGetServicesQuery } from '@/app/api/serviceApiSlice';
 
+import { UserDetailsCard } from './UserDetailCard';
+
 
 // Loading Skeleton Component
 const UserCardSkeleton = () => (
@@ -100,7 +102,7 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0">
-            <Card className="w-full max-w-md m-4 bg-white p-2 md:p-4 animate-in z-69 zoom-in-95">
+            <Card className="w-full max-w-md m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-xl">Manage Promotions</CardTitle>
@@ -140,7 +142,7 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
 
 
 // User Card Component
-const UserCard = ({ user, onPromote }) => {
+const UserCard = ({ user, onPromote, onNameClick }) => {
     const getRoleStyle = (role) => {
         switch (role?.toLowerCase()) {
           case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
@@ -160,36 +162,39 @@ const UserCard = ({ user, onPromote }) => {
 
     return (
         <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden">
-        <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-4">
-            <div className={`w-14 h-14 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors">
-                {user.name || 'Unknown User'}
-                </h3>
-                <p className="text-gray-500 text-sm truncate">{user.email || user.mobile}</p>
-            </div>
-            </div>
+            <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-14 h-14 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                        {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 
+                            className="font-semibold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors cursor-pointer"
+                            onClick={() => onNameClick(user)}
+                        >
+                            {user.name || 'Unknown User'}
+                        </h3>
+                        <p className="text-gray-500 text-sm truncate">{user.email || user.mobile}</p>
+                    </div>
+                </div>
 
-            <div className="flex items-center justify-between">
-                <Badge className={`${getRoleStyle(user.role)} font-medium`}>{user.role || 'User'}</Badge>
-                <Badge variant={user.isVerified ? 'default' : 'destructive'}>{user.isVerified ? 'Verified' : 'Not Verified'}</Badge>
-            </div>
+                <div className="flex items-center justify-between">
+                    <Badge className={`${getRoleStyle(user.role)} font-medium`}>{user.role || 'User'}</Badge>
+                    <Badge variant={user.isVerified ? 'default' : 'destructive'}>{user.isVerified ? 'Verified' : 'Not Verified'}</Badge>
+                </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                <Button variant="outline" size="sm" className="w-full bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
-                    <Award className="w-4 h-4 mr-2" />
-                    Promote User
-                </Button>
-                {(user.promotedCategories && user.promotedCategories.length > 0) && (
-                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 whitespace-nowrap">
-                        {user.promotedCategories.length} Promo{user.promotedCategories.length > 1 ? 's' : ''}
-                    </Badge>
-                )}
-            </div>
-        </CardContent>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+                    <Button variant="outline" size="sm" className="w-full bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
+                        <Award className="w-4 h-4 mr-2" />
+                        Promote User
+                    </Button>
+                    {(user.promotedCategories && user.promotedCategories.length > 0) && (
+                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 whitespace-nowrap">
+                            {user.promotedCategories.length} Promo{user.promotedCategories.length > 1 ? 's' : ''}
+                        </Badge>
+                    )}
+                </div>
+            </CardContent>
         </Card>
     );
 };
@@ -199,6 +204,8 @@ export default function AllUser() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [isDetailCardOpen, setIsDetailCardOpen] = useState(false);
+    const [detailUser, setDetailUser] = useState(null);
 
     // Fetch data using RTK Query
     const { data: usersData, isLoading: isLoadingUsers, isError: isUsersError, refetch } = useGetAllUsersQuery();
@@ -224,11 +231,21 @@ export default function AllUser() {
         setSelectedUser(user);
         setIsModalOpen(true);
     };
+    
+    const handleUserDetailClick = (user) => {
+        setDetailUser(user);
+        setIsDetailCardOpen(true);
+    };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedUser(null);
         refetch(); // Refetch user data to show updated promotions on cards
+    };
+
+    const handleCloseDetailCard = () => {
+        setIsDetailCardOpen(false);
+        setTimeout(() => setDetailUser(null), 300); // Allow animation to finish before clearing data
     };
 
     const isLoading = isLoadingUsers || isLoadingServices;
@@ -242,9 +259,9 @@ export default function AllUser() {
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
                         <p className="text-gray-600">Manage and view all registered users and their promotions</p>
                         </div>
-                        <div className="flex gap-3">
+                        {/* <div className="flex gap-3">
                         <Button variant="outline" onClick={refetch} disabled={isLoadingUsers}><RefreshCw className={`w-4 h-4 mr-2 ${isLoadingUsers ? 'animate-spin' : ''}`} /> Refresh</Button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
@@ -281,7 +298,12 @@ export default function AllUser() {
                     ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredUsers.map((user) => (
-                        <UserCard key={user._id} user={user} onPromote={handlePromoteClick} />
+                            <UserCard 
+                                key={user._id} 
+                                user={user} 
+                                onPromote={handlePromoteClick} 
+                                onNameClick={handleUserDetailClick}
+                            />
                         ))}
                     </div>
                     )}
@@ -297,6 +319,12 @@ export default function AllUser() {
                     onClose={handleCloseModal} 
                 />
             )}
+            
+            <UserDetailsCard
+                user={detailUser}
+                isOpen={isDetailCardOpen}
+                onClose={handleCloseDetailCard}
+            />
         </div>
     );
 };

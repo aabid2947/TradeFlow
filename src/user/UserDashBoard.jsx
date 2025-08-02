@@ -6,15 +6,15 @@ import SidebarComponent from "./userComponents/SidebarComponent";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import DashboardAnalytics from "./userComponents/DashboardAnalytics";
 import ServiceCardsViewer from "./userComponents/ServiceCardsViewer";
-import Profile from "./userComponents/Profile";
+import Profile from "./userComponents/Profile"; // Profile component is now a main view
 import PurchaseHistory from "./userComponents/PurchaseHistory";
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
 import ReviewDashboard from "./userComponents/ReviewSection";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/features/auth/authSlice";
-import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
 
+// Updated renderContent to include the 'profile' case
 const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions, userInfo) => {
   switch (activeView) {
     case "dashboard":
@@ -23,8 +23,10 @@ const renderContent = (activeView, services, isLoadingServices, transactions, is
       return <ServiceCardsViewer services={services} isLoading={isLoadingServices} userInfo={userInfo} />;
     case "history":
       return <PurchaseHistory/>
-    case "review":
-      return <ReviewDashboard/>
+    // case "review":
+    //   return <ReviewDashboard/>
+    case "profile": // <-- ADD THIS CASE
+      return <Profile />;
     default:
       return <DashboardAnalytics transactions={transactions} isLoading={isLoadingTransactions} />;
   }
@@ -37,20 +39,19 @@ export default function UserDashBoard() {
   const location = useLocation();
 
   const userInfo = useSelector(selectCurrentUser);
-  // const {refetch:refetchUser}=useGetProfileQuery();
+  console.log("User Info in Dashboard:", userInfo);
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
   const services = servicesResponse?.data || [];
   
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
   const transactions = transactionsResponse?.data || [];
 
+  // This useEffect now handles switching to the profile view
   useEffect(() => {
     if (location.state?.view) {
       setActiveView(location.state.view);
     }
   }, [location.state]);
-
- 
 
   useEffect(() => {
     const handleResize = () => {
@@ -117,22 +118,15 @@ export default function UserDashBoard() {
       />
 
       <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-60' : 'md:pl-20'}`}>
-        <DashboardHeader setSidebarOpen={setSidebarOpen} />
-        <div className="flex-1 flex flex-col lg:flex-row p-4 sm:p-6 lg:p-8 gap-6">
-          <main className="flex-1 overflow-hidden mt-16">
+        <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-12">
             <div
               key={activeView + categoryFilter}
               className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
             >
               {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions, userInfo)}
             </div>
-          </main>
-          {activeView === "dashboard" && (
-            <aside className="hidden lg:block w-full lg:w-72 lg:max-w-xs flex-shrink-0 animate-in slide-in-from-right-5 fade-in-0 duration-500 mt-16">
-              <Profile />
-            </aside>
-          )}
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+// store/slices/serviceApiSlice.js
+
 import { apiSlice } from './apiSlice';
 
 const SERVICES_URL = '/services';
@@ -10,7 +12,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       providesTags: (result) =>
-        result && result.data
+        result?.data
           ? [
               ...result.data.map(({ _id }) => ({ type: 'Service', id: _id })),
               { type: 'Service', id: 'LIST' },
@@ -25,32 +27,36 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
       }),
        providesTags: (result, error, id) => [{ type: 'Service', id }],
     }),
+    
+    // UPDATED: The backend route for creation is POST /api/services
     createService: builder.mutation({
       query: (serviceData) => ({
-        url: `${SERVICES_URL}/create`,
+        url: SERVICES_URL, // The URL is just the base URL
         method: 'POST',
         body: serviceData, 
       }),
       invalidatesTags: [{ type: 'Service', id: 'LIST' }],
     }),
+
+    // This mutation is correct
     updateService: builder.mutation({
       query: ({ id, ...changes }) => ({
         url: `${SERVICES_URL}/${id}`,
         method: 'PUT',
-        body: changes,
+        body: { changes }, // Ensure the payload matches the backend controller's expectation
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: 'Service', id },
         { type: 'Service', id: 'LIST' },
       ],
     }),
-    // ** MODIFIED ** to accept serviceKey
+
+    // UPDATED: The backend route for deletion is DELETE /api/services/:id
     deleteService: builder.mutation({
-      query: (serviceKey) => ({ // Expects the unique service_key
-        url: `${SERVICES_URL}/${serviceKey}`, // Uses the key in the URL as per backend
+      query: (serviceId) => ({ // Expects the document _id
+        url: `${SERVICES_URL}/${serviceId}`, // Uses the ID in the URL
         method: 'DELETE',
       }),
-      // Invalidates the whole list as we may not have the _id here easily
       invalidatesTags: [{ type: 'Service', id: 'LIST' }],
     }),
   }),

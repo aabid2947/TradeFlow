@@ -15,6 +15,7 @@ import {
 import ReviewModal from "./ReviewModal";
 import ReviewSkeleton from "@/components/skeletons/ReviewSkeleton"; 
 import { toast } from "react-hot-toast";
+import { useGetAllReviewsQuery } from "../../app/api/reviewApiSlice";
 
 // --- UI COMPONENTS (Unchanged) ---
 function StarRating({ rating }) {
@@ -68,9 +69,8 @@ export default function ReviewSection({ serviceId }) {
   const currentUser = useSelector(selectCurrentUser);
 
   // UPDATED: Fetch reviews specific to the serviceId
-  const { data: serviceReviewsData, isLoading: isLoadingServiceReviews } = useGetReviewsByServiceQuery(serviceId, {
-    skip: !serviceId,
-  });
+
+  const { data: serviceReviewsData, isLoading: isLoadingServiceReviews } =   useGetAllReviewsQuery();
 
   const [deleteReview] = useDeleteReviewMutation();
   const isLoading = isLoadingServiceReviews;

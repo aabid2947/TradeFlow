@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState } from "react";
 import { useGetAllUsersQuery } from "@/app/api/authApiSlice"; 
 import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"; 
-import { useGetServicesQuery } from "@/app/api/serviceApiSlice"; // Import the service query hook
+import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert" 
 import { Terminal } from "lucide-react"
 
@@ -20,11 +19,8 @@ import RegisterAdmin from "./AdminComponents/RegisterAdmin";
 import Feedback from "./AdminComponents/Feedback"
 import UsersDisplay from "./AdminComponents/AllUser";
 import FirebaseUserActivityDashboard from "./AdminComponents/DashBoardCharts";
+import Profile from "./AdminComponents/Profile"; // <-- IMPORT THE NEW PROFILE COMPONENT
 
-/**
- * The DashboardHome component receives users and transactions
- * to pass down to the overview component.
- */
 const DashboardHome = ({ users, transactions, isLoading }) => (
   <div className="space-y-6 bg-white">
     <DashboardOverview users={users} transactions={transactions} isLoading={isLoading} />
@@ -32,17 +28,13 @@ const DashboardHome = ({ users, transactions, isLoading }) => (
   </div>
 );
 
-/**
- * The renderContent function passes all necessary data down to its children.
- */
 const renderContent = (activeView, users, services, transactions, isLoading) => {
   switch (activeView) {
     case "dashboard":
       return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
     case "analytics":
-      // Pass users and services data to the Analytics component
       return <Analytics users={users} services={services} isLoading={isLoading} />;
-    case "clients":
+    case "shared":
       return <UsersDisplay/>
     case "orders":
       return <RecentlyPurchased />;
@@ -54,8 +46,9 @@ const renderContent = (activeView, users, services, transactions, isLoading) => 
       return <RegisterAdmin/>
     case "feedback":
       return <Feedback/>
+    case "profile": 
+      return <Profile/>;
     default:
-      // Default to the main dashboard view
       return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
   }
 };
@@ -64,21 +57,17 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState("dashboard");
 
-  // Fetch all necessary data
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetAllTransactionsQuery();
   const { data: usersResponse, isLoading: isLoadingUsers, isError: isErrorUsers, error: usersError } = useGetAllUsersQuery();
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
 
-  // Combine loading and error states
   const isLoading = isLoadingTransactions || isLoadingUsers || isLoadingServices;
   const isError = isErrorTransactions || isErrorUsers || isErrorServices;
   const error = transactionsError || usersError || servicesError;
 
-  // Extract data from responses, providing default empty arrays
   const allTransactions = transactionsResponse?.data || [];
   const allUsers = usersResponse?.data || [];
   const allServices = servicesResponse?.data || [];
-
 
   const handleNavigate = (view) => {
     setActiveView(view);
@@ -111,9 +100,10 @@ export default function AdminDashboard() {
       />
 
       <div className="flex flex-col flex-1 lg:pl-64">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        {/* Pass the handleNavigate function to the Header */}
+        <Header onMenuClick={() => setSidebarOpen(true)} onNavigate={handleNavigate} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-hidden">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-hidden mt-16">
           <div
             key={activeView}
             className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"

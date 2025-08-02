@@ -1,11 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Check, Shield, Zap, Star, ArrowRight, Globe, Lock } from "lucide-react"
+import { useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
+
 import Footer from "./homeComponents/Footer"
 import Header from "./homeComponents/Header"
-import { useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
+
+// Import the necessary hooks and selectors for the payment flow
+import useRazorpay from "@/hooks/useRazorpay"
+import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice"
+import { selectCurrentUser } from "@/features/auth/authSlice"
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -18,10 +27,151 @@ const itemVariants = {
 }
 
 const PricingPage = () => {
+  const [isAnnual, setIsAnnual] = useState(false)
 
-  const [selectedPlan, setSelectedPlan] = useState("professional")
+  // --- HOOKS FOR PAYMENT FLOW ---
+  const navigate = useNavigate()
+  const razorpayLoaded = useRazorpay()
+  const user = useSelector(selectCurrentUser) // Get the full user object
+  
+  const [createSubscriptionOrder, { isLoading: isCreatingOrder }] = useCreateSubscriptionOrderMutation()
+  const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation()
 
-  // Pricing data - easily replaceable for dynamic content
+  const handlePurchase = async (planName, planType) => {
+    // 1. Check for login
+    if (!user) {
+      toast.info("Please log in to purchase a plan.")
+      navigate("/login")
+      return
+    }
+
+    // 2. Check if Razorpay script is loaded
+    if (!razorpayLoaded) {
+      toast.error("Payment gateway is still loading. Please wait a moment.")
+      return
+    }
+
+    try {
+      // 3. Create the order on the backend
+      const orderData = await createSubscriptionOrder({
+        category: planName,
+        plan: planType,
+      }).unwrap()
+
+      // Handle cases where payment is skipped (e.g., 100% discount)
+      if (orderData.paymentSkipped) {
+        toast.success("Subscription activated successfully!")
+        navigate("/user") // Redirect to user dashboard
+        return
+      }
+
+      // 4. Configure Razorpay options
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.order.amount,
+        currency: "INR",
+        name: "Verify My KYC",
+        description: `Subscription for ${planName} - ${planType} plan`,
+        order_id: orderData.order.id,
+        handler: async function (response) {
+          // 5. This handler is called after a successful payment
+          try {
+            await verifySubscriptionPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              transactionId: orderData.transactionId,
+            }).unwrap()
+
+            toast.success("Payment successful! Your subscription is active.")
+            navigate("/user") // Redirect to user dashboard
+          } catch (verifyError) {
+            toast.error(verifyError.data?.message || "Payment verification failed. Please contact support.")
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.mobile,
+        },
+        notes: {
+          transactionId: orderData.transactionId,
+          userId: user._id,
+        },
+        theme: {
+          color: "#2563EB", // Blue theme
+        },
+      }
+      
+      // 6. Open the Razorpay checkout modal
+      const rzp = new window.Razorpay(options)
+      rzp.open()
+
+    } catch (err) {
+      toast.error(err.data?.message || "An error occurred. Please try again.")
+    }
+  }
+
+  const isLoading = isCreatingOrder || isVerifyingPayment;
+
+  // ACCURATE PRICING DATA from your document
+  const plans = [
+    {
+      id: "personal",
+      name: "Personal",
+      description: "For Individuals",
+      monthlyPrice: "₹4,999",
+      yearlyPrice: "₹38,499",
+      features: [
+        "25 Verifications Included",
+        "Aadhaar & PAN",
+        "Driving License & Voter ID",
+        "Address Verification",
+        "Criminal Check",
+        "Profile Lookup",
+      ],
+      buttonText: "Get Started",
+      buttonVariant: "outline",
+    },
+    {
+      id: "professional",
+      name: "Professional",
+      description: "For Small Businesses",
+      monthlyPrice: "₹18,999",
+      yearlyPrice: "₹1,46,299",
+      features: [
+        "100 Verifications Included",
+        "All Personal Features +",
+        "Passport & RC",
+        "Bank & GSTIN Verification",
+        "Employment Check",
+        "Liveness & Face Match",
+        "CoWIN",
+      ],
+      buttonText: "Choose Professional",
+      buttonVariant: "primary",
+      popular: true,
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      description: "For Corporates / High-Volume Needs",
+      monthlyPrice: "₹89,999",
+      yearlyPrice: "₹6,92,999",
+      features: [
+        "500 Verifications Included",
+        "All Professional Features +",
+        "Unlimited Category Access",
+        "Custom Distribution",
+        "All 20+ Verification Types",
+        "SLA Support & Reporting",
+        "Dedicated Manager",
+      ],
+      buttonText: "Contact Sales",
+      buttonVariant: "outline",
+    },
+  ]
+  
   const verificationServices = [
     { name: "Address Verification", price: 299, popular: false },
     { name: "PAN Verification", price: 399, popular: true },
@@ -40,93 +190,20 @@ const PricingPage = () => {
     { name: "Employment Verification", price: 299, popular: false },
     { name: "Vehicle RC Verification", price: 299, popular: false },
   ]
-
-  const plans = [
-    {
-      id: "starter",
-      name: "Starter",
-      description: "Perfect for small businesses getting started",
-      price: "Pay per use",
-      features: [
-        "Individual verification requests",
-        "Standard processing time",
-        "Email support",
-        "Basic dashboard",
-        "API access",
-      ],
-      buttonText: "Get Started",
-      buttonVariant: "outline",
-    },
-    {
-      id: "professional",
-      name: "Professional",
-      description: "Ideal for growing businesses with regular needs",
-      price: "₹2,499/month",
-      originalPrice: "₹4,999",
-      features: [
-        "Up to 100 verifications/month",
-        "Priority processing",
-        "24/7 chat support",
-        "Advanced analytics",
-        "Webhook integration",
-        "Custom branding",
-      ],
-      buttonText: "Start Free Trial",
-      buttonVariant: "primary",
-      popular: true,
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise",
-      description: "Custom solutions for large-scale operations",
-      price: "Custom pricing",
-      features: [
-        "Unlimited verifications",
-        "Instant processing",
-        "Dedicated account manager",
-        "Custom integrations",
-        "SLA guarantees",
-        "Advanced security features",
-      ],
-      buttonText: "Contact Sales",
-      buttonVariant: "outline",
-    },
-  ]
-
   const features = [
-    {
-      icon: Shield,
-      title: "Bank-grade Security",
-      description: "End-to-end encryption and compliance with industry standards",
-    },
-    {
-      icon: Zap,
-      title: "Lightning Fast",
-      description: "Get verification results in seconds, not hours",
-    },
-    {
-      icon: Globe,
-      title: "Pan-India Coverage",
-      description: "Comprehensive verification across all Indian states",
-    },
-    {
-      icon: Lock,
-      title: "Privacy First",
-      description: "No data storage policy ensures complete privacy",
-    },
+    { icon: Shield, title: "Bank-grade Security", description: "End-to-end encryption and compliance with industry standards" },
+    { icon: Zap, title: "Lightning Fast", description: "Get verification results in seconds, not hours" },
+    { icon: Globe, title: "Pan-India Coverage", description: "Comprehensive verification across all Indian states" },
+    { icon: Lock, title: "Privacy First", description: "No data storage policy ensures complete privacy" },
   ]
 
-  useEffect(()=>{
-       window.scrollTo({
-      top: 0,
-      behavior: "smooth", 
-    });
-    },[])
-  
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [])
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
-        <Header/>
+      <Header />
       {/* Hero Section */}
       <motion.div
         className="bg-gradient-to-br from-blue-50 to-sky-100 py-20 overflow-hidden"
@@ -146,22 +223,19 @@ const PricingPage = () => {
             Choose the perfect plan for your verification needs. All plans include access to our comprehensive suite of
             verification services.
           </motion.p>
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-700"
-            variants={itemVariants}
-          >
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>No setup fees</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>Cancel anytime</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-500" />
-              <span>24/7 support</span>
-            </div>
+          
+          <motion.div className="flex items-center justify-center gap-3 mb-8" variants={itemVariants}>
+            <span className={`text-lg font-medium ${!isAnnual ? "text-gray-900" : "text-gray-500"}`}>Monthly</span>
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-200"}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"}`}
+              />
+            </button>
+            <span className={`text-lg font-medium ${isAnnual ? "text-gray-900" : "text-gray-500"}`}>Annual</span>
+            {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-sm">Save on yearly billing!</Badge>}
           </motion.div>
         </div>
       </motion.div>
@@ -179,9 +253,7 @@ const PricingPage = () => {
             {plans.map((plan) => (
               <motion.div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border ${
-                  plan.popular ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"
-                } flex flex-col`}
+                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border ${plan.popular ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} flex flex-col`}
                 variants={itemVariants}
               >
                 {plan.popular && (
@@ -196,16 +268,15 @@ const PricingPage = () => {
                 <div className="p-8 flex-1">
                   <div className="text-center mb-8">
                     <h3 className="text-3xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                    <p className="text-gray-600 mb-6">{plan.description}</p>
+                    <p className="text-gray-600 mb-6 h-12">{plan.description}</p>
 
-                    <div className="mb-6">
-                      {plan.originalPrice && (
-                        <div className="text-lg text-gray-500 line-through mb-1">{plan.originalPrice}</div>
-                      )}
-                      <div className="text-5xl font-extrabold text-gray-900">{plan.price}</div>
-                      {plan.id === "professional" && (
-                        <div className="text-sm text-green-600 font-semibold mt-2">Save 50% for first 3 months</div>
-                      )}
+                    <div className="mb-6 h-20 flex flex-col justify-center">
+                      <div className="text-5xl font-extrabold text-gray-900">
+                        {isAnnual ? plan.yearlyPrice : plan.monthlyPrice}
+                      </div>
+                      <div className="text-gray-500 text-sm mt-1">
+                        {isAnnual ? "/year" : "/month"}
+                      </div>
                     </div>
                   </div>
                   <ul className="space-y-4 mb-8">
@@ -219,13 +290,11 @@ const PricingPage = () => {
                 </div>
                 <div className="p-8 pt-0">
                   <button
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
-                      plan.buttonVariant === "primary"
-                        ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1"
-                        : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                    }`}
+                    onClick={() => handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')}
+                    disabled={isLoading}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${plan.buttonVariant === "primary" ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                   >
-                    {plan.buttonText}
+                    {isLoading ? "Processing..." : plan.buttonText}
                   </button>
                 </div>
               </motion.div>
@@ -256,9 +325,7 @@ const PricingPage = () => {
             {verificationServices.map((service, index) => (
               <motion.div
                 key={index}
-                className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border ${
-                  service.popular ? "border-blue-200" : "border-gray-100"
-                }`}
+                className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border ${service.popular ? "border-blue-200" : "border-gray-100"}`}
                 variants={itemVariants}
               >
                 <div className="flex items-center justify-between mb-4">

@@ -30,7 +30,7 @@ const serviceCategories = [
 const navigationData = {
   reports: [
     { title: "Purchase History", icon: BarChart3, url: "#" },
-    { title: "Review", icon: PieChart, url: "#" },
+    // { title: "Review", icon: PieChart, url: "#" },
   ],
 };
 
@@ -114,7 +114,7 @@ export default function SidebarComponent({
           isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
         }`}
         style={{ 
-          top: '73px',
+          top: '64px',
           height: 'calc(100vh - 73px)'
         }}
       >

@@ -239,7 +239,6 @@ export default function ServiceCard({ data }) {
                 
                 <div className="space-y-3 mb-8">
                   {features.map((feature, index) =>{ 
-                      console.log(feature)
                     return(
                     <div 
                       key={index} 

@@ -1,7 +1,6 @@
-
 import { useSelector } from 'react-redux';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { selectCurrentToken } from '@/features/auth/authSlice';
+import { Navigate, Outlet } from 'react-router-dom';
+import { selectCurrentToken, selectCurrentUserRole } from '@/features/auth/authSlice';
 
 import ErrorPage from "@/pages/ErrorPage";
 import HomePage from "@/home/HomePage";
@@ -14,8 +13,6 @@ import ProductPage from '@/home/ProductPage'
 import PricingPage from '@/home/PricingPage';
 import ResetPasswordPage from '@/components/ResetPasswordPage';
 import BlogPage from '../home/BlogPage';
-import {  selectCurrentUserRole } from '@/features/auth/authSlice'; 
-
 
 export const publicRoutes = [
   {
@@ -75,17 +72,17 @@ export const publicRoutes = [
     },
 ];
 
-export const PublicRoute = () => {
+/**
+ * Redirects logged-in users to their respective dashboards.
+ */
+export const RedirectIfLoggedIn = () => {
   const token = useSelector(selectCurrentToken);
-  const role = useSelector(selectCurrentUserRole); // Get the user's role
-  const location = useLocation();
+  const role = useSelector(selectCurrentUserRole);
 
   if (token) {
-    // If the user is logged in, redirect them based on their role.
     const redirectTo = role === 'admin' ? '/admin' : '/user';
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
-  // If not logged in, render the child component (the public page)
   return <Outlet />;
 };

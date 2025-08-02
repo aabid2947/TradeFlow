@@ -73,32 +73,48 @@ const StatCard = ({ title, value, change, icon: Icon, color = "blue", subtitle, 
 };
 
 export default function FirebaseUserActivityDashboard() {
-  const { realTimeData, loading, error, getAnalyticsData } = useRealTimeUserActivity();
-  const [isLive, setIsLive] = useState(true); // Control real-time updates (visual only)
+  const { realTimeData, loading, error, getAnalyticsData, isInitialized } = useRealTimeUserActivity(); // DEBUG: Added isInitialized
+  const [isLive, setIsLive] = useState(true);
   const [mapZoom, setMapZoom] = useState(1);
   const [hoveredLocation, setHoveredLocation] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState('activeSessions');
   const [timeRange, setTimeRange] = useState('24h');
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  
+  // DEBUG: Log the raw realTimeData whenever it changes
+  useEffect(() => {
+    console.log("DEBUG: Raw realTimeData from hook:", realTimeData);
+  }, [realTimeData]);
 
   // Fetch aggregated analytics data when the component mounts or time range changes
   useEffect(() => {
+    // DEBUG: Ensure the hook is initialized before fetching data
+    if (!isInitialized) {
+        console.log("DEBUG: Skipping analytics fetch because hook is not initialized.");
+        return;
+    }
+
     const fetchData = async () => {
       try {
+        console.log(`DEBUG: Fetching analytics for time range: ${timeRange}`);
         const data = await getAnalyticsData(timeRange);
+        // DEBUG: Log the data that comes back from the analytics function
+        console.log("DEBUG: Aggregated analytics data received:", data);
         setAnalytics(data);
       } catch (err) {
         console.error("Failed to fetch aggregated analytics:", err);
       }
     };
     fetchData();
-  }, [timeRange, getAnalyticsData]);
+  }, [timeRange, getAnalyticsData, isInitialized]); // DEBUG: Added isInitialized dependency
 
   // Calculate high-level metrics
   const metrics = useMemo(() => {
     const dashboard = realTimeData.dashboardMetrics || {};
     if (!analytics) {
+      // DEBUG: Log a message if analytics data isn't ready for calculation
+      console.log("DEBUG: Calculating metrics but analytics data is null.");
       return {
         totalUsers: dashboard.totalUsers || 0,
         totalSessions: dashboard.activeSessions || 0,
@@ -110,6 +126,8 @@ export default function FirebaseUserActivityDashboard() {
       };
     }
     
+    // DEBUG: Log a message when metrics are calculated successfully
+    console.log("DEBUG: Successfully calculating metrics with analytics data.", analytics);
     return {
       totalUsers: dashboard.totalUsers || analytics.uniqueUsers || 0,
       totalSessions: dashboard.activeSessions || analytics.totalSessions || 0,
@@ -131,6 +149,13 @@ export default function FirebaseUserActivityDashboard() {
       percentage: total > 0 ? Math.floor((d.value / total) * 100) : 0
     };
   });
+
+  // DEBUG: Check the final data being passed to the chart right before rendering
+  console.log("DEBUG: Data for Hourly Chart:", analytics?.hourlyActivity);
+  console.log("DEBUG: Data for Device Chart:", deviceBreakdownForChart);
+  console.log("DEBUG: Data for Map:", realTimeData.locationAnalytics);
+  console.log("DEBUG: Data for Live Feed:", realTimeData.recentActivities);
+
 
   if (loading && !analytics) {
     return <Loader />;
@@ -324,7 +349,7 @@ export default function FirebaseUserActivityDashboard() {
             <div className="space-y-3">
               {deviceBreakdownForChart.map((device, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-.center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: device.color }}></div>
                     <span className="font-medium text-gray-900">{device.name}</span>
                   </div>

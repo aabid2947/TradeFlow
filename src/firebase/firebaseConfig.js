@@ -41,42 +41,43 @@ export const firestoreRules = `
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User sessions - users can only read/write their own sessions
+
+    // User sessions can be written by anyone, but with validation.
+    // This allows tracking of anonymous users.
     match /user_sessions/{sessionId} {
-      allow read, write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if true; // Allow any client to read session data for analytics dashboards.
+      allow write: if (request.auth != null && request.resource.data.userId == request.auth.uid) ||
+                    (request.auth == null && request.resource.data.userId.matches('anonymous_.*'));
     }
-    
-    // User activities - users can only write their own activities
+
+    // User activities can also be written by anyone, with the same validation.
     match /user_activities/{activityId} {
-      allow write: if request.auth != null && 
-        request.resource.data.userId == request.auth.uid;
-      allow read: if request.auth != null;
+      allow read: if true;
+      allow write: if (request.auth != null && request.resource.data.userId == request.auth.uid) ||
+                    (request.auth == null && request.resource.data.userId.matches('anonymous_.*'));
     }
-    
-    // Location analytics - readable by authenticated users, writable by system
-    match /location_analytics/{locationId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-    
-    // User errors - users can only write their own errors
+
+    // User errors can be written by anyone, with validation.
     match /user_errors/{errorId} {
-      allow write: if request.auth != null && 
-        request.resource.data.userId == request.auth.uid;
-      allow read: if request.auth != null;
+      allow read: if true;
+      allow write: if (request.auth != null && request.resource.data.userId == request.auth.uid) ||
+                    (request.auth == null && request.resource.data.userId.matches('anonymous_.*'));
     }
-    
-    // Admin analytics - only for admin users
-    match /admin_analytics/{docId} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.admin == true;
+
+    // Location analytics can be updated by any client session.
+    match /location_analytics/{locationId} {
+      allow read, write: if true;
     }
-    
-    // Real-time dashboard data
+
+    // Real-time dashboard data can be updated by any client.
     match /dashboard_data/{docId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if true;
+    }
+
+    // Admin-specific analytics should remain locked down.
+    match /admin_analytics/{docId} {
+      allow read, write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }

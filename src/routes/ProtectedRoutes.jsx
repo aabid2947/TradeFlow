@@ -1,32 +1,34 @@
-
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { selectCurrentToken, selectCurrentUserRole } from '@/features/auth/authSlice';
+import { selectCurrentToken, selectCurrentUserRole, selectIsAuthLoading } from '@/features/auth/authSlice'; 
 
-/**
- * A component to protect routes based on authentication status and user role.
- * @param {object} props
- * @param {string[]} props.allowedRoles - An array of roles that are allowed to access the route.
- */
 const ProtectedRoute = ({ allowedRoles }) => {
+  // Get all necessary state from Redux
+  const isLoading = useSelector(selectIsAuthLoading);
   const token = useSelector(selectCurrentToken);
   const role = useSelector(selectCurrentUserRole);
   const location = useLocation();
 
+  // If the auth state is loading, show a placeholder. This prevents the glitch.
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Authenticating...</p>
+      </div>
+    );
+  }
+
+  // Once loading is false, proceed with the existing logic
   if (!token) {
-    // If not authenticated, redirect to the main login page.
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if the user's role is included in the list of allowed roles.
   const isAuthorized = allowedRoles && allowedRoles.includes(role);
 
   if (!isAuthorized) {
-    // If the user is logged in but their role is not permitted,
     return <Navigate to="/unauthorized" state={{ from: location }} replace />;
   }
 
-  //  If authenticated and authorized, render the child components.
   return <Outlet />;
 };
 
