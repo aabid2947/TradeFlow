@@ -28,11 +28,28 @@ export const verificationApiSlice = apiSlice.injectEndpoints({
           body: body,
         };
       },
+      invalidatesTags: ['VerificationResult'],
       // This action does not create a transaction, so we only need to invalidate
       // the user's profile if we were tracking usage counts there.
       // For now, no invalidations are strictly necessary on individual use.
     }),
+     getVerificationHistory: builder.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: `${VERIFICATION_URL}/verification-history`,
+        method: 'GET',
+        params: { page, limit },
+      }),
+      providesTags: (result) =>
+        result?.data
+          ? [
+              ...result.data.map(({ _id }) => ({ type: 'VerificationResult', id: _id })),
+              { type: 'VerificationResult', id: 'LIST' },
+            ]
+          : [{ type: 'VerificationResult', id: 'LIST' }],
+      keepUnusedDataFor: 5, // Cache for 5 seconds
+    }),
+  
   }),
 });
 
-export const { useExecuteSubscribedServiceMutation } = verificationApiSlice;
+export const { useExecuteSubscribedServiceMutation,useGetVerificationHistoryQuery } = verificationApiSlice;

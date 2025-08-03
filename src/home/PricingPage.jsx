@@ -11,16 +11,17 @@ import Footer from "./homeComponents/Footer"
 import Header from "./homeComponents/Header"
 import { Badge } from "@/components/ui/badge"
 
-// Import the necessary hooks and selectors for the payment flow
 import useRazorpay from "@/hooks/useRazorpay"
 import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice"
 import { selectCurrentUser } from "@/features/auth/authSlice"
 
+// Animation variants for sections
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 }
 
+// Animation variants for individual items
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
@@ -28,44 +29,37 @@ const itemVariants = {
 
 const PricingPage = () => {
   const [isAnnual, setIsAnnual] = useState(false)
-
-  // --- HOOKS FOR PAYMENT FLOW ---
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
-  const user = useSelector(selectCurrentUser) // Get the full user object
+  const user = useSelector(selectCurrentUser)
   
   const [createSubscriptionOrder, { isLoading: isCreatingOrder }] = useCreateSubscriptionOrderMutation()
   const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation()
 
   const handlePurchase = async (planName, planType) => {
-    // 1. Check for login
     if (!user) {
       toast.info("Please log in to purchase a plan.")
       navigate("/login")
       return
     }
 
-    // 2. Check if Razorpay script is loaded
     if (!razorpayLoaded) {
       toast.error("Payment gateway is still loading. Please wait a moment.")
       return
     }
 
     try {
-      // 3. Create the order on the backend
       const orderData = await createSubscriptionOrder({
-        category: planName,
-        plan: planType,
+         planName: planName, 
+         planType: planType,
       }).unwrap()
 
-      // Handle cases where payment is skipped (e.g., 100% discount)
       if (orderData.paymentSkipped) {
         toast.success("Subscription activated successfully!")
-        navigate("/user") // Redirect to user dashboard
+        navigate("/user")
         return
       }
 
-      // 4. Configure Razorpay options
       const options = {
         key: orderData.key_id,
         amount: orderData.order.amount,
@@ -74,7 +68,6 @@ const PricingPage = () => {
         description: `Subscription for ${planName} - ${planType} plan`,
         order_id: orderData.order.id,
         handler: async function (response) {
-          // 5. This handler is called after a successful payment
           try {
             await verifySubscriptionPayment({
               razorpay_order_id: response.razorpay_order_id,
@@ -84,7 +77,7 @@ const PricingPage = () => {
             }).unwrap()
 
             toast.success("Payment successful! Your subscription is active.")
-            navigate("/user") // Redirect to user dashboard
+            navigate("/user")
           } catch (verifyError) {
             toast.error(verifyError.data?.message || "Payment verification failed. Please contact support.")
           }
@@ -99,11 +92,10 @@ const PricingPage = () => {
           userId: user._id,
         },
         theme: {
-          color: "#2563EB", // Blue theme
+          color: "#2563EB",
         },
       }
       
-      // 6. Open the Razorpay checkout modal
       const rzp = new window.Razorpay(options)
       rzp.open()
 
@@ -114,7 +106,7 @@ const PricingPage = () => {
 
   const isLoading = isCreatingOrder || isVerifyingPayment;
 
-  // ACCURATE PRICING DATA from your document
+  // Hardcoded pricing data for the main plans
   const plans = [
     {
       id: "personal",
@@ -172,6 +164,7 @@ const PricingPage = () => {
     },
   ]
   
+  // Hardcoded data for service display section
   const verificationServices = [
     { name: "Address Verification", price: 299, popular: false },
     { name: "PAN Verification", price: 399, popular: true },
@@ -190,6 +183,8 @@ const PricingPage = () => {
     { name: "Employment Verification", price: 299, popular: false },
     { name: "Vehicle RC Verification", price: 299, popular: false },
   ]
+  
+  // Hardcoded data for features section
   const features = [
     { icon: Shield, title: "Bank-grade Security", description: "End-to-end encryption and compliance with industry standards" },
     { icon: Zap, title: "Lightning Fast", description: "Get verification results in seconds, not hours" },
@@ -204,7 +199,7 @@ const PricingPage = () => {
   return (
     <div className="min-h-screen bg-white text-gray-800">
       <Header />
-      {/* Hero Section */}
+      
       <motion.div
         className="bg-gradient-to-br from-blue-50 to-sky-100 py-20 overflow-hidden"
         initial="hidden"
@@ -213,15 +208,11 @@ const PricingPage = () => {
         variants={sectionVariants}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.h1
-            className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight"
-            variants={itemVariants}
-          >
+          <motion.h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight" variants={itemVariants}>
             Simple, Transparent <span className="text-blue-600">Pricing</span>
           </motion.h1>
           <motion.p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto" variants={itemVariants}>
-            Choose the perfect plan for your verification needs. All plans include access to our comprehensive suite of
-            verification services.
+            Choose the perfect plan for your verification needs. All plans include access to our comprehensive suite of verification services.
           </motion.p>
           
           <motion.div className="flex items-center justify-center gap-3 mb-8" variants={itemVariants}>
@@ -230,9 +221,7 @@ const PricingPage = () => {
               onClick={() => setIsAnnual(!isAnnual)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-200"}`}
             >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"}`}
-              />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"}`}/>
             </button>
             <span className={`text-lg font-medium ${isAnnual ? "text-gray-900" : "text-gray-500"}`}>Annual</span>
             {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-sm">Save on yearly billing!</Badge>}
@@ -240,7 +229,6 @@ const PricingPage = () => {
         </div>
       </motion.div>
 
-      {/* Pricing Plans */}
       <motion.div
         className="py-20 bg-white overflow-hidden"
         initial="hidden"
@@ -250,10 +238,15 @@ const PricingPage = () => {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8 mb-16">
-            {plans.map((plan) => (
+            {plans.map((plan) => {
+              const isPlanActive = user?.activeSubscriptions?.some(
+                (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
+              );
+
+              return (
               <motion.div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border ${plan.popular ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} flex flex-col`}
+                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border ${plan.popular ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} ${isPlanActive ? "border-green-500" : ""} flex flex-col`}
                 variants={itemVariants}
               >
                 {plan.popular && (
@@ -265,11 +258,19 @@ const PricingPage = () => {
                   </div>
                 )}
 
+                {isPlanActive && (
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                      <Check className="w-3 h-3 mr-1" />
+                      Active Plan
+                    </Badge>
+                  </div>
+                )}
+
                 <div className="p-8 flex-1">
                   <div className="text-center mb-8">
                     <h3 className="text-3xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                     <p className="text-gray-600 mb-6 h-12">{plan.description}</p>
-
                     <div className="mb-6 h-20 flex flex-col justify-center">
                       <div className="text-5xl font-extrabold text-gray-900">
                         {isAnnual ? plan.yearlyPrice : plan.monthlyPrice}
@@ -291,19 +292,18 @@ const PricingPage = () => {
                 <div className="p-8 pt-0">
                   <button
                     onClick={() => handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')}
-                    disabled={isLoading}
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${plan.buttonVariant === "primary" ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                    disabled={isLoading || isPlanActive}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : plan.buttonVariant === "primary" ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                   >
-                    {isLoading ? "Processing..." : plan.buttonText}
+                    {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.buttonText)}
                   </button>
                 </div>
               </motion.div>
-            ))}
+            )})}
           </div>
         </div>
       </motion.div>
 
-      {/* Verification Services */}
       <motion.div
         className="py-20 bg-gradient-to-br from-blue-50 to-sky-50 overflow-hidden"
         initial="hidden"
@@ -317,8 +317,7 @@ const PricingPage = () => {
               All Verification Services Included
             </motion.h2>
             <motion.p className="text-xl text-gray-600 max-w-3xl mx-auto" variants={itemVariants}>
-              Access our complete suite of verification services with any plan. Pay-per-use pricing for maximum
-              flexibility.
+              Access our complete suite of verification services with any plan. Pay-per-use pricing for maximum flexibility.
             </motion.p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -355,7 +354,6 @@ const PricingPage = () => {
         </div>
       </motion.div>
 
-      {/* Features Section */}
       <motion.div
         className="py-20 bg-white overflow-hidden"
         initial="hidden"
@@ -390,7 +388,6 @@ const PricingPage = () => {
         </div>
       </motion.div>
 
-      {/* CTA Section */}
       <motion.div
         className="py-20 bg-gradient-to-r from-blue-700 to-sky-800 overflow-hidden"
         initial="hidden"
@@ -420,4 +417,4 @@ const PricingPage = () => {
   )
 }
 
-export default PricingPage
+export default PricingPage;

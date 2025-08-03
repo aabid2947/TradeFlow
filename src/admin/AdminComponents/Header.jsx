@@ -77,35 +77,40 @@ export default function Header({ onMenuClick, onNavigate }) {
             </div>
 
             {/* Right Section - Profile Dropdown */}
-            <div className="flex items-center gap-3">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-10 px-2 hover:bg-gray-100 flex items-center gap-2 rounded-full">
-                        <Avatar className="h-8 w-8">
-                        <AvatarImage src={userPic} alt={user?.name} />
-                        <AvatarFallback className="bg-purple-100 text-purple-600 text-sm font-medium">{user?.name?.charAt(0) || 'A'}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium text-gray-700 hidden md:block">{user?.name}</span>
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 mt-2">
-                        <DropdownMenuItem onClick={() => onNavigate('profile')} className="flex items-center gap-2 cursor-pointer">
-                           <User className="w-4 h-4" />
-                           <span>Profile</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled className="flex items-center gap-2 cursor-not-allowed">
-                            <Settings className="w-4 h-4" />
-                            <span>Settings</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer">
-                            <LogOut className="w-4 h-4" />
-                            <span>Log out</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+           <div className="flex items-center gap-3">
+    <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-10 px-2 hover:bg-gray-100 flex items-center gap-2 rounded-full">
+            <Avatar className="h-8 w-8">
+            <AvatarImage src={userPic} alt={user?.name} />
+            <AvatarFallback className="bg-purple-100 text-purple-600 text-sm font-medium">{user?.name?.charAt(0) || 'A'}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium text-gray-700 hidden md:block">{user?.name}</span>
+            <ChevronDown className="h-4 w-4 text-gray-500" />
+        </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2">
+            <DropdownMenuItem 
+                onClick={() => onNavigate('profile')} 
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:bg-gray-50 cursor-pointer rounded-none"
+            >
+               <User className="w-4 h-4 text-gray-500" />
+               <span className="font-medium">Profile</span>
+            </DropdownMenuItem>
+            
+      
+            <div className="h-px bg-gray-200 mx-2 my-1"></div>
+            
+            <DropdownMenuItem 
+                onClick={handleLogout} 
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-700 transition-colors duration-150 focus:outline-none cursor-pointer rounded-none"
+            >
+                <LogOut className="w-4 h-4 text-red-500" />
+                <span className="font-medium">Log out</span>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
+</div>
         </div>
     </header>
   )

@@ -182,14 +182,14 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
             </div>
           )}
 
-          {offer.minOrderValue > 0 && (
+          {/* {offer.minOrderValue > 0 && (
             <div className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-[#1987BF] rounded-full" />
                 <span className="text-sm font-medium text-gray-700">Minimum order value: ₹{offer.minOrderValue}</span>
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
@@ -289,7 +289,7 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
   }
 
   return (
-    <Card className="border-0 bg-gradient-to-br from-[#1987BF]/10 via-blue-50/80 to-purple-50/80 backdrop-blur-xl shadow-xl shadow-blue-500/10 rounded-2xl animate-in slide-in-from-top-4 duration-500">
+    <Card className="border-0 backdrop-blur-xl shadow-xl shadow-blue-500/10 rounded-2xl animate-in slide-in-from-top-4 duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent rounded-2xl" />
 
       <CardHeader className="px-8 pt-8 pb-6 relative z-10">
@@ -536,14 +536,14 @@ export default function CouponsOffers() {
   const activeOffers = mappedOffers.filter((offer) => offer.isActive)
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50  relative overflow-hidden">
       <div className="relative z-10 p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-12 gap-6">
             <div className="max-w-2xl">
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">Coupons & Offers</h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <h1 className="text-3xl  font-bold text-gray-900 mb-4 leading-tight">Coupons & Offers</h1>
+              <p className=" text-gray-600 leading-relaxed">
                 Manage promotional offers and discounts with our advanced coupon system
               </p>
             </div>
@@ -593,7 +593,7 @@ export default function CouponsOffers() {
                   {activeOffers.length} available
                 </Badge>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                 {activeOffers.map((offer, index) => (
                   <OfferCard 
                     key={offer.id} 

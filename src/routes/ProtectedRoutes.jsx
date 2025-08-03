@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { selectCurrentToken, selectCurrentUserRole, selectIsAuthLoading } from '@/features/auth/authSlice'; 
-
+import Loader from '../components/Loader';
 const ProtectedRoute = ({ allowedRoles }) => {
   // Get all necessary state from Redux
   const isLoading = useSelector(selectIsAuthLoading);
@@ -12,9 +12,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
   // If the auth state is loading, show a placeholder. This prevents the glitch.
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <p>Authenticating...</p>
-      </div>
+     <Loader />
     );
   }
 

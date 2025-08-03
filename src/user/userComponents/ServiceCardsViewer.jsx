@@ -1,102 +1,92 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import { motion } from "framer-motion"; // Import motion
+import { motion } from "framer-motion";
 import ServiceCard from "@/cards/ServiceCard";
-import PANCardImage from "@/assets/PANCardImage.svg";
-import AadharCardImage from "@/assets/AadharCardImage.svg";
-import VoterCardImage from "@/assets/VoterCardImage.svg";
-import PassportCardImage from "@/assets/PassportCardImage.svg";
-
 import { UserInfoCard } from "./UserInfoCard";
 import { UserDetailsCard } from "./UserDetailsCard";
-import { Button } from "@/components/ui/button";
 import SubscriptionPurchaseCard from "./SubscriptionPurchaseCard";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice";
-const fallbackImages = [ PANCardImage, AadharCardImage, VoterCardImage, PassportCardImage ];
-const demandLevels = ["Most Demanding", "Average Demanding", "Less Demanding"];
+import { X, RefreshCw } from 'lucide-react'; // Import RefreshCw for the new button
+import { Button } from "@/components/ui/button";
 
-const XIcon = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
-    <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-  </svg>
-);
-
-export default function ServiceCardsViewer({ services = [], isLoading, userInfo }) {
- 
-  const [serviceForVerification, setServiceForVerification] = useState(null);
-  const [categoryForPurchase, setCategoryForPurchase] = useState(null);
-  
-  const { refetch: refetchUserProfile } = useGetProfileQuery()
+export default function ServiceCardsViewer({ services = [], pricingPlans = [], isLoading, userInfo }) {
+  const [activeService, setActiveService] = useState(null);
+  const [purchasePlan, setPurchasePlan] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
   const [inputData, setInputData] = useState(null);
-  
+
+  const { refetch: refetchUserProfile } = useGetProfileQuery();
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
+
+  const accessibleServiceIds = useMemo(() => {
+    if (!userInfo?.activeSubscriptions || !pricingPlans.length) {
+      return new Set();
+    }
+    const serviceIdSet = new Set();
+    const userPlanNames = new Set(
+      userInfo.activeSubscriptions
+        .filter(sub => new Date(sub.expiresAt) > new Date())
+        .map(sub => sub.category)
+    );
+    pricingPlans.forEach(plan => {
+      if (userPlanNames.has(plan.name)) {
+        plan.includedServices.forEach(service => serviceIdSet.add(service._id));
+      }
+    });
+    return serviceIdSet;
+  }, [userInfo, pricingPlans]);
 
   const handleActionButtonClick = (service) => {
     setVerificationResult(null);
     setVerificationError(null);
     setInputData(null);
-
-    const isSubscribed = userInfo?.promotedCategories?.includes(service.category);
-
+    const isSubscribed = accessibleServiceIds.has(service._id);
     if (isSubscribed) {
-      setServiceForVerification(service);
-      setCategoryForPurchase(null);
+      setActiveService(service);
+      setPurchasePlan(null);
     } else {
-      setCategoryForPurchase(service);
-      setServiceForVerification(null);
+      const planToPurchase = pricingPlans.find(p => p.name === `${service.category} Plan`);
+      if (planToPurchase) {
+        setPurchasePlan(planToPurchase);
+      } else {
+        toast.error(`No individual purchase plan found for the "${service.category}" category.`);
+      }
+      setActiveService(null);
     }
   };
 
   const handleCloseModal = () => {
-    setServiceForVerification(null);
-    setCategoryForPurchase(null);
+    setActiveService(null);
+    setPurchasePlan(null);
   };
 
   const handleExecuteVerification = async (payload) => {
-      if (!serviceForVerification) return;
-
-      setInputData(payload);
-      setVerificationResult(null);
-      setVerificationError(null);
-
-      try {
-        const result = await executeService({ 
-            serviceKey: serviceForVerification.service_key, 
-            payload 
-        }).unwrap();
-        
-        setVerificationResult(result);
-        toast.success(result.message || "Verification successful!");
-        await refetchUserProfile();
-
-
-
-      } catch (err) {
-        console.error("Service execution failed:", err);
-        setVerificationError(err.data || { message: "Service execution failed."});
-        toast.error(err.data?.message || "Could not execute service.");
-      }
+    if (!activeService) return;
+    setInputData(payload);
+    setVerificationResult(null);
+    setVerificationError(null);
+    try {
+      const result = await executeService({
+        serviceKey: activeService.service_key,
+        payload
+      }).unwrap();
+      setVerificationResult(result);
+      toast.success(result.message || "Verification successful!");
+      await refetchUserProfile();
+    } catch (err) {
+      setVerificationError(err.data || { message: "Service execution failed." });
+      toast.error(err.data?.message || "Could not execute service.");
+    }
   };
- 
-  const serviceCards = services.map((svc) => {
-  
-    const isSubscribed = userInfo?.promotedCategories?.includes(svc.category);
-    return {
-        id: svc.service_key,
-        key: svc.service_key,
-        imageSrc: svc.imageUrl || fallbackImages[Math.floor(Math.random() * fallbackImages.length)],
-        demandLevel: svc.demandLevel || demandLevels[Math.floor(Math.random() * demandLevels.length)],
-        serviceName: svc.name,
-        verificationCount: svc.globalUsageCount,
-        price: svc.price,
-        service: svc,
-        buttonType: isSubscribed ? "verify" : "purchase",
-        onButtonClick: handleActionButtonClick,
-    };
-  });
+
+  // --- NEW: Function to reset the modal view to the input card ---
+  const handleNewVerification = () => {
+    setVerificationResult(null);
+    setVerificationError(null);
+    setInputData(null);
+  };
 
   if (isLoading) {
     return (
@@ -107,68 +97,93 @@ export default function ServiceCardsViewer({ services = [], isLoading, userInfo 
   }
 
   return (
-    <div className="relative ">
-      <h1 className="font-bold text-xl my-2">KYC Verification API</h1>
-      {serviceCards.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {serviceCards.map((cardProps) => (
-            <ServiceCard {...cardProps} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 text-gray-500">
-          <p>No services found for this category.</p>
-        </div>
-      )}
+    <div className="relative">
+      <h1 className="font-bold text-xl my-2">KYC Verification Services</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {services.map((svc) => {
+          const isSubscribed = accessibleServiceIds.has(svc._id);
+          return (
+            <ServiceCard
+              key={svc._id}
+              service={svc}
+              imageSrc={svc.imageUrl || "/placeholder.svg"}
+              serviceName={svc.name}
+              verificationCount={svc.globalUsageCount}
+              price={svc.price}
+              buttonType={isSubscribed ? "verify" : "purchase"}
+              onButtonClick={() => handleActionButtonClick(svc)}
+            />
+          );
+        })}
+      </div>
 
-      {/* Verification Modal */}
-      {serviceForVerification && (
+      {/* Verification Modal with Updated Logic */}
+      {activeService && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
-          
-          <div className="relative z-10 w-full max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
-            <motion.button
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={handleCloseModal}
+          ></div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl"
+          >
+            <button
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 z-20 p-2 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
+              className="absolute top-0 right-0 z-20 p-2 rounded-full text-gray-500 bg-gray-100 transition-colors"
               aria-label="Close modal"
             >
-              <XIcon className="h-5 w-5" />
-            </motion.button>
-            <div className="overflow-y-auto p-6 pt-12 space-y-6"> {/* Added pt-12 to avoid overlap with new close button */}
-              <UserInfoCard
-                services={services}
-                activeServiceId={serviceForVerification.service_key}
-                onVerify={handleExecuteVerification}
-                isVerifying={isVerifying}
-                userInfo={userInfo}
-                isSubscribed={userInfo?.promotedCategories?.includes(serviceForVerification.category)}
-              />
-              {(verificationResult || verificationError) && (
-                <UserDetailsCard 
-                  result={verificationResult} 
-                  error={verificationError} 
-                  serviceName={serviceForVerification?.name}
-                  inputData={inputData}
+              <X size={20} />
+            </button>
+
+            <div className="p-6 space-y-4">
+              {/* --- CORE UI CHANGE: Conditional Rendering --- */}
+              {!(verificationResult || verificationError) ? (
+                // STATE 1: Show input form
+                <UserInfoCard
+                  services={[activeService]}
+                  activeServiceId={activeService.service_key}
+                  onVerify={handleExecuteVerification}
+                  isVerifying={isVerifying}
+                  isSubscribed={true}
                 />
+              ) : (
+                // STATE 2: Show result and a "New Verification" button
+                <>
+                  <UserDetailsCard
+                    result={verificationResult}
+                    error={verificationError}
+                    serviceName={activeService?.name}
+                    inputData={inputData}
+                  />
+                  <Button
+                    onClick={handleNewVerification}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Perform New Verification
+                  </Button>
+                </>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
-
-      {/* Purchase Modal */}
-      {categoryForPurchase && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
-            <div className="relative z-10 w-full max-w-lg bg-transparent rounded-xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
-                <SubscriptionPurchaseCard
-                    categoryData={categoryForPurchase}
-                    userInfo={userInfo}
-                    onClose={handleCloseModal}
-                />
-            </div>
+      
+      {/* Purchase Modal (No changes needed here) */}
+      {purchasePlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal}></div>
+          <div className="relative z-10 w-full max-w-lg">
+            <SubscriptionPurchaseCard
+              planData={purchasePlan}
+              userInfo={userInfo}
+              onClose={handleCloseModal}
+            />
+          </div>
         </div>
       )}
     </div>

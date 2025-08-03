@@ -112,15 +112,15 @@ export default function Profile() {
     const paidSubs = user?.activeSubscriptions?.map(sub => ({...sub, type: 'paid'})) || [];
 
     const combinedSubscriptions = [...paidSubs, ...promotedSubs];
-    // --- END NEW ---
+
 
     return (
         <>
-            <div className="space-y-6">
+            <div className="space-y-6 mt-6">
                 <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
                 
                 <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-blue-100 flex-col md:flex-row items-center gap-6">
+                    <CardHeader className=" p-6 border-b border-blue-100 flex-col md:flex-row items-center gap-6">
                          <div className="relative">
                             <div className="h-24 w-24 border-4 border-white ring-4 ring-blue-500/20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                                 <img src={userPic} alt={`${user?.name} profile picture`} className="w-full h-full object-cover"/>

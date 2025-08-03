@@ -15,6 +15,6 @@ export const apiSlice = createApi({
   reducerPath: 'api', 
   baseQuery: baseQuery,
   // Add 'Subscription' to the list of tagTypes
-  tagTypes: ['Service', 'User', 'Transaction', 'Review', 'Coupon', 'Subscription'],
+  tagTypes: ['Service', 'User', 'Transaction', 'Review', 'Coupon', 'Subscription','VerificationResult'],
   endpoints: (builder) => ({}),
 });

@@ -1,3 +1,5 @@
+// store/slices/paymentApiSlice.js
+
 import { apiSlice } from './apiSlice';
 import { authApiSlice } from './authApiSlice';
 const PAYMENT_URL = '/payment';
@@ -5,16 +7,18 @@ const PAYMENT_URL = '/payment';
 export const paymentApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     /**
-     * @desc Mutation to create a Razorpay order for a CATEGORY SUBSCRIPTION.
-     * @param {string} category - The category to subscribe to.
-     * @param {string} plan - The plan ('monthly' or 'yearly').
+     * @desc Mutation to create a Razorpay order for a subscription.
+     * @param {string} planName - The name of the pricing plan (e.g., "Personal").
+     * @param {string} planType - The type ('monthly' or 'yearly').
      * @param {string} [couponCode] - Optional: The coupon code to apply.
      */
     createSubscriptionOrder: builder.mutation({
-      query: ({ category, plan, couponCode }) => ({
+      // The arguments received by the component hook (e.g., useCreateSubscriptionOrderMutation)
+      query: ({ planName, planType, couponCode }) => ({
         url: `${PAYMENT_URL}/order`,
         method: 'POST',
-        body: { category, plan, couponCode },
+        // CRITICAL FIX: The keys in the body MUST match the backend controller.
+        body: { planName, planType, couponCode },
       }),
     }),
 
@@ -28,15 +32,16 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: verificationData,
       }),
+      // This invalidation logic is perfect. It ensures user and transaction data is refetched.
       invalidatesTags: (result, error, arg) => [
         { type: 'User', id: 'PROFILE' },
         { type: 'Transaction', id: 'LIST' },
         { type: 'Coupon', id: 'LIST' }
       ],
+      // This onQueryStarted logic is also excellent for ensuring the UI updates instantly.
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          // After payment is verified, dispatch an action to refetch the user's profile
           dispatch(authApiSlice.endpoints.getProfile.initiate(undefined, { forceRefetch: true }));
         } catch (error) {
           console.error('Payment verification succeeded, but profile refetch failed:', error);

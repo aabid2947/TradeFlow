@@ -13,9 +13,11 @@ import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { selectCurrentUser } from "@/features/auth/authSlice";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
+// Import the new hook to get all pricing plans
+import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
 
 const XIcon = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
     <path d="M18 6 6 18" /><path d="m6 6 12 12" />
   </svg>
 );
@@ -26,17 +28,20 @@ export default function ServicePage() {
   const [verificationResult, setVerificationResult] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
   const [inputData, setInputData] = useState(null);
-  const [showSubscriptionCard, setShowSubscriptionCard] = useState(false); // 1. State to manage subscription card visibility
+  const [showSubscriptionCard, setShowSubscriptionCard] = useState(false);
   
   const navigate = useNavigate();
   const { category: encodedCategory } = useParams();
   const category = decodeURIComponent(encodedCategory || '');
 
-  const { data: profileData, refetch: refetchUserProfile } = useGetProfileQuery();
-
+  // Fetch all necessary data
+  const { refetch: refetchUserProfile } = useGetProfileQuery();
   const userInfo = useSelector(selectCurrentUser);
-  const { data: apiResponse, isLoading: isLoadingServices } = useGetServicesQuery();
-  const allServices = apiResponse?.data || [];
+  const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery();
+  const { data: pricingPlansResponse, isLoading: isLoadingPricing } = useGetPricingPlansQuery();
+
+  const allServices = servicesResponse?.data || [];
+  const allPricingPlans = pricingPlansResponse || [];
 
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
 
@@ -45,9 +50,35 @@ export default function ServicePage() {
     return allServices.filter(service => service.category === category);
   }, [allServices, category]);
 
-  const isSubscribed = useMemo(() => {
-    return profileData?.data?.promotedCategories?.includes(category) || userInfo?.promotedCategories?.includes(category);
-  }, [userInfo, profileData, category]);
+  const isSubscribedToCategory = useMemo(() => {
+    if (!userInfo?.activeSubscriptions || !allPricingPlans.length) {
+      return false;
+    }
+    
+    // Get all service IDs the user has access to from all their active plans
+    const accessibleServiceIds = new Set();
+    const userActivePlanNames = new Set(
+      userInfo.activeSubscriptions
+        .filter(sub => new Date(sub.expiresAt) > new Date())
+        .map(sub => sub.category)
+    );
+
+    allPricingPlans.forEach(plan => {
+      if (userActivePlanNames.has(plan.name)) {
+        plan.includedServices.forEach(service => accessibleServiceIds.add(service._id));
+      }
+    });
+
+    // Check if any service in the current category is in the user's accessible list
+    return filteredServices.some(service => accessibleServiceIds.has(service._id));
+
+  }, [userInfo, allPricingPlans, filteredServices]);
+
+  // Find the correct individual plan to purchase for this category
+  const planToPurchase = useMemo(() => {
+    if (isSubscribedToCategory || !category) return null;
+    return allPricingPlans.find(p => p.name === `${category} Plan`);
+  }, [allPricingPlans, category, isSubscribedToCategory]);
 
   const activeService = useMemo(() => {
     return allServices.find(s => s.service_key === activeServiceId);
@@ -68,12 +99,10 @@ export default function ServicePage() {
 
   const handleServiceSelect = (serviceKey) => {
     setActiveServiceId(serviceKey);
-    setShowSubscriptionCard(false); // Reset when a new service is selected
+    setShowSubscriptionCard(false);
   };
   
-  const handleCloseModal = () => {
-    setActiveServiceId(null);
-  };
+  const handleCloseModal = () => setActiveServiceId(null);
 
   const handleExecuteVerification = async (payload) => {
       if (!activeService) return;
@@ -81,39 +110,37 @@ export default function ServicePage() {
       setVerificationResult(null);
       setVerificationError(null);
       try {
-        const result = await executeService({
-          serviceKey: activeService.service_key,
-          payload,
-        }).unwrap();
+        const result = await executeService({ serviceKey: activeService.service_key, payload }).unwrap();
         setVerificationResult(result);
         toast.success(result.message || "Verification successful!");
+        await refetchUserProfile();
       } catch (err) {
         setVerificationError(err.data || { message: "Service execution failed." });
         toast.error(err.data?.message || "Could not execute service.");
       }
   };
-
-  const handlePurchaseSuccess = () => {
-    refetchUserProfile();
-    setShowSubscriptionCard(false); // Hide subscription card on success
+  
+  const handleSubscribeClick = () => {
+      if (!planToPurchase) {
+          toast.error("No individual purchase plan is available for this category.");
+          return;
+      }
+      setShowSubscriptionCard(true);
   };
 
   const renderRightPanel = () => {
-    // 2. Conditionally render SubscriptionPurchaseCard or UserInfoCard
-    if (!isSubscribed && showSubscriptionCard && filteredServices.length > 0) {
+    if (!isSubscribedToCategory && showSubscriptionCard && planToPurchase) {
       return (
-        <div className="md:col-span-1">
+        <div className="md:col-span-2">
           <SubscriptionPurchaseCard
-            categoryData={filteredServices[0]}
+            planData={planToPurchase}
             userInfo={userInfo}
-            onClose={() => setShowSubscriptionCard(false)} // Go back to UserInfoCard
-            onPurchaseSuccess={handlePurchaseSuccess}
+            onClose={() => setShowSubscriptionCard(false)}
           />
         </div>
       );
     }
 
-    // Always render UserInfoCard. It will adapt based on subscription status.
     return (
       <>
         <div className="md:col-span-1">
@@ -122,9 +149,8 @@ export default function ServicePage() {
             activeServiceId={activeServiceId}
             onVerify={handleExecuteVerification}
             isVerifying={isVerifying}
-            userInfo={userInfo}
-            isSubscribed={isSubscribed}
-            onSubscribeClick={() => setShowSubscriptionCard(true)} // 3. Show subscription card on click
+            isSubscribed={isSubscribedToCategory}
+            onSubscribeClick={handleSubscribeClick}
           />
         </div>
         <div className="md:col-span-1">
@@ -146,7 +172,7 @@ export default function ServicePage() {
             </h1>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <ServicesList services={filteredServices} isLoading={isLoadingServices} activeServiceId={activeServiceId} onServiceSelect={handleServiceSelect} />
+                <ServicesList services={filteredServices} isLoading={isLoadingServices || isLoadingPricing} activeServiceId={activeServiceId} onServiceSelect={handleServiceSelect} />
               </div>
               <div className="hidden lg:grid lg:col-span-2 grid-cols-1 md:grid-cols-2 gap-6">
                 {renderRightPanel()}
@@ -162,17 +188,13 @@ export default function ServicePage() {
           <div className="relative z-10 w-full max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
             <Button variant="ghost" size="icon" onClick={handleCloseModal} className="absolute top-2 right-2 z-20 rounded-full text-gray-500 hover:text-gray-800">
               <XIcon className="h-5 w-5" />
-              <span className="sr-only">Close</span>
             </Button>
             <div className="overflow-y-auto p-6 space-y-6">
-                {/* 4. Logic for mobile modal view */}
-                { !isSubscribed && showSubscriptionCard ? (
-                  filteredServices.length > 0 && 
+                { !isSubscribedToCategory && showSubscriptionCard && planToPurchase ? (
                   <SubscriptionPurchaseCard 
-                    categoryData={filteredServices[0]} 
+                    planData={planToPurchase} 
                     userInfo={userInfo} 
                     onClose={() => setShowSubscriptionCard(false)} 
-                    onPurchaseSuccess={handlePurchaseSuccess} 
                   />
                 ) : (
                   <>
@@ -181,9 +203,8 @@ export default function ServicePage() {
                       activeServiceId={activeServiceId} 
                       onVerify={handleExecuteVerification} 
                       isVerifying={isVerifying} 
-                      userInfo={userInfo}
-                      isSubscribed={isSubscribed}
-                      onSubscribeClick={() => setShowSubscriptionCard(true)}
+                      isSubscribed={isSubscribedToCategory}
+                      onSubscribeClick={handleSubscribeClick}
                     />
                     {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData} />}
                   </>

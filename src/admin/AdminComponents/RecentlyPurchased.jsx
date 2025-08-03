@@ -24,8 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
 import { generateInvoicePDF } from "./InvoiceGenerator"
-// import {UserDetailCard} from "./UserDetailsCard"
-
+import { UserDetailsCard } from "./UserDetailCard"
 const formatCurrency = (amount) => {
   if (typeof amount !== 'number') return "N/A";
   return new Intl.NumberFormat("en-IN", {
@@ -424,7 +423,7 @@ export default function RecentlyPurchased() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50  p-4 md:p-6">
       {/* NEW: Render UserDetailsCard */}
       <UserDetailsCard 
         user={selectedUser} 

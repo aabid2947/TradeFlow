@@ -6,29 +6,33 @@ import SidebarComponent from "./userComponents/SidebarComponent";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import DashboardAnalytics from "./userComponents/DashboardAnalytics";
 import ServiceCardsViewer from "./userComponents/ServiceCardsViewer";
-import Profile from "./userComponents/Profile"; // Profile component is now a main view
+import Profile from "./userComponents/Profile";
 import PurchaseHistory from "./userComponents/PurchaseHistory";
-import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
-import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
-import ReviewDashboard from "./userComponents/ReviewSection";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/features/auth/authSlice";
+import VerificationHistory from "./userComponents/VerificationHistory";
 
-// Updated renderContent to include the 'profile' case
-const renderContent = (activeView, services, isLoadingServices, transactions, isLoadingTransactions, userInfo) => {
+// Import all necessary API hooks
+import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
+import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
+import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
+
+// Updated renderContent to pass down all necessary data
+const renderContent = (activeView, services, pricingPlans, isLoading, userInfo, transactions) => {
   switch (activeView) {
     case "dashboard":
-      return <DashboardAnalytics transactions={transactions} isLoading={isLoadingTransactions} />;
+      return <DashboardAnalytics transactions={transactions} isLoading={isLoading} />;
     case "services":
-      return <ServiceCardsViewer services={services} isLoading={isLoadingServices} userInfo={userInfo} />;
+      // Pass the full services and pricingPlans list to the viewer
+      return <ServiceCardsViewer services={services} pricingPlans={pricingPlans} isLoading={isLoading} userInfo={userInfo} />;
     case "history":
-      return <PurchaseHistory/>
-    // case "review":
-    //   return <ReviewDashboard/>
-    case "profile": // <-- ADD THIS CASE
+      return <PurchaseHistory />;
+    case "profile":
       return <Profile />;
+    case "verification_history": 
+      return <VerificationHistory />; 
     default:
-      return <DashboardAnalytics transactions={transactions} isLoading={isLoadingTransactions} />;
+      return <DashboardAnalytics transactions={transactions} isLoading={isLoading} />;
   }
 };
 
@@ -39,14 +43,19 @@ export default function UserDashBoard() {
   const location = useLocation();
 
   const userInfo = useSelector(selectCurrentUser);
-  console.log("User Info in Dashboard:", userInfo);
-  const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
-  const services = servicesResponse?.data || [];
-  
-  const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
-  const transactions = transactionsResponse?.data || [];
 
-  // This useEffect now handles switching to the profile view
+  // Fetch all data required for the dashboard and its children
+  const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
+  const { data: pricingPlansResponse, isLoading: isLoadingPricing, isError: isErrorPricing, error: pricingError } = useGetPricingPlansQuery();
+  const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
+
+  // Safely extract data arrays, defaulting to empty arrays
+  const services = servicesResponse?.data || [];
+  const pricingPlans = pricingPlansResponse || [];
+  const transactions = transactionsResponse?.data || [];
+  
+  const isLoading = isLoadingServices || isLoadingPricing || isLoadingTransactions;
+
   useEffect(() => {
     if (location.state?.view) {
       setActiveView(location.state.view);
@@ -54,15 +63,8 @@ export default function UserDashBoard() {
   }, [location.state]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setSidebarOpen(true);
-      } else {
-        setSidebarOpen(false);
-      }
-    };
+    const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
-    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -71,6 +73,7 @@ export default function UserDashBoard() {
     return ["All Services", ...Array.from(categories)];
   }, [services]);
 
+  // Filter services based on the selected category for display
   const filteredServices = useMemo(() => {
     if (categoryFilter === "All Services") {
       return services;
@@ -80,26 +83,23 @@ export default function UserDashBoard() {
 
   const handleNavigate = (view) => {
     setActiveView(view);
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
+    if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
   const handleCategorySelect = (category) => {
     setActiveView("services");
     setCategoryFilter(category);
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
+    if (window.innerWidth < 768) setSidebarOpen(false);
   };
   
-   if (isErrorServices || isErrorTransactions) {
-    const error = servicesError || transactionsError;
+  // Consolidated error handling for all data fetching
+  if (isErrorServices || isErrorPricing || isErrorTransactions) {
+    const error = servicesError || pricingError || transactionsError;
     return (
       <div className="flex h-screen items-center justify-center bg-red-50">
         <div className="text-center text-red-700">
-          <h2 className="text-xl font-bold">Failed to load resources</h2>
-          <p>{error?.data?.message || "Please try again later."}</p>
+          <h2 className="text-xl font-bold">Failed to load dashboard resources</h2>
+          <p>{error?.data?.message || "Please refresh the page or try again later."}</p>
         </div>
       </div>
     );
@@ -124,7 +124,8 @@ export default function UserDashBoard() {
               key={activeView + categoryFilter}
               className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
             >
-              {renderContent(activeView, filteredServices, isLoadingServices, transactions, isLoadingTransactions, userInfo)}
+              {/* Pass the filtered services but the complete pricing plan list */}
+              {renderContent(activeView, filteredServices, pricingPlans, isLoading, userInfo, transactions)}
             </div>
         </main>
       </div>

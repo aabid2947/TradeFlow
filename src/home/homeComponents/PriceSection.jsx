@@ -14,7 +14,7 @@ import useRazorpay from "@/hooks/useRazorpay"
 import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice"
 import { selectCurrentUser } from "@/features/auth/authSlice"
 
-// Updated data based on the provided document
+// Hardcoded data for the pricing plans displayed in this section
 const pricingPlans = [
   {
     name: "Personal",
@@ -71,8 +71,6 @@ const pricingPlans = [
 
 export default function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false)
-
-  // --- HOOKS FOR PAYMENT FLOW ---
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
@@ -81,7 +79,6 @@ export default function PricingSection() {
   const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation()
 
   const handlePurchase = async (planName, planType) => {
-    // This is the same handlePurchase function from PricingPage.jsx
     if (!user) {
       toast.info("Please log in to purchase a plan.")
       navigate("/login")
@@ -92,7 +89,7 @@ export default function PricingSection() {
       return
     }
     try {
-      const orderData = await createSubscriptionOrder({ category: planName, plan: planType }).unwrap()
+      const orderData = await createSubscriptionOrder({ planName, planType }).unwrap()
       if (orderData.paymentSkipped) {
         toast.success("Subscription activated successfully!")
         navigate("/user")
@@ -119,18 +116,9 @@ export default function PricingSection() {
             toast.error(verifyError.data?.message || "Payment verification failed. Please contact support.")
           }
         },
-        prefill: {
-          name: user.name,
-          email: user.email,
-          contact: user.mobile,
-        },
-        notes: {
-            transactionId: orderData.transactionId,
-            userId: user._id
-        },
-        theme: {
-          color: "#2563EB",
-        },
+        prefill: { name: user.name, email: user.email, contact: user.mobile },
+        notes: { transactionId: orderData.transactionId, userId: user._id },
+        theme: { color: "#2563EB" },
       }
       const rzp = new window.Razorpay(options)
       rzp.open()
@@ -165,9 +153,7 @@ export default function PricingSection() {
               onClick={() => setIsAnnual(!isAnnual)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-200"}`}
             >
-              <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-5" : "translate-x-1"}`}
-              />
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-5" : "translate-x-1"}`} />
             </button>
             <span className={`text-sm font-medium ${isAnnual ? "text-gray-900" : "text-gray-500"}`}>Annual</span>
             {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">Save Big!</Badge>}
@@ -176,11 +162,15 @@ export default function PricingSection() {
         <TooltipProvider>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
             {pricingPlans.map((plan) => {
-              const IconComponent = plan.icon
+              const IconComponent = plan.icon;
+              const isPlanActive = user?.activeSubscriptions?.some(
+                (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
+              );
+
               return (
                 <Card
                   key={plan.name}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group ${plan.isPopular ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"}`}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group ${plan.isPopular ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} ${isPlanActive ? "!border-green-500" : ""}`}
                 >
                   {plan.isPopular && (
                     <div className="absolute top-1 left-1/2 transform -translate-x-1/2">
@@ -189,6 +179,16 @@ export default function PricingSection() {
                       </div>
                     </div>
                   )}
+
+                  {isPlanActive && (
+                      <div className="absolute top-1 right-1">
+                          <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                              <Check className="w-3 h-3 mr-1" />
+                              Active
+                          </Badge>
+                      </div>
+                  )}
+
                   <CardHeader className="text-center pb-4 pt-7">
                     <div className="flex justify-center mb-3">
                       <div className={`p-2 rounded-xl ${plan.isPopular ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"} transition-colors duration-300`}>
@@ -231,10 +231,10 @@ export default function PricingSection() {
                     </ul>
                     <Button
                       onClick={() => handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')}
-                      disabled={isLoading}
-                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${plan.isPopular ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                      disabled={isLoading || isPlanActive}
+                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : plan.isPopular ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                     >
-                      {isLoading ? "Processing..." : plan.cta}
+                      {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.cta)}
                     </Button>
                     <p className="text-[10px] text-gray-500 text-center mt-3">
                       No setup fees • Cancel anytime

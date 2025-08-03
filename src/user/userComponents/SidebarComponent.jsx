@@ -1,11 +1,11 @@
 "use client"
 
 import {
-  LayoutDashboard, Shield, Users, BarChart3, PieChart, Settings, LogOut,
-  ChevronDown, Tag, User, Building, Scale, FileText, Scan, Database,
-  AlertTriangle, MapPin
+  LayoutDashboard, Shield, User, BarChart3, PieChart, Settings, LogOut,
+  ChevronDown, Tag,  Building, Scale, FileText, Scan, Database,
+  AlertTriangle, MapPin,MoreVertical
 } from "lucide-react"
-import { useState } from "react"
+import { useState,useRef,useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,7 +30,7 @@ const serviceCategories = [
 const navigationData = {
   reports: [
     { title: "Purchase History", icon: BarChart3, url: "#" },
-    // { title: "Review", icon: PieChart, url: "#" },
+    { title: "Verification Results", icon: PieChart, url: "#" },
   ],
 };
 
@@ -50,13 +50,36 @@ export default function SidebarComponent({
   activeCategory,
   onCategorySelect,
 }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const [isServicesOpen, setIsServicesOpen] = useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
  
+   const handleProfileClick = () => {
+      // Navigate to the same dashboard URL but pass 'profile' in the state
+      // The UserDashBoard component will detect this and switch its view.
+      navigate('/user', { state: { view: 'profile' }, replace: true });
+      setShowDropdown(!showDropdown);
+  };
+
+
   const handleLogout = async () => {
     try {
+      setShowDropdown(false);
       await dispatch(logOut());
       navigate("/");
     } catch (error) {
@@ -114,7 +137,7 @@ export default function SidebarComponent({
           isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
         }`}
         style={{ 
-          top: '64px',
+           top: window.innerWidth >= 1024 ? '72px' : '64px',
           height: 'calc(100vh - 73px)'
         }}
       >
@@ -206,14 +229,14 @@ export default function SidebarComponent({
                     label={item.title} 
                     isActive={
                       (item.title === "Purchase History" && activeView === "history") || 
-                      (item.title === "Review" && activeView === "review")
+                      (item.title === "Verification Results" && activeView === "verification_history")
                     } 
                     onClick={() => {
                       if (item.title === "Purchase History") {
                         handleNavigationClick("history");
                       }
-                      if (item.title === "Review") {
-                        handleNavigationClick("review");
+                      if (item.title === "Verification Results") {
+                        handleNavigationClick("verification_history");
                       }
                     }} 
                   />
@@ -222,38 +245,86 @@ export default function SidebarComponent({
             </div>
           </div>
 
-          <div className="border-t border-gray-100 bg-white/80 backdrop-blur-sm ">
+          {/* Fixed User Profile Section */}
+          <div className="border-t border-gray-100 bg-white/80 backdrop-blur-sm p-3 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)}>
             {isOpen && (
-              <div className="flex items-center gap-3  p-3 rounded-xl bg-gray-50">
-                <Avatar className="w-10 h-10 ring-2 ring-white">
-                  <AvatarImage src={userPic} alt={user?.name || "User"} />
-                  <AvatarFallback className="bg-blue-500 text-white font-medium">
-                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
-                  <p className="text-xs text-gray-500">{user?.role || 'Administrator'}</p>
+              <div className="relative" ref={dropdownRef}>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 relative">
+                  <Avatar className="w-10 h-10 ring-2 ring-white">
+                    <AvatarImage src={userPic} alt={user?.name || "User"} />
+                    <AvatarFallback className="bg-blue-500 text-white font-medium">
+                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500">{user?.role || 'Administrator'}</p>
+                  </div>
+
+                  {/* Three-dot menu button */}
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                    aria-label="User menu"
+                  >
+                    <MoreVertical className="w-4 h-4 text-gray-600" />
+                  </button>
                 </div>
+
+                {/* Dropdown menu - positioned outside the profile container */}
+                {showDropdown && (
+                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-[60] ">
+                    <button
+                      onClick={handleProfileClick}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:bg-gray-50"
+                    >
+                      <User className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">My Profile</span>
+                    </button>
+                    
+                    <div className="h-px bg-gray-200 mx-2 my-1"></div>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 focus:outline-none focus:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4 text-red-500" />
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-            <div className={`space-y-2 ${isOpen ? '' : 'flex flex-col items-center space-y-3'}`}>
-           
-              <Button 
-                onClick={handleLogout} 
-                variant="ghost" 
-                size={isOpen ? "sm" : "icon"} 
-                className={`${isOpen ? 'w-full justify-start h-10' : 'w-10 h-10'} hover:bg-red-50 hover:text-red-600 text-gray-600 group relative`}
-              >
-                <LogOut className="w-4 h-4" />
-                {isOpen && <span className="ml-2 text-xs">Log out</span>}
-                {!isOpen && (
+
+            {/* Collapsed state - show minimal profile */}
+            {!isOpen && (
+              <div className="flex flex-col items-center space-y-3">
+                <div className="relative group">
+                  <Avatar className="w-10 h-10 ring-2 ring-white cursor-pointer">
+                    <AvatarImage src={userPic} alt={user?.name || "User"} />
+                    <AvatarFallback className="bg-blue-500 text-white font-medium">
+                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute left-16 bg-gray-900 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                    {user?.name || 'User'}
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleLogout} 
+                  variant="ghost" 
+                  size="icon"
+                  className="w-10 h-10 hover:bg-red-50 hover:text-red-600 text-gray-600 group relative"
+                >
+                  <LogOut className="w-4 h-4" />
                   <div className="absolute left-12 bg-gray-900 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                     Log out
                   </div>
-                )}
-              </Button>
-            </div>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </aside>

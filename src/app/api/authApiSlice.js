@@ -29,17 +29,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     
-    // 2. UPDATE the getProfile query
-     getProfile: builder.query({
+    getProfile: builder.query({
       query: () => `${USERS_URL}/profile`,
       providesTags: (result, error, id) => [{ type: 'User', id: 'PROFILE' }],
-      // This part is crucial and correctly implemented
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log('🔐 getProfile - Fetched user data:', data);
-          if (data ) {
-            // This updates the auth slice with the fresh user data
+          if (data) {
             dispatch(updateUser(data)); 
           }
         } catch (error) {
@@ -48,8 +44,18 @@ export const authApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
+    // --- NEW QUERY FOR FETCHING A SINGLE USER BY ID (FOR ADMIN USE) ---
+    getUserById: builder.query({
+      query: (userId) => ({
+        url: `${USERS_URL}/${userId}`, // Backend route will be GET /api/users/:userId
+        method: 'GET',
+      }),
+      // Provides a tag for this specific user, useful if this user's data is updated elsewhere
+      providesTags: (result, error, id) => [{ type: 'User', id }],
+    }),
+    // --- END NEW QUERY ---
 
-    // 3. UPDATE the updateProfile mutation
+
     updateProfile: builder.mutation({
       query: (userInfo) => ({
         url: `${USERS_URL}/profile`,
@@ -57,7 +63,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: userInfo,
       }),
       invalidatesTags: [{ type: 'User', id: 'PROFILE' }],
-      // Also update the state immediately on successful profile update
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
             const { data } = await queryFulfilled;
@@ -144,12 +149,37 @@ export const authApiSlice = apiSlice.injectEndpoints({
         providesTags: ['Subscription']
     }),
     remindSubscription: builder.mutation({
-        query: (userId) => ({
+        query: ({userId}) => ({
             url: `${USERS_URL}/${userId}/send-reminder`,
             method: 'POST',
         }),
-        providesTags: ['Subscription']
-    })
+        invalidatesTags: ['Subscription']
+    }),
+    
+    extendSubscription: builder.mutation({
+      query: ({ userId, category, duration }) => ({
+        url: `${USERS_URL}/admin/extend-subscription`,
+        method: 'POST',
+        body: { userId, category, duration },
+      }),
+      invalidatesTags: (result, error, { userId }) => [
+        { type: 'User', id: 'PROFILE' },
+        { type: 'User', id: userId }
+      ],
+    }),
+
+    revokeSubscription: builder.mutation({
+      query: ({ userId, category }) => ({
+        url: `${USERS_URL}/admin/revoke-subscription`,
+        method: 'POST',
+        body: { userId, category },
+      }),
+      invalidatesTags: (result, error, { userId }) => [
+        { type: 'User', id: 'PROFILE' },
+        { type: 'User', id: userId }
+      ],
+    }),
+
   }),
 });
 
@@ -158,6 +188,7 @@ export const {
   useSignupMutation, 
   useGetProfileQuery, 
   useGetAllUsersQuery,
+  useGetUserByIdQuery, 
   useSignupAdminMutation,
   useGetAllAdminQuery,
   useLoginWithGoogleMutation,
@@ -168,5 +199,7 @@ export const {
   usePromoteUserCategoryMutation,
   useDemoteUserCategoryMutation,
   useGetSubscriptionStatusQuery, 
-  useRemindSubscriptionMutation
+  useRemindSubscriptionMutation,
+  useExtendSubscriptionMutation,
+  useRevokeSubscriptionMutation,
 } = authApiSlice;

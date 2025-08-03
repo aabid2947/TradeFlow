@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, RotateCcw, ChevronDown, MoreVertical, Menu, X, User } from "lucide-react"
+import { Search, RotateCcw, ChevronDown, MoreVertical, Menu, X, User,LogOut } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
@@ -66,7 +66,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center overflow-hidden">
+          <div className="flex items-center overflow-hidden " onClick={() => navigate("/")}>
             <img src={sidebarLogo} alt="Logo" className="h-10 w-auto" />
           </div>
           <div className="flex flex-col">
@@ -82,29 +82,40 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 px-2 flex items-center gap-2 rounded-full hover:bg-gray-100" aria-label="User profile menu">
-                <Avatar className="h-7 w-7 border border-gray-200">
-                  <AvatarImage src={userPic} alt={user?.name} />
-                  <AvatarFallback className="bg-[#1987BF]/10 text-[#1987BF] text-xs font-medium">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-gray-700 hidden lg:inline">{user?.name}</span>
-                <ChevronDown className="h-3 w-3 text-gray-500 hidden lg:inline" />
-                <MoreVertical className="h-4 w-4 text-gray-500 lg:hidden" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-white border rounded-lg shadow-lg p-1">
-               <DropdownMenuItem onClick={handleNavigateProfile} className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-2">
-                 <User className="w-4 h-4" />
-                 <span>My Profile</span>
-               </DropdownMenuItem>
-               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md cursor-pointer">Log out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <div className="flex items-center gap-2 md:gap-3">
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" className="h-9 px-2 flex items-center gap-2 rounded-full hover:bg-gray-100" aria-label="User profile menu">
+        <Avatar className="h-7 w-7 border border-gray-200">
+          <AvatarImage src={userPic} alt={user?.name} />
+          <AvatarFallback className="bg-[#1987BF]/10 text-[#1987BF] text-xs font-medium">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium text-gray-700 hidden lg:inline">{user?.name}</span>
+        <ChevronDown className="h-3 w-3 text-gray-500 hidden lg:inline" />
+        <MoreVertical className="h-4 w-4 text-gray-500 lg:hidden" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2">
+      <DropdownMenuItem 
+        onClick={handleNavigateProfile} 
+        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:bg-gray-50 cursor-pointer rounded-none"
+      >
+        <User className="w-4 h-4 text-gray-500" />
+        <span className="font-medium">My Profile</span>
+      </DropdownMenuItem>
+      
+      <div className="h-px bg-gray-200 mx-2 my-1"></div>
+      
+      <DropdownMenuItem 
+        onClick={handleLogout} 
+        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 focus:outline-none focus:bg-red-50 cursor-pointer rounded-none"
+      >
+        <LogOut className="w-4 h-4 text-red-500" />
+        <span className="font-medium">Logout</span>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</div>
       </div>
     </header>
   )

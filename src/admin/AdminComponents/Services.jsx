@@ -82,9 +82,9 @@ export default function Services() {
     }
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-gray-50 ">
             <div className="max-w-7xl mx-auto px-4">
-                <h1 className="font-bold text-xl my-4">KYC Verification API</h1>
+                <h1 className="font-bold text-xl my-8">KYC Verification API</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div onClick={() => setIsAddModalOpen(true)} className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:bg-gray-50 hover:border-blue-500 transition-colors duration-300 min-h-[300px]">
                         <PlusIcon className="w-12 h-12 text-gray-400" />
