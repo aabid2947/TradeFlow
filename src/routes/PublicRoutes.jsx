@@ -12,8 +12,9 @@ import ContactUsPage from '@/home/ContactUsPage';
 import ProductPage from '@/home/ProductPage'
 import PricingPage from '@/home/PricingPage';
 import ResetPasswordPage from '@/components/ResetPasswordPage';
+// import BlogPage from '../home/BlogPage';
+import BlogLanding from '../home/BlogLanding';
 import BlogPage from '../home/BlogPage';
-
 export const publicRoutes = [
   {
     path: '/',
@@ -52,6 +53,11 @@ export const publicRoutes = [
     },
        {
       path: '/blog',
+      element: <BlogLanding />,
+      errorElement: <ErrorPage />
+    },
+        {
+      path: '/identity-verification',
       element: <BlogPage />,
       errorElement: <ErrorPage />
     },

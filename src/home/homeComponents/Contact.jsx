@@ -241,9 +241,10 @@ const ContactUs = () => {
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-1">Our Headquarters</h4>
                         <p className="text-gray-600">
-                          Tower A, 4th Floor<br />
-                          Sector 62, Noida<br />
-                          Uttar Pradesh - 201309<br />
+                          
+                           A 24/5, Mohan Cooperative Industrial Area<br />
+                          Badarpur, Second Floor,<br />
+                           New Delhi 110044<br />
                           India
                         </p>
                       </div>
@@ -275,16 +276,15 @@ const ContactUs = () => {
                   <div className="mt-4 text-sm text-gray-600">
                     <p className="font-medium mb-1">Nearest Landmarks:</p>
                     <ul className="space-y-1">
-                      <li>• 5 minutes from Sector 62 Metro Station</li>
-                      <li>• Next to City Center Mall</li>
-                      <li>• Opposite NTPC Office</li>
+                      <li>• 5 minutes from Saritavihar Metro Station</li>
+                      <li>• Next to Tata Motor Service center</li>
+                      <li>• Near to Air Liquid</li>
                     </ul>
                   </div>
                 </div>
               </AnimatedSection>
             </div>
 
-            {/* --- MAP ROW: FULL WIDTH --- */}
             <AnimatedSection>
               <div className="w-full bg-white rounded-2xl shadow-xl p-8 overflow-hidden">
                 <iframe

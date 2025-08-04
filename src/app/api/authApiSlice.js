@@ -44,7 +44,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    // --- NEW QUERY FOR FETCHING A SINGLE USER BY ID (FOR ADMIN USE) ---
     getUserById: builder.query({
       query: (userId) => ({
         url: `${USERS_URL}/${userId}`, // Backend route will be GET /api/users/:userId
@@ -53,7 +52,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
       // Provides a tag for this specific user, useful if this user's data is updated elsewhere
       providesTags: (result, error, id) => [{ type: 'User', id }],
     }),
-    // --- END NEW QUERY ---
+   
 
 
     updateProfile: builder.mutation({
@@ -179,6 +178,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
         { type: 'User', id: userId }
       ],
     }),
+     subscribeToNewsletter: builder.mutation({
+      query: (credentials) => ({
+        url: `${USERS_URL}/newsletter-subscribe`,
+        method: 'POST',
+        body: credentials,
+      }),
+       invalidatesTags: ['User']
+    }),
 
   }),
 });
@@ -202,4 +209,5 @@ export const {
   useRemindSubscriptionMutation,
   useExtendSubscriptionMutation,
   useRevokeSubscriptionMutation,
+  useSubscribeToNewsletterMutation
 } = authApiSlice;

@@ -131,8 +131,8 @@ export default function SidebarComponent({
       />
 
       <aside
-        className={`fixed left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${
-          isOpen ? "w-60" : "w-20"
+        className={`fixed  left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${
+          isOpen ? "w-64" : "w-20"
         } ${
           isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
         }`}
@@ -142,8 +142,8 @@ export default function SidebarComponent({
         }}
       >
         <div className="flex-1 flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto modern-scrollbar py-4">
-            <div className="mb-6">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden modern-scrollbar  py-4 ">
+            <div className="mb-6 w-[96%] ">
               <MenuButton 
                 icon={LayoutDashboard} 
                 label="Dashboard" 
@@ -152,7 +152,7 @@ export default function SidebarComponent({
               />
             </div>
 
-            <div className="mb-6">
+            <div className="mb-6  w-[96%] ">
               {isOpen && (
                 <div className="px-6 mb-3">
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Services</h3>
@@ -221,7 +221,7 @@ export default function SidebarComponent({
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Reports</h3>
                 </div>
               )}
-              <div className="space-y-1">
+              <div className="space-y-1  w-[96%] ">
                 {navigationData.reports.map((item) => (
                   <MenuButton 
                     key={item.title} 

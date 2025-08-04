@@ -24,7 +24,7 @@ import Profile from "./AdminComponents/Profile"; // <-- IMPORT THE NEW PROFILE C
 const DashboardHome = ({ users, transactions, isLoading }) => (
   <div className="space-y-6 bg-white">
     <DashboardOverview users={users} transactions={transactions} isLoading={isLoading} />
-    <FirebaseUserActivityDashboard />
+    {/* <FirebaseUserActivityDashboard /> */}
   </div>
 );
 

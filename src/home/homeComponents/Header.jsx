@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronDown, Menu, X, Phone, ArrowRight } from "lucide-react"
+import { ChevronDown, Menu, X, Phone, ArrowRight ,User} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import AppLogo from "@/assets/sidebarLogo.svg"
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice"
 import { selectCurrentUser } from "../../features/auth/authSlice"
 import { useSelector } from "react-redux"
+
 // Navigation items with Products shown first
 const staticNavItems = [
   {
@@ -176,7 +177,7 @@ export default function Header() {
                           />
                         </div>
                         {activeDropdown === item.name && (
-                          <div className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-xl border border-gray-100 z-50 flex">
+                          <div className="absolute top-full left-0  bg-white shadow-xl rounded-xl border border-gray-100 z-50 flex">
                             {/* Left Pane: Categories */}
                             <div ref={leftPaneRef} className="w-60 p-4 space-y-1">
                               {Object.keys(processedProducts).map((category) => (
@@ -229,7 +230,7 @@ export default function Header() {
                           />
                         </div>
                         {activeDropdown === item.name && (
-                          <div className="absolute top-full left-0 mt-2 min-w-full bg-white shadow-xl rounded-xl border border-gray-100 py-3 px-3 z-50">
+                          <div className="absolute top-full left-0 min-w-full bg-white shadow-xl rounded-xl border border-gray-100 py-3 px-3 z-50">
                             <div className="space-y-1">
                               {item.items?.map((subItem) => (
                                 <a
@@ -268,25 +269,40 @@ export default function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-5">
-            {user?<div className="hidden lg:block">
-                <Button
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
-                  type="button"
-                  onClick={() => navigate("/signup")}
-                >
-                  Dashboard
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
-                </Button>
-              </div>:<div className="hidden lg:block">
-                <Button
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
-                  type="button"
-                  onClick={() => navigate("/signup")}
-                >
-                  Get Started
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
-                </Button>
-              </div>}
+    
+{user ? (
+  <div className="hidden lg:block relative group">
+    <Button
+     onClick={() => navigate("/user")}
+      variant="ghost"
+      className="flex items-center gap-2 text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 py-2 bg-white shadow-sm transition duration-200"
+    >
+      <User className="w-5 h-5 text-gray-600" />
+      Account
+      <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gray-600" />
+    </Button>
+    <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
+      <button
+        onClick={() => navigate("/user")}
+        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+      >
+        Go to Account
+      </button>
+    </div>
+  </div>
+) : (
+  <div className="hidden lg:block">
+    <Button
+      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
+      type="button"
+      onClick={() => navigate("/signup")}
+    >
+      Get Started
+      <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
+    </Button>
+  </div>
+)}
+
               {/* <div className="hidden lg:block">
                 <Button
                   className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
