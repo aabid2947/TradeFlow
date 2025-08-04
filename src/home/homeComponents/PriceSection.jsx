@@ -31,7 +31,7 @@ const pricingPlans = [
       { name: "Criminal Check", hasInfo: false },
       { name: "Profile Lookup", hasInfo: true, tooltip: "Basic profile information checks." },
     ],
-    cta: "Start Personal",
+    cta: "Choose Plan",
   },
   {
     name: "Professional",
@@ -48,7 +48,7 @@ const pricingPlans = [
       { name: "Employment Check", hasInfo: true, tooltip: "Verify employment history." },
       { name: "Liveness & Face Match", hasInfo: true, tooltip: "Advanced biometric checks." },
     ],
-    cta: "Choose Professional",
+    cta: "Choose Plan",
   },
   {
     name: "Enterprise",
@@ -65,7 +65,7 @@ const pricingPlans = [
       { name: "SLA Support & Reporting", hasInfo: true, tooltip: "Guaranteed uptime and detailed reports." },
       { name: "Dedicated Manager", hasInfo: true, tooltip: "A dedicated manager for your account." },
     ],
-    cta: "Contact Sales",
+    cta: "Choose Plan",
   },
 ]
 
@@ -248,6 +248,7 @@ export default function PricingSection() {
         <div className="text-center mt-10">
           <p className="text-gray-600 text-sm mb-3">Need a custom solution?</p>
           <Button
+            onClick={() => navigate("/contact-us")}
             variant="outline"
             className="border-blue-500 text-blue-600 hover:bg-blue-50 bg-transparent text-sm py-2 px-4"
           >

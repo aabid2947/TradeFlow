@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
 import { selectCurrentToken, selectCurrentUserRole } from '@/features/auth/authSlice';
-
+import PrivacyPolicy from '../home/PrivacyPolicyPage';
 import ErrorPage from "@/pages/ErrorPage";
 import HomePage from "@/home/HomePage";
 import LoginPage from "@/pages/LoginPage";
@@ -23,6 +23,11 @@ export const publicRoutes = [
    {
     path: '/about-us',
     element:<AboutUsPage/>,
+    errorElement: <ErrorPage />
+  },
+   {
+    path: '/privacy-policy',
+    element:<PrivacyPolicy/>,
     errorElement: <ErrorPage />
   },
    {

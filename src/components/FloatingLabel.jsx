@@ -22,14 +22,14 @@ export const FloatingLabel = ({
     <div className="relative group">
       <div className="relative">
         <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors duration-200 group-focus-within:text-[#1987BF] z-10" />
-        <Input
+        <input
           {...props}
-          type={type === "password" && showPassword ? "text" : type}
+          type={type === "password" ? (showPassword ? "text" : "password") : type}
           value={value}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={`
-    pl-12 pr-12 pt-6 pb-2 h-14 bg-gray-50/80 border rounded-xl
+    pl-12 pr-12 pt-6 pb-2 h-14 bg-gray-50/80 border rounded-xl w-full
     transition-all duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]
     focus:outline-none focus:ring-4 focus:ring-[#1987BF]/20 focus:border-[#1987BF]/90
     hover:bg-white hover:border-gray-300

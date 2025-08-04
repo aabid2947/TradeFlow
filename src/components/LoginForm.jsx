@@ -7,11 +7,11 @@ import { Mail, Lock, ArrowRight, Phone, Eye, EyeOff, KeyRound, ArrowLeft } from 
 import { Button } from "@/components/ui/button"
 import { FloatingLabel } from "./FloatingLabel"
 import { AuthCard } from "../cards/AuthCard"
-import { 
-  useLoginMutation, 
+import {
+  useLoginMutation,
   useLoginWithGoogleMutation,
   useForgotPasswordMutation,
-} from "@/app/api/authApiSlice" 
+} from "@/app/api/authApiSlice"
 import { setCredentials } from "@/features/auth/authSlice"
 import { auth, googleProvider } from "@/firebase/firebaseConfig.js"
 import { signInWithPopup } from "firebase/auth"
@@ -21,14 +21,14 @@ export function LoginForm() {
   const [currentFlow, setCurrentFlow] = useState('login');
   // State to manage steps within a flow (e.g., for phone verification)
   const [flowStep, setFlowStep] = useState(1);
-  
-  const [formData, setFormData] = useState({ 
-    email: "", 
-    password: "", 
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
     phone: "",
     verificationCode: "",
   });
-  
+
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -94,7 +94,7 @@ export function LoginForm() {
       console.error("Failed to log in:", err);
     }
   };
-  
+
   const handlePhoneSubmit = (e) => {
     e.preventDefault();
     if (flowStep === 1) {
@@ -135,7 +135,7 @@ export function LoginForm() {
       console.error("Forgot password request failed:", err);
     }
   };
-  
+
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -169,7 +169,7 @@ export function LoginForm() {
     if (currentFlow === 'phone') return flowStep === 1 ? "Enter your phone number to continue" : "Enter the 6-digit code sent to your phone";
     return "Sign in to your account to continue";
   };
-  
+
   const anyApiError = loginApiError || googleApiError || forgotPasswordApiError;
 
   const renderFormContent = () => {
@@ -233,10 +233,21 @@ export function LoginForm() {
               )}
               <div className="space-y-5">
                 <FloatingLabel label="Email Address" value={formData.email} onChange={handleInputChange("email")} error={errors.email} icon={Mail} type="email" />
-                <div className="relative">
-                  <FloatingLabel label="Password" value={formData.password} onChange={handleInputChange("password")} error={errors.password} icon={Lock} type={showPassword ? "text" : "password"} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><Eye className="w-5 h-5" /></button>
-                </div>
+                {/* 
+                  FIX: The FloatingLabel component for passwords now handles the visibility toggle.
+                  - Removed the extra <button> that was causing the duplicate icon.
+                  - Added `showPassword` and `onTogglePassword` props to FloatingLabel.
+                */}
+                <FloatingLabel
+                  label="Password"
+                  value={formData.password}
+                  onChange={handleInputChange("password")}
+                  error={errors.password}
+                  icon={Lock}
+                  type="password"
+                  showPassword={showPassword}
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                />
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
@@ -278,7 +289,7 @@ export function LoginForm() {
           )}
 
           {renderFormContent()}
-          
+
           {/* Sign up link */}
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">

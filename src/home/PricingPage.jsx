@@ -122,7 +122,7 @@ const PricingPage = () => {
         "Criminal Check",
         "Profile Lookup",
       ],
-      buttonText: "Get Started",
+      buttonText: "Choose Plan ",
       buttonVariant: "outline",
     },
     {
@@ -140,7 +140,7 @@ const PricingPage = () => {
         "Liveness & Face Match",
         "CoWIN",
       ],
-      buttonText: "Choose Professional",
+      buttonText: "Choose Plan",
       buttonVariant: "primary",
       popular: true,
     },
@@ -159,7 +159,7 @@ const PricingPage = () => {
         "SLA Support & Reporting",
         "Dedicated Manager",
       ],
-      buttonText: "Contact Sales",
+      buttonText: "Choose Plan",
       buttonVariant: "outline",
     },
   ]
@@ -406,7 +406,7 @@ const PricingPage = () => {
             <button className="bg-white text-blue-700 px-8 py-4 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
               Start Free Trial
             </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300">
+            <button onClick={()=>navigate("/contact-us")} className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300">
               Contact Sales
             </button>
           </motion.div>

@@ -119,8 +119,8 @@ const ProductPage = ({ serviceId }) => {
     // --- NEW: Handler for navigating users who cannot review yet ---
     const handleNavigateAction = () => {
         if (userInfo) {
-            toast.info("You must use this service first to leave a review.");
             navigate('/user');
+            // toast.info("You must use this service first to leave a review.");
         } else {
             toast.error("Please log in to get started.");
             navigate('/login');
@@ -185,7 +185,6 @@ const ProductPage = ({ serviceId }) => {
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
                 <Header />
                 <div className="max-w-7xl mx-auto px-4 py-8">
-                    {/* ... (Product details JSX - no changes here) ... */}
                     <div className="grid lg:grid-cols-2 gap-12 mb-12">
                         {/* Product Image Section */}
                         <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="relative">
@@ -243,7 +242,7 @@ const ProductPage = ({ serviceId }) => {
                                     <div className="text-sm text-gray-600">Happy Customers</div>
                                 </div>
                             </div>
-                            <button onClick={() => navigate("/login")} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
+                            <button onClick={() => navigate(`/user/service/${productData.name}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
                                 Verify Now - {productData.price}
                             </button>
                             <div className="bg-white rounded-xl p-6 shadow-lg">

@@ -242,7 +242,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 pb-6">
+              {/* <div className="flex gap-2 pb-6">
                 <Button
                   size="sm"
                   variant="outline"
@@ -254,7 +254,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                   <Download className="w-4 h-4 mr-2" />
                   Download Invoice
                 </Button>
-              </div>
+              </div> */}
             </div>
           </td>
         </tr>

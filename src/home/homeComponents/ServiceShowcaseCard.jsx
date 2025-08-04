@@ -182,13 +182,8 @@ const CardContent = ({ children, className }) => (
 export default function ServiceCard({ data }) {
   const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false);
-  const { layout, theme, badgeIcon: BadgeIcon, badgeText, titleLines, typewriterTexts,  ctaText, VisualComponent } = data;
-   const  features= [
-        "Real-time API verification",
-        "99.9% accuracy guarantee",
-        "Instant fraud detection",
-        "Secure data handling",
-      ];
+  const { layout, theme, badgeIcon: BadgeIcon, badgeText, titleLines, typewriterTexts,  ctaText, VisualComponent,features } = data;
+ 
   const contentOrder = layout === 'image-left' ? 'lg:order-2' : 'lg:order-1';
   const visualOrder = layout === 'image-left' ? 'lg:order-1' : 'lg:order-2';
 

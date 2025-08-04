@@ -91,7 +91,8 @@ const ContactUs = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto mb-8"
             >
-              Got questions about our APIs? Need help with integration? Want to discuss pricing? We're here to help.
+              We’re here to help! Whether you have questions about our services, need support, or want to explore partnership opportunities, feel free to reach out. Our team at VerifyMyKyc is always ready to assist you.
+
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 20 }}

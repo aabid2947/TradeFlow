@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Plus, Minus, HelpCircle, Search, MessageCircle, Phone, Mail, ChevronRight } from "lucide-react"
-
+import { Plus, Minus, HelpCircle, Search, MessageCircle, Phone, Mail,Contact,ChevronRight } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 const faqData = [
   {
     id: 1,
@@ -151,6 +151,7 @@ export default function FAQSection() {
   const [openItems, setOpenItems] = useState([1]) // First item open by default
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const navigate = useNavigate()
 
   const toggleItem = (id) => {
     setOpenItems((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
@@ -187,12 +188,12 @@ export default function FAQSection() {
                   popular and trusted verification solution. Check out some answers you're looking for.
                 </p>
 
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                {/* <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                   <span className="flex items-center gap-2">
                     View All Documentation
                     <ChevronRight className="w-4 h-4" />
                   </span>
-                </button>
+                </button> */}
               </div>
 
               {/* Quick Stats */}
@@ -215,9 +216,9 @@ export default function FAQSection() {
                     <MessageCircle className="w-4 h-4 mr-3" />
                     Start Live Chat
                   </button> */}
-                  <button className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
-                    <Mail className="w-4 h-4 mr-3" />
-                    Send Email
+                  <button onClick={()=>navigate("/contact-us")} className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
+                    <Contact className="w-4 h-4 mr-3" />
+                    Contact us
                   </button>
                   {/* <button className="w-full justify-start bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-500/30 text-gray-700 hover:text-blue-600 transition-all duration-200 px-4 py-3 rounded-lg flex items-center">
                     <Phone className="w-4 h-4 mr-3" />

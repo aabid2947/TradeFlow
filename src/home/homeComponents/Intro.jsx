@@ -122,8 +122,7 @@ export default function CompanyIntro() {
               style={{ transitionDelay: '400ms' }}
             >
               <p className="text-lg text-gray-600 leading-relaxed">
-                VerifyMyKyc's vision is to be the undisputed choice for companies looking to maximize their security
-                through advanced verification operations that deploy the right mix of technology and human expertise.
+              At VerifyMyKyc, we help businesses verify identities, documents, and company details with speed, accuracy, and complete peace of mind. Whether you're onboarding new users or validating important business documents, we make the process smooth, secure, and stress free.
               </p>
 
               <p className="text-lg text-gray-600 leading-relaxed">

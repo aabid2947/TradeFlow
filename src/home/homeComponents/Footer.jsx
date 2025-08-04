@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useGetServicesQuery } from "@/app/api/serviceApiSlice"
 import {
   CheckCircle,
   Facebook,
@@ -19,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+// Static footer data (product links are now fully dynamic)
 const footerData = {
   company: {
     name: "VerifyMyKyc",
@@ -26,49 +29,34 @@ const footerData = {
       "Leading identity verification platform trusted by 10,000+ businesses worldwide. Secure, fast, and compliant verification solutions for the digital age.",
     contact: {
       email: "verifymykyc@gmail.com",
-      secEmail:"verifymykyc@navigantinc.com",
+      secEmail: "verifymykyc@navigantinc.com",
       phone: "+91 95606 52708",
       address: " A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044 ",
     },
   },
   links: {
-    products: [
-      { name: "Identity Verification", href: "/product/identity-verification" },
-      { name: "Financial & Business Checks", href: "/product/financial-business-checks" },
-      { name: "Legal & Compliance Checks", href: "/product/legal-compliance-checks" },
-      { name: "Health & Government Records", href: "/product/health-government-records" },
-      { name: "Biometric & AI-Based Verification", href: "/product/biometric-ai-verification" },
-      { name: "Profile & Database Lookup", href: "/product/profile-database-lookup" },
-      { name: "Criminal Verification", href: "/product/criminal-verification" },
-      { name: "Land Record Check", href: "/product/land-record-check" },
-
-    ],
     solutions: [
       { name: "Financial Services", href: "#" },
       { name: "Healthcare", href: "#" },
       { name: "E-commerce", href: "#" },
       { name: "Real Estate", href: "#" },
-      { name: "Government", href: "#" },
     ],
     company: [
       { name: "About Us", href: "/about-us" },
       { name: "Careers", href: "#" },
-      { name: "Press Kit", href: "#" },
-      { name: "Partner Program", href: "#" },
-      { name: "Contact Sales", href: "/contact-us" },
+      { name: "Contact", href: "/contact-us" },
+      { name: "Pricing", href: "/pricing" },
     ],
     resources: [
+      { name: "Case Studies", href: "#" },
+      { name: "Blog", href: "/blog" },
       { name: "Help Center", href: "#" },
-      { name: "Status Page", href: "#", external: true },
-      { name: "Security", href: "#" },
-      { name: "Compliance", href: "#" },
     ],
     legal: [
       { name: "Privacy Policy", href: "#" },
       { name: "Terms of Service", href: "#" },
       { name: "Cookie Policy", href: "#" },
       { name: "Data Processing Agreement", href: "#" },
-      { name: "Modern Slavery Statement", href: "#" },
     ],
   },
   social: [
@@ -94,27 +82,19 @@ const NewsletterSignup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!email) {
       setError("Email is required")
       return
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address")
       return
     }
-
     setError("")
     setIsSubmitting(true)
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500))
-
     setIsSubmitting(false)
     setIsSubmitted(true)
-
-    // Reset after 3 seconds
     setTimeout(() => {
       setIsSubmitted(false)
       setEmail("")
@@ -129,7 +109,6 @@ const NewsletterSignup = () => {
           Get the latest updates on new features, security enhancements, and industry insights.
         </p>
       </div>
-
       {!isSubmitted ? (
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="relative">
@@ -142,29 +121,23 @@ const NewsletterSignup = () => {
                 if (error) setError("")
               }}
               placeholder="Enter your email"
-              className={`
-                pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-200
-                focus:bg-white/20 focus:border-white/40 rounded-lg h-11
-                ${error ? "border-red-400" : ""}
-              `}
+              className={`pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-200 focus:bg-white/20 focus:border-white/40 rounded-lg h-11 ${error ? "border-red-400" : ""}`}
               disabled={isSubmitting}
             />
           </div>
-
           {error && <p className="text-red-300 text-xs">{error}</p>}
-
           <Button
             type="submit"
             disabled={isSubmitting}
             className="w-full bg-white text-[#1987BF] hover:bg-blue-50 font-semibold rounded-lg h-11 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:transform-none"
           >
             {isSubmitting ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-[#1987BF]/30 border-t-[#1987BF] rounded-full animate-spin" />
                 Subscribing...
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 Subscribe
                 <Send className="w-4 h-4" />
               </div>
@@ -180,7 +153,6 @@ const NewsletterSignup = () => {
           <p className="text-blue-100 text-sm">Check your inbox for confirmation.</p>
         </div>
       )}
-
       <p className="text-xs text-blue-200 leading-relaxed">
         By subscribing, you agree to our Privacy Policy. Unsubscribe at any time.
       </p>
@@ -191,48 +163,73 @@ const NewsletterSignup = () => {
 export default function Footer() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef(null)
+  const navigate = useNavigate()
+
+  const { data: servicesData, isLoading } = useGetServicesQuery()
+  const [groupedProducts, setGroupedProducts] = useState({})
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 },
-    )
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setIsVisible(true)
+    }, { threshold: 0.1 })
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
+    if (sectionRef.current) observer.observe(sectionRef.current)
+
+    return () => {
+      if (sectionRef.current) observer.disconnect()
     }
-
-    return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    if (servicesData && Array.isArray(servicesData.data)) {
+      const grouped = servicesData.data.reduce((acc, service) => {
+        const category = service.category || "Other"
+        if (!acc[category]) {
+          acc[category] = []
+        }
+        acc[category].push({
+          name: service.name,
+          href: `/product/${service._id}`,
+        })
+        return acc
+      }, {})
+      setGroupedProducts(grouped)
+    }
+  }, [servicesData])
+
+  const handleNavigation = (e, href) => {
+    if (!href || href === "#" || href.startsWith("http") || e.metaKey || e.ctrlKey) {
+      return
+    }
+    e.preventDefault()
+    navigate(href)
+  }
+
+  const NavLink = ({ link }) => (
+    <li>
+      <a
+        href={link.href}
+        onClick={(e) => handleNavigation(e, link.href)}
+        className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-1 group cursor-pointer"
+      >
+        {link.name}
+        {link.external && (
+          <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        )}
+      </a>
+    </li>
+  )
 
   return (
     <footer ref={sectionRef} className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-[#1987BF] text-white">
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse" />
-        <div
-          className="absolute bottom-20 right-20 w-32 h-32 bg-blue-300 rounded-full blur-2xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-purple-300 rounded-full blur-xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        />
+        <div className="absolute bottom-20 right-20 w-32 h-32 bg-blue-300 rounded-full blur-2xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-purple-300 rounded-full blur-xl animate-pulse" style={{ animationDelay: "2s" }} />
       </div>
 
-      {/* Main Footer Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div
-          className={`
-            grid grid-cols-1 lg:grid-cols-12 gap-12
-            ${isVisible ? "animate-in slide-in-from-bottom-8 fade-in duration-700" : "opacity-0"}
-          `}
-        >
-          {/* Company Info */}
+        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-12 ${isVisible ? "animate-in slide-in-from-bottom-8 fade-in duration-700" : "opacity-0"}`}>
           <div className="lg:col-span-4 space-y-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -243,48 +240,29 @@ export default function Footer() {
               </div>
               <p className="text-blue-100 leading-relaxed text-sm">{footerData.company.description}</p>
             </div>
-
-            {/* Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
+              <a href={`mailto:${footerData.company.contact.email}`} className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
                 <Mail className="w-4 h-4 text-blue-300" />
-                <a href={`mailto:${footerData.company.contact.email}`} className="text-sm">
-                  {footerData.company.contact.email}
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
+                <span className="text-sm">{footerData.company.contact.email}</span>
+              </a>
+              <a href={`mailto:${footerData.company.contact.secEmail}`} className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
                 <Mail className="w-4 h-4 text-blue-300" />
-                <a href={`mailto:${footerData.company.contact.secEmail}`} className="text-sm">
-                  {footerData.company.contact.secEmail}
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
+                <span className="text-sm">{footerData.company.contact.secEmail}</span>
+              </a>
+              <a href={`tel:${footerData.company.contact.phone}`} className="flex items-center gap-3 text-blue-100 hover:text-white transition-colors duration-200">
                 <Phone className="w-4 h-4 text-blue-300" />
-                <a href={`tel:${footerData.company.contact.phone}`} className="text-sm">
-                  {footerData.company.contact.phone}
-                </a>
-              </div>
+                <span className="text-sm">{footerData.company.contact.phone}</span>
+              </a>
               <div className="flex items-start gap-3 text-blue-100">
                 <MapPin className="w-4 h-4 text-blue-300 mt-0.5 flex-shrink-0" />
                 <span className="text-sm leading-relaxed">{footerData.company.contact.address}</span>
               </div>
             </div>
-
-            {/* Social Links */}
             <div>
               <h4 className="font-semibold mb-3">Follow Us</h4>
               <div className="flex gap-3">
                 {footerData.social.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className={`
-                      w-10 h-10 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center
-                      transition-all duration-200 hover:scale-110 ${social.color}
-                    `}
-                    aria-label={social.name}
-                    target="_blank"
-                  >
+                  <a key={social.name} href={social.href} className={`w-10 h-10 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 ${social.color}`} aria-label={social.name} target="_blank" rel="noopener noreferrer">
                     <social.icon className="w-5 h-5" />
                   </a>
                 ))}
@@ -292,130 +270,66 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links Sections */}
           <div className="lg:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Products */}
-            <div>
-              <h3 className="font-semibold mb-4 text-white">Products</h3>
-              <ul className="space-y-3">
-                {footerData.links.products.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-1 group"
-                    >
-                      {link.name}
-                      {link.external && (
-                        <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                      )}
-                    </a>
-                  </li>
+            {/* Dynamic Product Category Columns */}
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="h-5 bg-white/10 rounded w-3/4 mb-4"></div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-white/10 rounded w-full"></div>
+                      <div className="h-4 bg-white/10 rounded w-5/6"></div>
+                      <div className="h-4 bg-white/10 rounded w-full"></div>
+                    </div>
+                  </div>
+                ))
+              : Object.entries(groupedProducts).map(([category, links]) => (
+                  <div key={category}>
+                    <h3 className="font-semibold mb-4 text-white">{category}</h3>
+                    <ul className="space-y-3">
+                      {links.map((link) => (
+                        <NavLink key={link.name} link={link} />
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
 
-            {/* Solutions */}
+            {/* Static Link Columns */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Solutions</h3>
-              <ul className="space-y-3">
-                {footerData.links.solutions.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-blue-100 hover:text-white transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-3">{footerData.links.solutions.map((link) => <NavLink key={link.name} link={link} />)}</ul>
             </div>
-
-            {/* Company */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Company</h3>
-              <ul className="space-y-3">
-                {footerData.links.company.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-blue-100 hover:text-white transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-3">{footerData.links.company.map((link) => <NavLink key={link.name} link={link} />)}</ul>
             </div>
-
-            {/* Resources */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Resources</h3>
-              <ul className="space-y-3">
-                {footerData.links.resources.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-1 group"
-                    >
-                      {link.name}
-                      {link.external && (
-                        <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-3">{footerData.links.resources.map((link) => <NavLink key={link.name} link={link} />)}</ul>
             </div>
-
-            {/* Legal */}
             <div className="md:col-span-2">
               <h3 className="font-semibold mb-4 text-white">Legal</h3>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {footerData.links.legal.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-blue-100 hover:text-white transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">{footerData.links.legal.map((link) => <NavLink key={link.name} link={link} />)}</ul>
             </div>
           </div>
-
-          {/* Newsletter */}
           <div className="lg:col-span-2">
             <NewsletterSignup />
           </div>
         </div>
 
-        {/* Certifications */}
-        <div
-          className={`
-            mt-12 pt-8 border-t border-white/20
-            ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}
-          `}
-          style={{ animationDelay: "300ms" }}
-        >
+        <div className={`mt-12 pt-8 border-t border-white/20 ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}`} style={{ animationDelay: "300ms" }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h4 className="font-semibold mb-3 text-white">Security & Compliance</h4>
               <div className="flex flex-wrap gap-4">
                 {footerData.certifications.map((cert) => (
-                  <div
-                    key={cert.name}
-                    className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
-                  >
+                  <div key={cert.name} className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg hover:bg-white/20 transition-colors duration-200">
                     <cert.icon className="w-4 h-4 text-blue-300" />
                     <span className="text-sm font-medium">{cert.name}</span>
                   </div>
                 ))}
               </div>
             </div>
-
             <div className="text-center md:text-right">
               <div className="text-2xl font-bold text-white mb-1">99.9%</div>
               <div className="text-blue-100 text-sm">Uptime SLA</div>
@@ -423,32 +337,13 @@ export default function Footer() {
           </div>
         </div>
       </div>
-
-      {/* Bottom Bar */}
       <div className="relative z-10 border-t border-white/20 bg-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div
-            className={`
-              flex flex-col md:flex-row items-center justify-between gap-4
-              ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}
-            `}
-            style={{ animationDelay: "500ms" }}
-          >
+          <div className={`flex flex-col md:flex-row items-center justify-between gap-4 ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}`} style={{ animationDelay: "500ms" }}>
             <div className="text-blue-100 text-sm">© 2024 {footerData.company.name}. All rights reserved.</div>
-
             <div className="flex items-center gap-6 text-sm">
-              <a href="#" className="text-blue-100 hover:text-white transition-colors duration-200">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white transition-colors duration-200">
-                Terms
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white transition-colors duration-200">
-                Cookies
-              </a>
-              <a href="#" className="text-blue-100 hover:text-white transition-colors duration-200">
-                Do not sell my info
-              </a>
+              <a href="#" onClick={(e) => handleNavigation(e, "#")} className="text-blue-100 hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</a>
+              <a href="#" onClick={(e) => handleNavigation(e, "#")} className="text-blue-100 hover:text-white transition-colors duration-200 cursor-pointer">Terms</a>
             </div>
           </div>
         </div>

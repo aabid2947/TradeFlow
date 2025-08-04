@@ -211,7 +211,7 @@ const AboutUs = () => {
               </div>
               <p className="text-xl text-blue-600 font-semibold mb-4">Make trust instant.</p>
               <p className="text-gray-600 leading-relaxed">
-                Every business should be able to verify customers quickly. Every person should prove their identity without waiting. That's what we do.
+                VerifyMyKyc was built to make trust easy in a digital world. We help companies stay compliant, avoid fraud, and build strong, trustworthy relationships with customers and partners  all through simple, effective verification tools.
               </p>
             </AnimatedSection>
 
@@ -271,33 +271,51 @@ const AboutUs = () => {
       </section>
 
       {/* Services Preview */}
-      <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <AnimatedSection className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">What We Verify</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Comprehensive identity verification for all your business needs
-            </p>
-          </AnimatedSection>
+      {/* <section className="py-20 bg-white">
+  <div className="max-w-6xl mx-auto px-6">
+    <AnimatedSection className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-gray-900 mb-4">What We Verify</h2>
+      <p className="text-gray-600 max-w-2xl mx-auto">
+        Comprehensive identity verification for all your business needs
+      </p>
+    </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: "PAN Card", desc: "Instant government database check", icon: "🆔" },
-              { name: "Aadhaar", desc: "Real biometric verification", icon: "👤" },
-              { name: "Bank Account", desc: "Penny drop verification", icon: "🏦" },
-              { name: "UPI ID", desc: "Live VPA checking", icon: "💳" },
-              { name: "GST Number", desc: "Business verification", icon: "🏢" },
-              { name: "Voter ID", desc: "Electoral database check", icon: "🗳️" }
-            ].map((service, index) => (
-              <AnimatedSection key={index} className="bg-gray-50 p-6 rounded-xl hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.name}</h3>
-                <p className="text-gray-600">{service.desc}</p>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[
+        {
+          name: "Digital Identity Verification",
+          desc: "Verify Aadhaar, PAN, Voter ID, Driving License, and other IDs — all in just a few clicks.",
+          icon: "🆔",
+        },
+        {
+          name: "Business Verification",
+          desc: "Instantly check GST registration, MSME certificates, company status, and more to ensure you're working with legitimate entities.",
+          icon: "🏢",
+        },
+        {
+          name: "Paperless Document Signing",
+          desc: "Say goodbye to paperwork. Use Aadhaar-based eSign to sign legally valid documents online — safely and quickly.",
+          icon: "✍️",
+        },
+        {
+          name: "Property & Land Record Checks",
+          desc: "Reduce risks by checking property ownership, title clarity, and any legal issues before making real estate decisions.",
+          icon: "🏠",
+        },
+      ].map((service, index) => (
+        <AnimatedSection
+          key={index}
+          className="bg-gray-50 p-6 rounded-xl hover:shadow-lg transition-all duration-300"
+        >
+          <div className="text-4xl mb-4">{service.icon}</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.name}</h3>
+          <p className="text-gray-600">{service.desc}</p>
+        </AnimatedSection>
+      ))}
+    </div>
+  </div>
+</section> */}
+
     </div>
   );
 };
