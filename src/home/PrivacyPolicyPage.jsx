@@ -6,14 +6,18 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { ChevronDown, ChevronRight, Shield, FileText, Users, Lock, Eye, Globe, Mail, MapPin } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-
+import LandingPageFooter from "./homeComponents/Footer"
+import HomePageHeader from "./homeComponents/Header"
+import { useNavigate } from "react-router-dom"
 
 export default function PrivacyPolicy() {
-  const [expandedSection, setExpandedSection] = useState<string>("overview")
+  // FIX: Removed the TypeScript type annotation <string>
+  const [expandedSection, setExpandedSection] = useState("overview")
 
   const toggleSection = (sectionId) => {
     setExpandedSection(expandedSection === sectionId ? "" : sectionId)
   }
+  const navigate = useNavigate()
 
   const sections = [
     {
@@ -159,7 +163,7 @@ export default function PrivacyPolicy() {
               </p>
               <p className="text-gray-700 mb-4">
                 When You access the Service by or through a mobile device, We may collect certain information
-                automatically, including, but not limited to, the type of mobile device You use, Your mobile device
+                automatically, including, but not to, the type of mobile device You use, Your mobile device
                 unique ID, the IP address of Your mobile device, Your mobile operating system, the type of mobile
                 Internet browser You use, unique device identifiers and other diagnostic data.
               </p>
@@ -566,6 +570,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
+      <HomePageHeader/>
       <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
@@ -657,16 +662,17 @@ export default function PrivacyPolicy() {
                   If you have any questions about this Privacy Policy, You can contact us:
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <a
-                    href="https://verifymykyc.com/contact-us"
+                  <div
+                    onClick={()=>navigate("/contact-us")}
                     className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
                   >
                     <Globe className="w-5 h-5 mr-2" />
                     Visit Contact Page
-                  </a>
+                  </div>
                   <div className="flex items-center text-gray-600">
                     <MapPin className="w-5 h-5 mr-2" />
-                    <span className="text-sm">Tower A, 4th Floor Sector 62, Noida, UP - 201309</span>
+                    <span className="text-sm">A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044
+</span>
                   </div>
                 </div>
               </div>
@@ -674,6 +680,7 @@ export default function PrivacyPolicy() {
           </Card>
         </motion.div>
       </div>
+      <LandingPageFooter/>
     </div>
   )
 }
