@@ -453,7 +453,7 @@ export function SignUpForm() {
               <div className="space-y-4">
                 {/* Google Sign-in */}
                 {/* Phone option */}
-                <button
+                {/* <button
                   onClick={() => { setPhoneFlow(true); setStep(1); setErrors({}) }}
                   className="w-full h-12 flex items-center justify-center border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 transform hover:scale-[1.02] bg-white hover:bg-gray-50 group"
                 >
@@ -477,7 +477,7 @@ export function SignUpForm() {
                       </span>
                     </>
                   )}
-                </button>
+                </button> */}
 
               </div>
 
