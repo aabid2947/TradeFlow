@@ -251,7 +251,7 @@ export default function SidebarComponent({
               <div className="relative" ref={dropdownRef}>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 relative">
                   <Avatar className="w-10 h-10 ring-2 ring-white">
-                    <AvatarImage src={userPic} alt={user?.name || "User"} />
+                    <AvatarImage src={user.avatar} alt={user?.name || "User"} />
                     <AvatarFallback className="bg-blue-500 text-white font-medium">
                       {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
                     </AvatarFallback>

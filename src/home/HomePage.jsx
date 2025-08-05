@@ -13,11 +13,9 @@ import HeroSection from "./homeComponents/HeroSection"
 import TopBar from "./homeComponents/TopBar"
 import { useEffect } from "react"
 import GoToTopButton from "./homeComponents/GoToTopButton"
-import { useSelector } from "react-redux"
-import {selectCurrentUser} from "@/features/auth/authSlice"
 
 export default function HomePage() {
-  const user = useSelector(selectCurrentUser);
+
 useEffect(()=>{
      window.scrollTo({
     top: 0,
@@ -32,7 +30,7 @@ useEffect(()=>{
     
         {/* A single, unified header that handles its own responsiveness */}
 
-        {!user && <TopBar />}
+        <TopBar />
       
         <HomePageHeader />
         <HeroSection/>

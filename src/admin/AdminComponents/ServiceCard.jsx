@@ -1,9 +1,17 @@
-import { Heart, Shield, Clock, Pencil, Trash2 } from "lucide-react";
+import { Heart, Shield, Clock, Pencil, Trash2, ImageOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useDeleteServiceMutation } from "../../app/api/serviceApiSlice";
+
+// Skeleton component for when no image is available
+const ImageSkeleton = () => (
+  <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center rounded-lg">
+    <ImageOff className="w-10 h-10 text-gray-400" />
+  </div>
+);
+
 
 export default function ServiceCard({
   imageSrc,
@@ -21,13 +29,12 @@ export default function ServiceCard({
   const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
   const handleDeleteService = async (e) => {
-    // Prevent the click from navigating
     e.stopPropagation(); 
     if (!confirm("Are you sure you want to delete this service?")) return;
 
     try {
-      // Use the database _id for the delete mutation for consistency with caching
-      await deleteService(serviceId).unwrap();
+      // Use the database _id for the delete mutation
+      await deleteService(serviceDbId).unwrap();
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete service. Please try again.");
@@ -35,9 +42,7 @@ export default function ServiceCard({
   };
   
   const handleUpdate = (e) => {
-    // Prevent the click from navigating
     e.stopPropagation();
-    // Notify the parent component to open the update form
     onUpdateClick();
   };
 
@@ -45,11 +50,15 @@ export default function ServiceCard({
     <Card onClick={() => navigate(`/user/service/${serviceId}`)} className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
       <div className="relative">
         <div className="aspect-[4/2.8] overflow-hidden">
-          <img
-            src={imageSrc}
-            alt={alt || serviceName}
-            className="w-full h-full object-cover rounded-lg"
-          />
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={alt || serviceName}
+              className="w-full h-full object-cover rounded-lg"
+            />
+          ) : (
+            <ImageSkeleton />
+          )}
         </div>
       </div>
 
@@ -81,7 +90,6 @@ export default function ServiceCard({
         <div className="flex items-center justify-between pt-3 ">
           <div className="text-xl font-bold text-orange-500">₹ {price}</div>
           <div className="flex items-center space-x-2">
-            {/* UPDATE BUTTON */}
             <Button
               size="icon"
               variant="outline"
@@ -91,7 +99,6 @@ export default function ServiceCard({
             >
               <Pencil className="w-4 h-4" />
             </Button>
-            {/* DELETE BUTTON */}
             <Button
               size="icon"
               variant="outline"

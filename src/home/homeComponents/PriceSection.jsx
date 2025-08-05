@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -21,7 +22,6 @@ const pricingPlans = [
     monthlyPrice: "₹4,999",
     yearlyPrice: "₹38,499",
     description: "For Individuals",
-    isPopular: false,
     icon: Users,
     features: [
       { name: "25 Verifications/month", hasInfo: false },
@@ -38,7 +38,6 @@ const pricingPlans = [
     monthlyPrice: "₹18,999",
     yearlyPrice: "₹1,46,299",
     description: "For Small Businesses",
-    isPopular: true,
     icon: Zap,
     features: [
       { name: "100 Verifications/month", hasInfo: false },
@@ -55,7 +54,6 @@ const pricingPlans = [
     monthlyPrice: "₹89,999",
     yearlyPrice: "₹6,92,999",
     description: "For Corporates / High-Volume Needs",
-    isPopular: false,
     icon: Building,
     features: [
       { name: "500 Verifications/month", hasInfo: false },
@@ -71,6 +69,7 @@ const pricingPlans = [
 
 export default function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false)
+  const [selectedPlanName, setSelectedPlanName] = useState('Professional'); // Default highlighted plan
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
@@ -166,19 +165,21 @@ export default function PricingSection() {
               const isPlanActive = user?.activeSubscriptions?.some(
                 (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
               );
+              const isSelected = plan.name === selectedPlanName;
 
               return (
                 <Card
                   key={plan.name}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group ${plan.isPopular ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} ${isPlanActive ? "!border-green-500" : ""}`}
+                  onClick={() => setSelectedPlanName(plan.name)}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group cursor-pointer ${isSelected ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} ${isPlanActive ? "!border-green-500" : ""}`}
                 >
-                  {plan.isPopular && (
+                  {/* {isSelected && (
                     <div className="absolute top-1 left-1/2 transform -translate-x-1/2">
                       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-1 rounded-full text-xs font-semibold shadow">
                         Most Popular
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {isPlanActive && (
                       <div className="absolute top-1 right-1">
@@ -191,7 +192,7 @@ export default function PricingSection() {
 
                   <CardHeader className="text-center pb-4 pt-7">
                     <div className="flex justify-center mb-3">
-                      <div className={`p-2 rounded-xl ${plan.isPopular ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"} transition-colors duration-300`}>
+                      <div className={`p-2 rounded-xl ${isSelected ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"} transition-colors duration-300`}>
                         <IconComponent className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
                     </div>
@@ -230,9 +231,12 @@ export default function PricingSection() {
                       ))}
                     </ul>
                     <Button
-                      onClick={() => handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card's onClick from firing
+                        handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
+                      }}
                       disabled={isLoading || isPlanActive}
-                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : plan.isPopular ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : isSelected ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                     >
                       {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.cta)}
                     </Button>
@@ -246,11 +250,11 @@ export default function PricingSection() {
           </div>
         </TooltipProvider>
         <div className="text-center mt-10">
-          <p className="text-gray-600 text-sm mb-3">Need a custom solution?</p>
+          <p className="text-gray-600 text-sm mb-3 font-semibold text-lg">Need a custom solution?</p>
           <Button
             onClick={() => navigate("/contact-us")}
             variant="outline"
-            className="border-blue-500 text-blue-600 hover:bg-blue-50 bg-transparent text-sm py-2 px-4"
+            className="border-blue-500 md:text-lg bg-blue-600 text-white  text-sm py-2 px-4"
           >
             Contact Sales
           </Button>

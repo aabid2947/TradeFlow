@@ -27,25 +27,6 @@ export default function Services() {
     const [createService, { isLoading: isCreating, error: createError }] = useCreateServiceMutation();
     const [updateService, { isLoading: isUpdating, error: updateError }] = useUpdateServiceMutation();
 
-    const handleAddService = async (serviceData) => {
-        try {
-            await createService(serviceData).unwrap();
-            setIsAddModalOpen(false); 
-        } catch (err) {
-            console.error('Failed to create the service:', err);
-        }
-    };
-
-    const handleUpdateService = async (serviceData) => {
-        try {
-            console.log(serviceData)
-            await updateService({ id: serviceData._id, changes: serviceData }).unwrap();
-            setServiceToUpdate(null); 
-        } catch (err) {
-            console.error('Failed to update the service:', err);
-        }
-    };
-
     const handleOpenUpdateModal = (service) => {
         setServiceToUpdate(service);
     };
@@ -55,7 +36,45 @@ export default function Services() {
         setServiceToUpdate(null);
     };
 
-    // Spread the original service object `svc` to ensure all its data is preserved
+    // Generic function to create FormData from service data object
+    const createServiceFormData = (data, imageFile) => {
+        const formData = new FormData();
+        Object.keys(data).forEach(key => {
+            const value = data[key];
+            // Stringify objects and arrays before appending
+            if (typeof value === 'object' && value !== null) {
+                formData.append(key, JSON.stringify(value));
+            } else {
+                formData.append(key, value);
+            }
+        });
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+        return formData;
+    };
+
+    const handleAddService = async (serviceData, imageFile) => {
+        const formData = createServiceFormData(serviceData, imageFile);
+        try {
+            await createService(formData).unwrap();
+            handleCloseModal();
+        } catch (err) {
+            console.error('Failed to create the service:', err);
+        }
+    };
+
+    const handleUpdateService = async (serviceData, imageFile) => {
+        const { _id, ...changes } = serviceData;
+        const formData = createServiceFormData(changes, imageFile);
+        try {
+            await updateService({ id: _id, formData }).unwrap();
+            handleCloseModal();
+        } catch (err) {
+            console.error('Failed to update the service:', err);
+        }
+    };
+
     const serviceCards = services?.data?.map((svc) => {
         const randomImage = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
         const randomDemand = demandLevels[Math.floor(Math.random() * demandLevels.length)];
@@ -101,14 +120,14 @@ export default function Services() {
                             durationDays={card.durationDays}
                             price={card.price}
                             serviceId={card.serviceId}
-                            serviceDbId={card.id} // Pass the database _id
-                            onUpdateClick={() => handleOpenUpdateModal(card)} // Pass the handler
+                            serviceDbId={card.id}
+                            onUpdateClick={() => handleOpenUpdateModal(card)}
                         />
+
                     ))}
                 </div>
             </div>
 
-            {/* Modal for Adding OR Updating a Service */}
             {(isAddModalOpen || serviceToUpdate) && (
                 <AddServiceForm
                     initialData={serviceToUpdate}

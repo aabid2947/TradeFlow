@@ -87,7 +87,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-9 px-2 flex items-center gap-2 rounded-full hover:bg-gray-100" aria-label="User profile menu">
         <Avatar className="h-7 w-7 border border-gray-200">
-          <AvatarImage src={userPic} alt={user?.name} />
+          <AvatarImage src={user.avatar} alt={user?.name} />
           <AvatarFallback className="bg-[#1987BF]/10 text-[#1987BF] text-xs font-medium">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
         <span className="text-sm font-medium text-gray-700 hidden lg:inline">{user?.name}</span>

@@ -18,8 +18,9 @@ import DashboardOverview from "./AdminComponents/DashBoardOverview";
 import RegisterAdmin from "./AdminComponents/RegisterAdmin";
 import Feedback from "./AdminComponents/Feedback"
 import UsersDisplay from "./AdminComponents/AllUser";
-import FirebaseUserActivityDashboard from "./AdminComponents/DashBoardCharts";
+// import FirebaseUserActivityDashboard from "./AdminComponents/DashBoardCharts";
 import Profile from "./AdminComponents/Profile"; // <-- IMPORT THE NEW PROFILE COMPONENT
+import BlogManagement from "./AdminComponents/BlogMetaDataForm";
 
 const DashboardHome = ({ users, transactions, isLoading }) => (
   <div className="space-y-6 bg-white">
@@ -48,6 +49,8 @@ const renderContent = (activeView, users, services, transactions, isLoading) => 
       return <Feedback/>
     case "profile": 
       return <Profile/>;
+    case "blog":
+      return <BlogManagement/>
     default:
       return <DashboardHome users={users} transactions={transactions} isLoading={isLoading} />
   }

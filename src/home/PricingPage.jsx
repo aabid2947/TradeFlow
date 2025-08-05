@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -29,6 +30,7 @@ const itemVariants = {
 
 const PricingPage = () => {
   const [isAnnual, setIsAnnual] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState('professional'); // Default highlighted plan
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
@@ -142,7 +144,6 @@ const PricingPage = () => {
       ],
       buttonText: "Choose Plan",
       buttonVariant: "primary",
-      popular: true,
     },
     {
       id: "enterprise",
@@ -242,21 +243,23 @@ const PricingPage = () => {
               const isPlanActive = user?.activeSubscriptions?.some(
                 (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
               );
+              const isSelected = plan.id === selectedPlanId;
 
               return (
               <motion.div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border ${plan.popular ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} ${isPlanActive ? "border-green-500" : ""} flex flex-col`}
+                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border cursor-pointer ${isSelected ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} ${isPlanActive ? "border-green-500" : ""} flex flex-col`}
                 variants={itemVariants}
+                onClick={() => setSelectedPlanId(plan.id)}
               >
-                {plan.popular && (
+                {/* {isSelected && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <div className="bg-gradient-to-r from-blue-600 to-sky-700 text-white px-6 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
                       <Star className="w-4 h-4 fill-white" />
                       Most Popular
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {isPlanActive && (
                   <div className="absolute top-4 right-4">
@@ -291,9 +294,12 @@ const PricingPage = () => {
                 </div>
                 <div className="p-8 pt-0">
                   <button
-                    onClick={() => handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card's onClick from firing
+                      handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
+                    }}
                     disabled={isLoading || isPlanActive}
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : plan.buttonVariant === "primary" ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : isSelected ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                   >
                     {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.buttonText)}
                   </button>

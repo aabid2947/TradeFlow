@@ -29,21 +29,21 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
     }),
     
     // UPDATED: The backend route for creation is POST /api/services
-    createService: builder.mutation({
-      query: (serviceData) => ({
-        url: SERVICES_URL, // The URL is just the base URL
+      createService: builder.mutation({
+      query: (formData) => ({
+        url: SERVICES_URL,
         method: 'POST',
-        body: serviceData, 
+        body: formData, // Send FormData directly
       }),
       invalidatesTags: [{ type: 'Service', id: 'LIST' }],
     }),
 
-    // This mutation is correct
+    // Accepts FormData
     updateService: builder.mutation({
-      query: ({ id, ...changes }) => ({
+      query: ({ id, formData }) => ({
         url: `${SERVICES_URL}/${id}`,
         method: 'PUT',
-        body: { changes }, // Ensure the payload matches the backend controller's expectation
+        body: formData, // Send FormData directly
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: 'Service', id },

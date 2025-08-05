@@ -178,6 +178,25 @@ export const authApiSlice = apiSlice.injectEndpoints({
         { type: 'User', id: userId }
       ],
     }),
+        updateAvatar: builder.mutation({
+      query: (formData) => ({
+        url: `${USERS_URL}/profile/avatar`, // Corrected URL
+        method: 'PUT',
+        body: formData,
+        // FormData is handled automatically by the browser
+      }),
+      invalidatesTags: [{ type: 'User', id: 'PROFILE' }],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+           if (data?.success && data?.avatar) {
+             dispatch(updateUser({ avatar: data.avatar }));
+           }
+        } catch (err) {
+          console.error('Failed to update avatar:', err);
+        }
+      },
+    }),
      subscribeToNewsletter: builder.mutation({
       query: (credentials) => ({
         url: `${USERS_URL}/newsletter-subscribe`,
@@ -205,6 +224,7 @@ export const {
   useUpdateProfileMutation,
   usePromoteUserCategoryMutation,
   useDemoteUserCategoryMutation,
+  useUpdateAvatarMutation,
   useGetSubscriptionStatusQuery, 
   useRemindSubscriptionMutation,
   useExtendSubscriptionMutation,

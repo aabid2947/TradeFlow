@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Star, Quote, Verified, Play, Pause } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Star, Quote, Verified } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -10,82 +9,133 @@ import { Badge } from "@/components/ui/badge"
 const mockReviews = [
   {
     id: 1,
-    name: "Sarah Chen",
+    name: "Priya Sharma",
     title: "Product Manager",
     company: "TechFlow Solutions",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1494790108755-2616c0763c4e?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "VerifyMe has transformed our onboarding process. The API integration was seamless, and the accuracy rate is outstanding. We've reduced fraud by 85% since implementation.",
     date: "2 weeks ago",
     verified: true,
-    location: "San Francisco, CA",
+    location: "Mumbai, Maharashtra",
   },
   {
     id: 2,
-    name: "Michael Rodriguez",
+    name: "Raj Patel",
     title: "CTO",
     company: "SecureBank Ltd",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "The real-time verification capabilities have exceeded our expectations. Customer satisfaction improved significantly, and the compliance features are exactly what we needed.",
     date: "1 month ago",
     verified: true,
-    location: "New York, NY",
+    location: "Bangalore, Karnataka",
   },
   {
     id: 3,
-    name: "Emily Watson",
+    name: "Ananya Singh",
     title: "Operations Director",
     company: "Global Fintech",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "Exceptional service and support. The verification process is lightning-fast, and the detailed reporting helps us maintain compliance effortlessly.",
     date: "3 weeks ago",
     verified: true,
-    location: "London, UK",
+    location: "Delhi, NCR",
   },
   {
     id: 4,
-    name: "David Kim",
+    name: "Vikram Kumar",
     title: "Head of Security",
     company: "CryptoVault Inc",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "The most reliable verification platform we've used. The fraud detection algorithms are sophisticated, and the customer support team is incredibly responsive.",
     date: "2 months ago",
     verified: true,
-    location: "Singapore",
+    location: "Hyderabad, Telangana",
   },
   {
     id: 5,
-    name: "Lisa Thompson",
+    name: "Meera Gupta",
     title: "Compliance Manager",
     company: "RegTech Solutions",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "VerifyMe's comprehensive verification suite has streamlined our entire compliance workflow. The documentation is excellent, and implementation was surprisingly smooth.",
     date: "1 month ago",
     verified: true,
-    location: "Toronto, CA",
+    location: "Pune, Maharashtra",
   },
   {
     id: 6,
-    name: "James Anderson",
+    name: "Arjun Reddy",
     title: "VP Engineering",
     company: "DataSecure Corp",
-    avatar: "/placeholder.svg?height=60&width=60",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
       "The API performance is exceptional with 99.9% uptime. The verification accuracy and speed have helped us scale our platform without compromising security.",
     date: "3 weeks ago",
     verified: true,
-    location: "Austin, TX",
+    location: "Chennai, Tamil Nadu",
   },
+  {
+    id: 7,
+    name: "Sneha Joshi",
+    title: "Tech Lead",
+    company: "StartupHub India",
+    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=60&h=60&fit=crop&crop=face",
+    rating: 5,
+    review:
+      "Outstanding platform with excellent customer service. The verification process is smooth and the integration documentation is comprehensive.",
+    date: "1 week ago",
+    verified: true,
+    location: "Gurgaon, Haryana",
+  },
+  {
+    id: 8,
+    name: "Rohit Agarwal",
+    title: "Business Analyst",
+    company: "FinServ Solutions",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=60&h=60&fit=crop&crop=face",
+    rating: 5,
+    review:
+      "Game-changing solution for our business verification needs. The accuracy and speed are unmatched in the industry.",
+    date: "2 weeks ago",
+    verified: true,
+    location: "Kolkata, West Bengal",
+  },
+  {
+    id: 9,
+    name: "Kavya Nair",
+    title: "Product Owner",
+    company: "TechInnovate",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60&fit=crop&crop=face",
+    rating: 5,
+    review:
+      "Incredible platform that has revolutionized our identity verification process. Highly recommend to any business looking for reliable solutions.",
+    date: "4 days ago",
+    verified: true,
+    location: "Kochi, Kerala",
+  }
+]
+
+// Indian user avatars for the online users section
+const indianUsers = [
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1494790108755-2616c0763c4e?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=40&h=40&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face"
 ]
 
 const StarRating = ({ rating, size = "sm" }) => {
@@ -181,8 +231,6 @@ const ReviewCard = ({ review, isActive }) => {
 
 export default function CustomerReviews() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const [isPaused, setIsPaused] = useState(false)
   const reviewsPerPage = 3
 
   const totalSlides = Math.ceil(mockReviews.length / reviewsPerPage)
@@ -191,21 +239,11 @@ export default function CustomerReviews() {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides)
   }
 
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + totalSlides) % totalSlides)
-  }
-
-  const goToSlide = (index) => {
-    setCurrentIndex(index)
-  }
-
-  // Auto-play functionality
+  // Auto-scroll functionality
   useEffect(() => {
-    if (!isAutoPlaying || isPaused) return
-
-    const timer = setInterval(nextSlide, 5000)
+    const timer = setInterval(nextSlide, 4000) // Auto-scroll every 4 seconds
     return () => clearInterval(timer)
-  }, [isAutoPlaying, isPaused, currentIndex])
+  }, [currentIndex])
 
   const currentReviews = mockReviews.slice(currentIndex * reviewsPerPage, (currentIndex + 1) * reviewsPerPage)
 
@@ -214,7 +252,7 @@ export default function CustomerReviews() {
  return (
     <section className="w-full bg-gradient-to-br from-[#1987BF] via-blue-600 to-purple-700 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header with updated text colors */}
+        {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full text-sm font-semibold mb-6">
             <Star className="w-4 h-4 fill-current" />
@@ -228,50 +266,49 @@ export default function CustomerReviews() {
             operations and enhance user experience.
           </p>
 
-          {/* Stats with updated text colors */}
+          {/* Stats */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 mb-8">
-  {/* Average Rating */}
-  <div className="text-center break-words w-full md:w-auto">
-    <div className="flex items-center justify-center gap-2 mb-2">
-      <StarRating rating={5} size="md" />
-      <span className="text-2xl font-bold text-white break-words">
-        {averageRating.toFixed(1)}
-      </span>
-    </div>
-    <p className="text-blue-100 text-sm">Average Rating</p>
-  </div>
+            {/* Average Rating */}
+            <div className="text-center break-words w-full md:w-auto">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <StarRating rating={5} size="md" />
+                <span className="text-2xl font-bold text-white break-words">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <p className="text-blue-100 text-sm">Average Rating</p>
+            </div>
 
-  <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
+            <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
 
-  {/* Verified Reviews */}
-  <div className="text-center break-words w-full md:w-auto">
-    <div className="text-2xl font-bold text-white mb-2 break-words">
-      {mockReviews.length}+
-    </div>
-    <p className="text-blue-100 text-sm">Verified Reviews</p>
-  </div>
+            {/* Verified Reviews */}
+            <div className="text-center break-words w-full md:w-auto">
+              <div className="text-2xl font-bold text-white mb-2 break-words">
+                {mockReviews.length}+
+              </div>
+              <p className="text-blue-100 text-sm">Verified Reviews</p>
+            </div>
 
-  <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
+            <div className="w-full md:w-px h-px md:h-12 bg-white/30" />
 
-  {/* Satisfaction Rate */}
-  <div className="text-center break-words w-full md:w-auto">
-    <div className="text-2xl font-bold text-white mb-2 break-words">
-      99%
-    </div>
-    <p className="text-blue-100 text-sm">Satisfaction Rate</p>
-  </div>
-</div>
+            {/* Satisfaction Rate */}
+            <div className="text-center break-words w-full md:w-auto">
+              <div className="text-2xl font-bold text-white mb-2 break-words">
+                99%
+              </div>
+              <p className="text-blue-100 text-sm">Satisfaction Rate</p>
+            </div>
+          </div>
 
-          
-          {/* Online users section */}
+          {/* Online Indian users section */}
           <div className="mt-10 mb-12">
             <div className="flex flex-col items-center">
-              <p className="text-blue-100 mb-4">Join our community of 50,000+ active users</p>
+              <p className="text-blue-100 mb-4">Join our community of 50,000+ active users across India</p>
               <div className="flex -space-x-3">
-                {Array.from({ length: 8 }).map((_, index) => (
+                {indianUsers.map((avatar, index) => (
                   <div key={index} className="w-10 h-10 rounded-full bg-white border-2 border-blue-500 overflow-hidden">
                     <img 
-                      src={`https://i.pravatar.cc/150?img=${index + 10}`}
+                      src={avatar}
                       alt="Online user"
                       className="w-full h-full object-cover"
                     />
@@ -285,14 +322,10 @@ export default function CustomerReviews() {
           </div>
         </div>
 
-        {/* Reviews Carousel */}
+        {/* Reviews Carousel - Auto-scrolling */}
         <div className="relative">
           {/* Main Reviews Grid */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 transition-all duration-500 ease-in-out"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 transition-all duration-500 ease-in-out">
             {currentReviews.map((review, index) => (
               <div
                 key={review.id}
@@ -306,70 +339,19 @@ export default function CustomerReviews() {
             ))}
           </div>
 
-          {/* Navigation Controls with updated colors */}
-          <div className="flex items-center justify-center gap-6">
-            <Button
-              onClick={prevSlide}
-              variant="outline"
-              size="sm"
-              className="w-12 h-12 rounded-full border-2 border-white/50 hover:border-white text-white hover:bg-white/10 transition-all duration-200 bg-transparent shadow-sm"
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-
-            {/* Slide Indicators */}
-            <div className="flex items-center gap-3">
-              {Array.from({ length: totalSlides }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`transition-all duration-300 rounded-full ${
-                    index === currentIndex ? "w-8 h-3 bg-white" : "w-3 h-3 bg-white/30 hover:bg-white/50"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-
-            <Button
-              onClick={nextSlide}
-              variant="outline"
-              size="sm"
-              className="w-12 h-12 rounded-full border-2 border-white/50 hover:border-white text-white hover:bg-white/10 transition-all duration-200 bg-transparent shadow-sm"
-              disabled={currentIndex === totalSlides - 1}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-
-            {/* Auto-play Control */}
-            <Button
-              onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-              variant="ghost"
-              size="sm"
-              className="ml-4 text-white hover:text-blue-200"
-              aria-label={isAutoPlaying ? "Pause auto-play" : "Start auto-play"}
-            >
-              {isAutoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mt-8 max-w-md mx-auto">
-            <div className="w-full bg-white/30 rounded-full h-1">
+          {/* Simple Progress Indicators */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            {Array.from({ length: totalSlides }).map((_, index) => (
               <div
-                className="bg-white h-1 rounded-full transition-all duration-300"
-                style={{ width: `${((currentIndex + 1) / totalSlides) * 100}%` }}
+                key={index}
+                className={`transition-all duration-300 rounded-full ${
+                  index === currentIndex ? "w-8 h-3 bg-white" : "w-3 h-3 bg-white/30"
+                }`}
               />
-            </div>
-            <div className="flex justify-between text-xs text-white/80 mt-2">
-              <span>
-                Review {currentIndex * reviewsPerPage + 1}-
-                {Math.min((currentIndex + 1) * reviewsPerPage, mockReviews.length)}
-              </span>
-              <span>of {mockReviews.length}</span>
-            </div>
+            ))}
           </div>
+
+       
         </div>
       </div>
     </section>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import CompanyIntro from './Intro';
 import FounderProfile from './FounderProfile';
+import founder from "@/assets/founder.jpg";
 
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
@@ -243,11 +244,11 @@ const AboutUs = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <TeamMember
-              name="Rajesh Kumar"
+              name="Ankur Bhatia"
               role="CEO"
               quote="Good people shouldn't wait days to prove they're good people."
               experience="12+ years in fintech • Ex-Paytm, Razorpay"
-              image="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+              image={founder}
               delay={0}
             />
             <TeamMember

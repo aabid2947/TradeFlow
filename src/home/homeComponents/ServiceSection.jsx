@@ -195,6 +195,8 @@ export default function ServicesSection() {
                        originalPrice={hasDiscount ? service.price : null}
                        buttonState={service.is_active ? "subscribe" : "disabled"}
                        discount={service.discount}
+                       serviceImage={service.imageUrl}
+
                      />
                    </div>
                  );

@@ -284,6 +284,7 @@ export default function RecentlyPurchased() {
 
     return transactionsResponse.data
       .slice()
+      .filter(transaction => transaction.status === 'completed') 
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .map((transaction) => ({
         id: transaction._id,

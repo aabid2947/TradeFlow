@@ -153,7 +153,7 @@ const totalRevenue = filteredTransactions.reduce((sum, t) => {
     const totalTransactions = filteredTransactions.length;
     const completedTransactions = filteredTransactions.filter(t => t.status == 'completed').length;
     const successRate = totalTransactions > 0 ? (completedTransactions / totalTransactions * 100).toFixed(1) : 0;
-    const avgOrderValue = completedTransactions > 0 ? (totalRevenue / completedTransactions).toFixed(0) : 0;
+    const avgOrderValue = completedTransactions > 0 ? (totalRevenue / completedTransactions).toFixed(2) : 0;
 
     // Daily trend data
     const dailyData = [];

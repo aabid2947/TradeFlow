@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { useGetServicesQuery } from "@/app/api/serviceApiSlice"
 import {
   CheckCircle,
   Facebook,
@@ -17,14 +16,23 @@ import {
   Users,
   Zap,
   ExternalLink,
+  User,
+  Building,
+  Briefcase,
+  FileCheck,
+  Home,
+  UserCheck,
+  ChefHat,
+  Baby,
+  Wrench,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-// Static footer data (product links are now fully dynamic)
+// Updated footer data according to verify.txt specifications
 const footerData = {
   company: {
-    name: "VerifyMyKyc",
+    name: "Verify My KYC",
     description:
       "Leading identity verification platform trusted by 10,000+ businesses worldwide. Secure, fast, and compliant verification solutions for the digital age.",
     contact: {
@@ -34,29 +42,30 @@ const footerData = {
       address: " A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044 ",
     },
   },
+  // Updated links according to verify.txt requirements
   links: {
-    solutions: [
-      { name: "Financial Services", href: "#" },
-      { name: "Healthcare", href: "#" },
-      { name: "E-commerce", href: "#" },
-      { name: "Real Estate", href: "#" },
+    verificationServices: [
+      { name: "Identity Verification", href: "/identity-verification", icon: User },
+      { name: "Financial & Business Checks", href: "#", icon: Building },
+      { name: "Employment Verification", href: "#", icon: Briefcase },
+      { name: "Legal & Compliance Checks", href: "#", icon: FileCheck },
+    ],
+    domesticServices: [
+      { name: "Tenant Verification", href: "#", icon: Home },
+      { name: "Maid Verification", href: "#", icon: UserCheck },
+      { name: "Cook / Chef Verification", href: "#", icon: ChefHat },
+      { name: "Nanny / Babysitter Identity Check", href: "#", icon: Baby },
+      { name: "Housekeeping Staff Verification", href: "#", icon: Wrench },
     ],
     company: [
       { name: "About Us", href: "/about-us" },
-      { name: "Careers", href: "#" },
       { name: "Contact", href: "/contact-us" },
       { name: "Pricing", href: "/pricing" },
-    ],
-    resources: [
-      { name: "Case Studies", href: "#" },
       { name: "Blog", href: "/blog" },
-      { name: "Help Center", href: "#" },
     ],
     legal: [
-      { name: "Privacy Policy", href: "#" },
+      { name: "Privacy Policy", href: "/privacy-policy" },
       { name: "Terms of Service", href: "#" },
-      { name: "Cookie Policy", href: "#" },
-      { name: "Data Processing Agreement", href: "#" },
     ],
   },
   social: [
@@ -165,9 +174,6 @@ export default function Footer() {
   const sectionRef = useRef(null)
   const navigate = useNavigate()
 
-  const { data: servicesData, isLoading } = useGetServicesQuery()
-  const [groupedProducts, setGroupedProducts] = useState({})
-
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) setIsVisible(true)
@@ -180,40 +186,34 @@ export default function Footer() {
     }
   }, [])
 
-  useEffect(() => {
-    if (servicesData && Array.isArray(servicesData.data)) {
-      const grouped = servicesData.data.reduce((acc, service) => {
-        const category = service.category || "Other"
-        if (!acc[category]) {
-          acc[category] = []
-        }
-        acc[category].push({
-          name: service.name,
-          href: `/product/${service._id}`,
-        })
-        return acc
-      }, {})
-      setGroupedProducts(grouped)
-    }
-  }, [servicesData])
+  // Available public routes for navigation
+  const availableRoutes = [
+    '/', '/about-us', '/privacy-policy', '/contact-us', '/pricing', 
+    '/blog', '/identity-verification'
+  ]
 
   const handleNavigation = (e, href) => {
     if (!href || href === "#" || href.startsWith("http") || e.metaKey || e.ctrlKey) {
       return
     }
-    e.preventDefault()
-    navigate(href)
+    
+    // Check if route is available in public routes
+    if (availableRoutes.includes(href)) {
+      e.preventDefault()
+      navigate(href)
+    }
   }
 
-  const NavLink = ({ link }) => (
+  const NavLink = ({ link, showIcon = false }) => (
     <li>
       <a
         href={link.href}
         onClick={(e) => handleNavigation(e, link.href)}
-        className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-1 group cursor-pointer"
+        className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-2 group cursor-pointer"
       >
+        {showIcon && link.icon && <link.icon className="w-4 h-4 text-blue-300" />}
         {link.name}
-        {link.external && (
+        {link.href.startsWith("http") && (
           <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         )}
       </a>
@@ -230,6 +230,7 @@ export default function Footer() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className={`grid grid-cols-1 lg:grid-cols-12 gap-12 ${isVisible ? "animate-in slide-in-from-bottom-8 fade-in duration-700" : "opacity-0"}`}>
+          {/* Company Info Section */}
           <div className="lg:col-span-4 space-y-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -270,53 +271,46 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="lg:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Dynamic Product Category Columns */}
-            {isLoading
-              ? Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="animate-pulse">
-                    <div className="h-5 bg-white/10 rounded w-3/4 mb-4"></div>
-                    <div className="space-y-3">
-                      <div className="h-4 bg-white/10 rounded w-full"></div>
-                      <div className="h-4 bg-white/10 rounded w-5/6"></div>
-                      <div className="h-4 bg-white/10 rounded w-full"></div>
-                    </div>
-                  </div>
-                ))
-              : Object.entries(groupedProducts).map(([category, links]) => (
-                  <div key={category}>
-                    <h3 className="font-semibold mb-4 text-white">{category}</h3>
-                    <ul className="space-y-3">
-                      {links.map((link) => (
-                        <NavLink key={link.name} link={link} />
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-
-            {/* Static Link Columns */}
+          {/* Services Sections */}
+          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Verification Services */}
             <div>
-              <h3 className="font-semibold mb-4 text-white">Solutions</h3>
-              <ul className="space-y-3">{footerData.links.solutions.map((link) => <NavLink key={link.name} link={link} />)}</ul>
+              <h3 className="font-semibold mb-4 text-white">Verification Services</h3>
+              <ul className="space-y-3">
+                {footerData.links.verificationServices.map((link) => (
+                  <NavLink key={link.name} link={link} showIcon={true} />
+                ))}
+              </ul>
             </div>
+
+            {/* Domestic & Tenant Verification */}
+            <div>
+              <h3 className="font-semibold mb-4 text-white">🏠 Domestic & Tenant</h3>
+              <ul className="space-y-3">
+                {footerData.links.domesticServices.map((link) => (
+                  <NavLink key={link.name} link={link} showIcon={true} />
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Company</h3>
-              <ul className="space-y-3">{footerData.links.company.map((link) => <NavLink key={link.name} link={link} />)}</ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4 text-white">Resources</h3>
-              <ul className="space-y-3">{footerData.links.resources.map((link) => <NavLink key={link.name} link={link} />)}</ul>
-            </div>
-            <div className="md:col-span-2">
-              <h3 className="font-semibold mb-4 text-white">Legal</h3>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">{footerData.links.legal.map((link) => <NavLink key={link.name} link={link} />)}</ul>
+              <ul className="space-y-3">
+                {footerData.links.company.map((link) => (
+                  <NavLink key={link.name} link={link} />
+                ))}
+              </ul>
             </div>
           </div>
+
+          {/* Newsletter Section */}
           <div className="lg:col-span-2">
             <NewsletterSignup />
           </div>
         </div>
 
+        {/* Security & Compliance Section */}
         <div className={`mt-12 pt-8 border-t border-white/20 ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}`} style={{ animationDelay: "300ms" }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -337,13 +331,23 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Footer Bottom - Updated Copyright */}
       <div className="relative z-10 border-t border-white/20 bg-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className={`flex flex-col md:flex-row items-center justify-between gap-4 ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}`} style={{ animationDelay: "500ms" }}>
-            <div className="text-blue-100 text-sm">© 2024 {footerData.company.name}. All rights reserved.</div>
+            <div className="text-blue-100 text-sm">© 2025 {footerData.company.name}. All rights reserved.</div>
             <div className="flex items-center gap-6 text-sm">
-              <a href="#" onClick={(e) => handleNavigation(e, "#")} className="text-blue-100 hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</a>
-              <a href="#" onClick={(e) => handleNavigation(e, "#")} className="text-blue-100 hover:text-white transition-colors duration-200 cursor-pointer">Terms</a>
+              {footerData.links.legal.map((link) => (
+                <a 
+                  key={link.name}
+                  href={link.href} 
+                  onClick={(e) => handleNavigation(e, link.href)} 
+                  className="text-blue-100 hover:text-white transition-colors duration-200 cursor-pointer"
+                >
+                  {link.name}
+                </a>
+              ))}
             </div>
           </div>
         </div>

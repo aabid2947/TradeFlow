@@ -37,6 +37,8 @@ const navigationItems = [
   { title: "Services", icon: Info, key: "services" },
   { title: "Register Admin", icon: Users, key: "register" }, // Renamed for clarity
   { title: "Feedback", icon: MessageCircle, key: "feedback" },
+  { title: "Blog", icon: MessageCircle, key: "blog" },
+
 ]
 
 export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, onNavigate }) {
@@ -120,7 +122,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                 <div className="flex items-center gap-3 flex-1">
                   <div className="relative">
                     <Avatar className="w-10 h-10">
-                      <AvatarImage src={userPic} alt={user?.name} />
+                      <AvatarImage src={user.avatar} alt={user?.name} />
                       <AvatarFallback className="bg-gray-600 text-white text-sm">
                         {user?.name?.charAt(0)?.toUpperCase() || "?"}
                       </AvatarFallback>

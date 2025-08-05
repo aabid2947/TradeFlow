@@ -15,6 +15,7 @@ export default function ServiceCard({
   buttonState, // "purchased" | "subscribe"
   serviceId,
   onSubscribeClick, // Accept the handler prop
+  serviceImage
 }) {
   const isPurchased = buttonState === "purchased";
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function ServiceCard({
       <div className="relative">
         <div className="aspect-[4/2.8] overflow-hidden">
           <img
-            src={imageSrc}
+            src={serviceImage || imageSrc}
             alt={alt || serviceName}
             className="w-full h-full object-cover rounded-lg"
           />

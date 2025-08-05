@@ -200,7 +200,7 @@ export default function Profile() {
                 <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
                     <CardHeader className=" p-6 border-b border-blue-100 flex-col md:flex-row items-center gap-6">
                          <div className="relative">
-                            <img src={userPic} alt="User" className="h-24 w-24 border-4 border-white ring-4 ring-blue-500/20 rounded-full"/>
+                            <img src={user.avatar} alt="User" className="h-24 w-24 border-4 border-white ring-4 ring-blue-500/20 rounded-full"/>
                          </div>
                          <div className="flex-1 text-center md:text-left">
                             <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>

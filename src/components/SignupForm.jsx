@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -26,6 +27,20 @@ export function SignUpForm() {
   const [errors, setErrors] = useState({})
   const [otpTimer, setOtpTimer] = useState(0)
   const [canResendOtp, setCanResendOtp] = useState(true)
+
+  // --- START: FIX FOR PASSWORD TOGGLE ---
+  const [showPassword, setShowPassword] = useState({
+    password: false,
+    confirmPassword: false
+  })
+
+  const handleTogglePassword = (field) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }))
+  }
+  // --- END: FIX FOR PASSWORD TOGGLE ---
   
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -312,6 +327,8 @@ export function SignUpForm() {
                   icon={Lock}
                   type="password"
                   autoComplete="new-password"
+                  showPassword={showPassword.password}
+                  onTogglePassword={() => handleTogglePassword("password")}
                 />
 
                 <FloatingLabel
@@ -322,6 +339,8 @@ export function SignUpForm() {
                   icon={Lock}
                   type="password"
                   autoComplete="new-password"
+                  showPassword={showPassword.confirmPassword}
+                  onTogglePassword={() => handleTogglePassword("confirmPassword")}
                 />
 
                 <Button 

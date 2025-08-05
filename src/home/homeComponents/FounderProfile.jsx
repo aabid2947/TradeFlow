@@ -67,14 +67,7 @@ export default function FounderProfile() {
           >
             <div className="space-y-6">
               <p className="text-lg leading-relaxed text-gray-700">
-                VerifyMyKyc's founder and CEO, Rajesh Kumar, started VerifyMyKyc in 2018 and is responsible for
-                strategic global business planning for the company. With a vision to be the preferred partner for
-                digital identity verification, he spearheads the mid-size fintech company catering to diverse and unique
-                needs of a marquee list of international and domestic clients in the area of identity verification, KYC
-                compliance, fraud prevention and digital onboarding services. From the start, Rajesh always dreamed of
-                being an entrepreneur who would create a big company to provide satisfying job opportunities to the
-                burgeoning pool of India's young talent while revolutionizing how businesses approach customer
-                verification and compliance.
+                As Founder and Chief Executive Officer of Navigant, Ankur bhatia  is responsible for the vision and the global planning with business strategies in place at Navigant. An expert at raising and mentoring teams and making them successful, Ankur being an effective leader has continually diversified its solution offerings and promised to take Navigant Technologies to the forefront of the global outsourcing industry
               </p>
             </div>
           </motion.div>
@@ -88,7 +81,7 @@ export default function FounderProfile() {
           viewport={{ once: true, amount: 0.3 }}
           className="text-center mt-12"
         >
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Rajesh Kumar</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Ankur bhatia</h3>
           <p className="text-lg text-gray-600">Founder and CEO</p>
         </motion.div>
       </div>

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react"
+
+import React, { useState, useEffect, useRef } from "react"
 import { 
-    MoreVertical, Bell, Edit3, Check, X, User, Mail, ShieldCheck, AlertTriangle, CreditCard, Activity, Shield, Award, Settings, Phone, CheckCircle, XCircle, Crown
+    MoreVertical, Bell, Edit3, Check, X, User, Mail, ShieldCheck, AlertTriangle, CreditCard, 
+    Activity, Shield, Award, Settings, Phone, CheckCircle, XCircle, Crown, Upload, Loader2
 } from "lucide-react"
 import { useSelector } from "react-redux"
 import { selectCurrentUser } from '@/features/auth/authSlice'
-import { useUpdateProfileMutation, useRemindSubscriptionMutation } from '@/app/api/authApiSlice'
+import { useUpdateProfileMutation, useUpdateAvatarMutation, useRemindSubscriptionMutation } from '@/app/api/authApiSlice'
 import { toast } from "react-hot-toast"
 import userPic from "@/assets/UserImage.svg"
 import { motion, AnimatePresence } from "framer-motion"
@@ -14,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    // Return "Never" for promotional plans that don't expire
     if (dateString === 'Never') return 'Never';
     return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
@@ -22,12 +23,18 @@ const formatDate = (dateString) => {
 export default function Profile() {
     const user = useSelector(selectCurrentUser)
     const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation()
+    const [updateAvatar, { isLoading: isUploadingAvatar }] = useUpdateAvatarMutation()
     const [sendReminder] = useRemindSubscriptionMutation();
-    
+    console.log(user)
     const [isEditing, setIsEditing] = useState(false)
     const [editedName, setEditedName] = useState(user?.name || "")
     const [error, setError] = useState("")
     const [activeTab, setActiveTab] = useState('overview');
+
+    // --- NEW: State for image upload ---
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (!user?._id || !user.activeSubscriptions) return;
@@ -90,27 +97,59 @@ export default function Profile() {
         if (error) setError("");
     }
     
+    // --- NEW: Handlers for avatar upload ---
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleCancelAvatar = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handleAvatarUpload = async () => {
+        if (!imageFile) return;
+        const formData = new FormData();
+        formData.append('avatar', imageFile);
+
+        const toastId = toast.loading("Uploading avatar...");
+        try {
+            await updateAvatar(formData).unwrap();
+            toast.success("Avatar updated successfully!", { id: toastId });
+            handleCancelAvatar();
+        } catch (err) {
+            toast.error(err?.data?.message || "Failed to upload avatar.", { id: toastId });
+            console.error('Failed to upload avatar:', err);
+        }
+    };
+
+
     const tabs = [
         { id: 'overview', label: 'Overview', icon: User },
-        { id: 'subscriptions', label: 'Entitlements', icon: CreditCard }, // Renamed for clarity
+        { id: 'subscriptions', label: 'Entitlements', icon: CreditCard },
         { id: 'services', label: 'Services Used', icon: Activity },
         { id: 'security', label: 'Security', icon: Shield }
     ];
 
-    // --- NEW: Combine paid and promoted subscriptions for a unified view ---
     const paidSubCategories = user?.activeSubscriptions?.map(sub => sub.category) || [];
     
     const promotedSubs = user?.promotedCategories
-        ?.filter(cat => !paidSubCategories.includes(cat)) // Exclude if already covered by a paid sub
+        ?.filter(cat => !paidSubCategories.includes(cat))
         .map(cat => ({
             category: cat,
             planType: 'Promotional',
             expiresAt: 'Never',
-            type: 'promoted' // Add a type for styling
+            type: 'promoted'
         })) || [];
         
     const paidSubs = user?.activeSubscriptions?.map(sub => ({...sub, type: 'paid'})) || [];
-
     const combinedSubscriptions = [...paidSubs, ...promotedSubs];
 
 
@@ -121,14 +160,50 @@ export default function Profile() {
                 
                 <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
                     <CardHeader className=" p-6 border-b border-blue-100 flex-col md:flex-row items-center gap-6">
-                         <div className="relative">
+                         <div className="relative group">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept="image/png, image/jpeg, image/gif"
+                                className="hidden"
+                            />
                             <div className="h-24 w-24 border-4 border-white ring-4 ring-blue-500/20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                <img src={userPic} alt={`${user?.name} profile picture`} className="w-full h-full object-cover"/>
+                                <img 
+                                    src={imagePreview || user?.avatar || userPic} 
+                                    alt={`${user?.name} profile picture`} 
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploadingAvatar}
+                                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            >
+                                {isUploadingAvatar ? (
+                                    <Loader2 className="w-6 h-6 text-white animate-spin"/>
+                                ) : (
+                                    <Upload className="w-6 h-6 text-white"/>
+                                )}
+                            </button>
                          </div>
+
                          <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
-                            <p className="text-gray-600">{user?.email}</p>
+                            {imagePreview ? (
+                                <div className="flex items-center justify-center md:justify-start gap-2">
+                                    <Button size="sm" onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
+                                        {isUploadingAvatar ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Saving...</> : <><Check className="w-4 h-4 mr-2"/> Save</>}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={handleCancelAvatar} disabled={isUploadingAvatar}>
+                                        <X className="w-4 h-4 mr-2"/> Cancel
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
+                                    <p className="text-gray-600">{user?.email}</p>
+                                </>
+                            )}
                             <div className="flex items-center justify-center md:justify-start space-x-2 mt-2">
                                {user?.role === 'admin' && <Badge variant="secondary" className="bg-purple-100 text-purple-700"><Crown className="w-3 h-3 mr-1" />Admin</Badge>}
                                <Badge variant={user?.isVerified ? 'default' : 'destructive'}>
@@ -137,7 +212,7 @@ export default function Profile() {
                                </Badge>
                             </div>
                          </div>
-                         <Button onClick={handleEditClick} className="bg-white text-gray-800 border shadow-sm hover:bg-gray-50">
+                         <Button onClick={handleEditClick} disabled={isUploadingAvatar} className="bg-white text-gray-800 border shadow-sm hover:bg-gray-50">
                             <Edit3 className="w-4 h-4 mr-2" />
                             Edit Profile
                         </Button>
@@ -156,7 +231,7 @@ export default function Profile() {
                         </div>
                     </div>
                     
-                    {/* Tab Content */}
+                    {/* Tab Content (No changes needed below this line) */}
                     <CardContent className="p-6">
                         {activeTab === 'overview' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,7 +245,6 @@ export default function Profile() {
                                     <div className="flex justify-between text-sm"><span className="text-gray-600">User ID:</span><span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{user?._id}</span></div>
                                     <div className="flex justify-between text-sm"><span className="text-gray-600">Joined On:</span><span className="text-gray-700">{formatDate(user?.createdAt)}</span></div>
                                 </div>
-                                {/* This section remains to give a quick overview of special promotions */}
                                 {user?.promotedCategories?.length > 0 && (
                                     <div className="md:col-span-2 space-y-3">
                                         <h4 className="font-semibold text-gray-800 flex items-center gap-2"><Award className="w-4 h-4 text-yellow-600"/>Promoted Categories</h4>
@@ -181,7 +255,6 @@ export default function Profile() {
                                 )}
                             </div>
                         )}
-                        {/* UPDATED SUBSCRIPTIONS TAB */}
                         {activeTab === 'subscriptions' && (
                             <div className="space-y-4">
                                 {combinedSubscriptions.length > 0 ? combinedSubscriptions.map(sub => (
@@ -233,7 +306,7 @@ export default function Profile() {
                 </Card>
             </div>
 
-            {/* Edit Modal (no change in logic, just integrated into the new layout) */}
+            {/* Edit Modal */}
             <AnimatePresence>
                 {isEditing && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}

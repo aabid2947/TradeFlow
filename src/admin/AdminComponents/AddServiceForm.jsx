@@ -45,14 +45,13 @@ const defaultServiceState = {
         monthly: 0,
         yearly: 0,
     },
-    imageUrl: '',
     endpoint: '',
     apiType: 'json',
     inputFields: [],
     outputFields: [],
 };
 
-// Static list of categories based on the Gridlines API documentation
+// Static list of categories
 const serviceCategories = [
   { value: 'Identity Verification', label: 'Identity Verification' },
   { value: 'Financial & Business Checks', label: 'Financial & Business Checks' },
@@ -67,11 +66,11 @@ const serviceCategories = [
 
 export default function AddServiceForm({ onSubmit, onClose, isLoading, error, initialData = null }) {
     const [service, setService] = useState(defaultServiceState);
+    const [imageFile, setImageFile] = useState(null); // State for the image file
     const isUpdateMode = !!initialData;
 
     useEffect(() => {
         if (initialData) {
-            // Ensure combo_price is correctly structured, even if missing from initialData
             const data = {
                 ...defaultServiceState,
                 ...initialData,
@@ -81,8 +80,10 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                 }
             };
             setService(data);
+            setImageFile(null); // Reset image file when opening the form
         } else {
             setService(defaultServiceState);
+            setImageFile(null);
         }
     }, [initialData]);
 
@@ -91,9 +92,14 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
         setService(prev => ({ ...prev, [name]: value }));
     };
 
-    // New handler for nested combo_price object
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
+
     const handleComboPriceChange = (e) => {
-        const { name, value } = e.target; // name will be 'monthly' or 'yearly'
+        const { name, value } = e.target;
         setService(prev => ({
             ...prev,
             combo_price: {
@@ -124,7 +130,8 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(service);
+        // Pass both service data and the image file to the parent handler
+        onSubmit(service, imageFile);
     };
 
     const renderFieldArray = (fieldType) => (
@@ -157,7 +164,7 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
 
     return (
         <>
-            <div className="fixed inset-0 bg-trasnparent bg-opacity-30 backdrop-blur-sm z-40" onClick={onClose} aria-hidden="true"></div>
+            <div className="fixed inset-0 bg-transparent bg-opacity-30 backdrop-blur-sm z-40" onClick={onClose} aria-hidden="true"></div>
             <div className="fixed inset-0 flex justify-center items-center z-50 p-4">
                 <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
                     <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -180,18 +187,28 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Service Key" name="service_key" value={service.service_key} onChange={handleChange} required />
                                 <Input label="Price" name="price" type="number" value={service.price} onChange={handleChange} required />
                                 
-                                {/* Updated Combo Price Inputs */}
                                 <Input label="Monthly Combo Price" name="monthly" type="number" value={service.combo_price.monthly} onChange={handleComboPriceChange} required />
                                 <Input label="Yearly Combo Price" name="yearly" type="number" value={service.combo_price.yearly} onChange={handleComboPriceChange} required />
                                 
-                                <Input label="Image URL" name="imageUrl" value={service.imageUrl} onChange={handleChange} />
                                 <Select label="Category" name="category" value={service.category} onChange={handleChange} required>
                                     <option value="" disabled>Select a category</option>
                                     {serviceCategories.map(cat => (
                                         <option key={cat.value} value={cat.value}>{cat.label}</option>
                                     ))}
                                 </Select>
-
+                                
+                                {/* NEW: Image File Input */}
+                                <div>
+                                    <label htmlFor="image" className="block text-sm font-medium text-gray-700">Service Image</label>
+                                    <input
+                                        type="file"
+                                        id="image"
+                                        name="image"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>

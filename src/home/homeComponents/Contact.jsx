@@ -312,7 +312,7 @@ const ContactUs = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Email</p>
-                        <p className="text-blue-600">hello@verifykyc.com</p>
+                        <p className="text-blue-600">verifymykyc@gmail.com</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -321,7 +321,8 @@ const ContactUs = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Phone</p>
-                        <p className="text-green-600">+91-120-456-7890</p>
+                        <p className="text-green-600">+91 95606 52708
+</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -330,7 +331,8 @@ const ContactUs = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">WhatsApp</p>
-                        <p className="text-purple-600">+91-98765-43210</p>
+                        <p className="text-purple-600">+91 95606 52708
+</p>
                       </div>
                     </div>
                   </div>
@@ -344,16 +346,18 @@ const ContactUs = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700">Sales</span>
-                      <span className="text-blue-600 font-medium">sales@verifykyc.com</span>
+                      <span className="text-blue-600 font-medium">verifymykyc@navigantinc.com
+</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700">Support</span>
-                      <span className="text-green-600 font-medium">support@verifykyc.com</span>
+                      <span className="text-green-600 font-medium">verifymykyc@navigantinc.com
+</span>
                     </div>
-                    <div className="flex justify-between items-center">
+                    {/* <div className="flex justify-between items-center">
                       <span className="text-gray-700">Partnerships</span>
                       <span className="text-purple-600 font-medium">partners@verifykyc.com</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </AnimatedSection>

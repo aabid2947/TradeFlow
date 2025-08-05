@@ -76,7 +76,46 @@ const ModernButton = ({ children, variant = "primary", onClick, className = "" }
   );
 };
 
-// Visual Components
+// Image Visual Component
+const ImageVisual = ({ image, alt = "Service illustration" }) => (
+  <div className="relative h-[32rem] flex items-center justify-center p-8 lg:p-12">
+    <div className="relative w-full h-full max-w-lg">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden rounded-xl">
+        <FloatingElement delay={0} className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-br from-sky-400/20 to-blue-500/20 rounded-lg backdrop-blur-sm" />
+        <FloatingElement delay={1} className="absolute bottom-8 right-8 w-12 h-12 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full backdrop-blur-sm" />
+        <FloatingElement delay={0.5} className="absolute top-1/2 right-12 w-8 h-8 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-full backdrop-blur-sm" />
+      </div>
+      
+      {/* Main image container */}
+      <div className="relative h-full flex items-center justify-center">
+        <div className="relative group">
+          {/* Glow effect behind image */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-sky-400/30 via-blue-500/30 to-purple-500/30 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-glow"></div>
+          
+          {/* Image */}
+          <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-white/50">
+            <img 
+              src={image} 
+              alt={alt}
+              className="w-full h-auto max-h-80 object-contain rounded-xl transition-transform duration-500 hover:scale-105"
+            />
+          </div>
+          
+          {/* Floating verification badge */}
+          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-bounce">
+            <div className="flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              VERIFIED
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Visual Components (keeping originals as fallbacks)
 export const GovernmentIdVisual = () => (
   <div className="relative bg-gradient-to-br from-purple-500 via-sky-500 to-blue-600 p-8 lg:p-12 flex items-center justify-center rounded-xl h-[32rem]">
      <div className="absolute inset-0 overflow-hidden">
@@ -182,7 +221,7 @@ const CardContent = ({ children, className }) => (
 export default function ServiceCard({ data }) {
   const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false);
-  const { layout, theme, badgeIcon: BadgeIcon, badgeText, titleLines, typewriterTexts,  ctaText, VisualComponent,features } = data;
+  const { layout, theme, badgeIcon: BadgeIcon, badgeText, titleLines, typewriterTexts, ctaText, VisualComponent, features, image } = data;
  
   const contentOrder = layout === 'image-left' ? 'lg:order-2' : 'lg:order-1';
   const visualOrder = layout === 'image-left' ? 'lg:order-1' : 'lg:order-2';
@@ -270,8 +309,12 @@ export default function ServiceCard({ data }) {
             </div>
 
             {/* Visual Content */}
-            <div className={`relative ${visualOrder}`}>
+            <div className={`relative flex items-center justify-center ${visualOrder}`}>
+              {image ? (
+                <ImageVisual image={image} alt={`${badgeText} illustration`} />
+              ) : (
                 <VisualComponent />
+              )}
             </div>
           </div>
         </CardContent>
@@ -279,8 +322,3 @@ export default function ServiceCard({ data }) {
     </>
   );
 }
-
-// Example usage data
-
-
-

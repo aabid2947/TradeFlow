@@ -12,9 +12,9 @@ import ContactUsPage from '@/home/ContactUsPage';
 import ProductPage from '@/home/ProductPage'
 import PricingPage from '@/home/PricingPage';
 import ResetPasswordPage from '@/components/ResetPasswordPage';
-// import BlogPage from '../home/BlogPage';
 import BlogLanding from '../home/BlogLanding';
 import BlogPage from '../home/BlogPage';
+
 export const publicRoutes = [
   {
     path: '/',
@@ -51,17 +51,19 @@ export const publicRoutes = [
       element: <AdminLoginPage />,
       errorElement: <ErrorPage />
     },
-       {
+    {
       path: '/blog',
       element: <BlogLanding />,
       errorElement: <ErrorPage />
     },
-        {
-      path: '/identity-verification',
+    // --- THIS IS THE FIX ---
+    // The old '/identity-verification' route is replaced with this dynamic route.
+    // This will match /blog/any-blog-title and render the BlogPage component.
+    {
+      path: '/blog/:slug',
       element: <BlogPage />,
       errorElement: <ErrorPage />
     },
-
   {
     path: '/login',
     element: <LoginPage />,

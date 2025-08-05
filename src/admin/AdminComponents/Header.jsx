@@ -82,7 +82,7 @@ export default function Header({ onMenuClick, onNavigate }) {
         <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-10 px-2 hover:bg-gray-100 flex items-center gap-2 rounded-full">
             <Avatar className="h-8 w-8">
-            <AvatarImage src={userPic} alt={user?.name} />
+            <AvatarImage src={user.avatar} alt={user?.name} />
             <AvatarFallback className="bg-purple-100 text-purple-600 text-sm font-medium">{user?.name?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
             <span className="text-sm font-medium text-gray-700 hidden md:block">{user?.name}</span>

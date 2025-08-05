@@ -5,7 +5,10 @@
 import React from 'react';
 import ServiceCard, { GovernmentIdVisual, CompanyCredentialVisual, BankVisual, EducationVisual } from './ServiceShowcaseCard';
 import { Shield, Building2, Landmark, GraduationCap, FileSignature, Home } from "lucide-react";
-
+import Aadhar from "@/assets/adhar.png"
+import Buissness from "@/assets/Buissness.png"
+import GOI from "@/assets/GOI.png"
+import Property from "@/assets/Property.png"
 // This is the parent component that holds all the data.
 export default function ServicesShowcase() {
 const servicesData = [
@@ -20,6 +23,7 @@ const servicesData = [
       badgeBg: 'bg-[#1987BF]/10',
       badgeText: 'text-[#1987BF]',
     },
+    image:Aadhar,
     badgeIcon: Shield,
     badgeText: 'GOVERNMENT ID VERIFICATION',
     titleLines: ['Digital Identity Verification'],
@@ -48,6 +52,7 @@ const servicesData = [
       badgeBg: 'bg-purple-100',
       badgeText: 'text-purple-700',
     },
+    image:Buissness,
     badgeIcon: Building2,
     badgeText: 'COMPANY & CREDENTIALS',
     titleLines: ['Start and Verify Your Business with Confidence'],
@@ -76,6 +81,7 @@ const servicesData = [
       badgeBg: 'bg-blue-100',
       badgeText: 'text-blue-700',
     },
+       image:GOI,
     badgeIcon: FileSignature,
     badgeText: 'DIGITAL SIGNATURE & eSIGN',
     titleLines: ['Go Paperless with Digital Signing'],
@@ -104,6 +110,7 @@ const servicesData = [
       badgeBg: 'bg-orange-100',
       badgeText: 'text-orange-700',
     },
+    image:Property,
     badgeIcon: Home,
     badgeText: 'PROPERTY & LAND RECORDS',
     titleLines: ['Verify Property Ownership,', 'Check for Encumbrances', 'and Validate Titles'],

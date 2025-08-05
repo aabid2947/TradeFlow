@@ -5,11 +5,11 @@ import ErrorPage from "../pages/ErrorPage";
 import ProtectedRoute from './ProtectedRoutes';
 import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
-import usePageTracking from '../hooks/usePageTracking';
-import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
+// import usePageTracking from '../hooks/usePageTracking';
+// import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
 
 const AppRoutes = () => {
-  usePageTracking();
+  // usePageTracking();
   
   const authPaths = ['/login', '/signup', '/admin-login', '/reset-password'];
   const generalPublicRoutes = publicRoutes.filter(r => !authPaths.includes(r.path));
@@ -17,7 +17,7 @@ const AppRoutes = () => {
 
   return (
     <>
-      <FirebaseAuthListener /> 
+      {/* <FirebaseAuthListener />  */}
       
       <Routes>
         <Route element={<RedirectIfLoggedIn />}>
