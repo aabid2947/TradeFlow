@@ -257,8 +257,8 @@ const ContactUs = () => {
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-1">Business Hours</h4>
                         <p className="text-gray-600">
-                          Monday - Friday: 9:00 AM - 7:00 PM<br />
-                          Saturday: 10:00 AM - 4:00 PM<br />
+                          Monday - Saturday: 10:00 AM - 7:00 PM<br />
+                          
                           Sunday: Closed
                         </p>
                       </div>
@@ -351,7 +351,7 @@ const ContactUs = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700">Support</span>
-                      <span className="text-green-600 font-medium">verifymykyc@navigantinc.com
+                      <span className="text-green-600 font-medium">Support@Verifymykyc.com
 </span>
                     </div>
                     {/* <div className="flex justify-between items-center">

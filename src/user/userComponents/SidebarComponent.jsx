@@ -16,6 +16,7 @@ import { logOut } from "@/features/auth/authSlice"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 
+
 const serviceCategories = [
   { value: 'Identity Verification', label: 'Identity Verification', icon: User },
   { value: 'Financial & Business Checks', label: 'Financial & Business Checks', icon: Building },

@@ -38,7 +38,7 @@ const staticNavItems = [
     items: [
       { name: "Case Studies", href: "#", description: "Customer success stories" },
       { name: "Blog", href: "/blog", description: "Industry insights and updates" },
-      { name: "Help Center", href: "#", description: "Support and FAQs" },
+      { name: "Terms and Condition", href: "/t&c", description: "Support and FAQs" },
     ],
   },
   {

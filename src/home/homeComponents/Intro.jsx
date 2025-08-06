@@ -126,12 +126,7 @@ export default function CompanyIntro() {
               </p>
 
               <p className="text-lg text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-900">VerifyMyKyc Technologies Private Limited (VMKPL)</span> is
-                a global verification firm headquartered in New Delhi, India. It was founded in 2020 with a single
-                mission of delivering high quality identity verification services for clients looking to secure their
-                business operations. Its dedicated team of over 50 professionals cater to a complete range of KYC & AML
-                services for its clients spread across UK, USA, Canada and India. The platform currently serves 10,000+
-                users with a 99.9% accuracy rate.
+                <span className="font-semibold text-gray-900">VerifyMyKyc Technologies Private Limited (VMKPL)</span> is a Indian verification firm headquartered in New Delhi, India. It was founded in 2025 with a single mission of delivering high quality identity verification services for clients looking to secure their business operations. Its dedicated team of over 20+ professionals cater to a complete range of KYC & AML services for its clients spread across India. The platform currently serves 10,000+ users with a 99.9% accuracy rate.
               </p>
             </div>
 

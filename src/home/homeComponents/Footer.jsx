@@ -65,7 +65,7 @@ const footerData = {
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy-policy" },
-      { name: "Terms of Service", href: "#" },
+      { name: "Terms of Service", href: "/t&c" },
     ],
   },
   social: [

@@ -14,7 +14,7 @@ import PricingPage from '@/home/PricingPage';
 import ResetPasswordPage from '@/components/ResetPasswordPage';
 import BlogLanding from '../home/BlogLanding';
 import BlogPage from '../home/BlogPage';
-
+import TermsAndConditionsPage from '../home/Terms&ConditionPage';
 export const publicRoutes = [
   {
     path: '/',
@@ -29,6 +29,11 @@ export const publicRoutes = [
    {
     path: '/privacy-policy',
     element:<PrivacyPolicy/>,
+    errorElement: <ErrorPage />
+  },
+    {
+    path: '/t&c',
+    element:<TermsAndConditionsPage/>,
     errorElement: <ErrorPage />
   },
    {
@@ -56,9 +61,6 @@ export const publicRoutes = [
       element: <BlogLanding />,
       errorElement: <ErrorPage />
     },
-    // --- THIS IS THE FIX ---
-    // The old '/identity-verification' route is replaced with this dynamic route.
-    // This will match /blog/any-blog-title and render the BlogPage component.
     {
       path: '/blog/:slug',
       element: <BlogPage />,
