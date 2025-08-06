@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 import { AuthCard } from "@/cards/AuthCard"
 import { FloatingLabel } from "@/components/FloatingLabel"
 import { setCredentials } from "@/features/auth/authSlice"
-import { useSignupMutation, useLoginWithGoogleMutation, useVerifyEmailOtpMutation } from "@/app/api/authApiSlice"
+import { useSignupMutation, useLoginWithGoogleMutation, useVerifyEmailOtpMutation,useSimpleSignupMutation } from "@/app/api/authApiSlice"
 import { auth, googleProvider } from "@/firebase/firebaseConfig.js"
 import { signInWithPopup } from "firebase/auth"
 import { useDispatch } from "react-redux"
+
 
 export function SignUpForm() {
   const [step, setStep] = useState(1)
@@ -46,6 +47,7 @@ export function SignUpForm() {
   const dispatch = useDispatch()
   
   const [signup, { isLoading: isSigningUp, error: apiError }] = useSignupMutation()
+  const [simpleSignup, { isLoading: isSimpleSignUp, error: signApiError }] = useSimpleSignupMutation()
   const [loginWithGoogle, { isLoading: isGoogleLoading, error: googleError }] = useLoginWithGoogleMutation()
   const [verifyEmailOtp, { isLoading: isVerifyingOtp, error: otpError }] = useVerifyEmailOtpMutation()
 
@@ -111,6 +113,31 @@ export function SignUpForm() {
       console.error("Failed to sign up:", err)
     }
   }
+    const handleSimpleSignup = async () => {
+    if (!validatePasswords()) return
+    
+    try {
+      const { name, email, password } = formData
+      // Send signup request which should trigger OTP email
+      await simpleSignup({ name, email, password }).unwrap()
+      
+      // Move to OTP verification step
+      // setStep(3)
+      // startOtpTimer()
+       navigate("/login", { 
+        state: { 
+          message: "Email verified successfully! Please log in.", 
+          email: formData.email 
+        } 
+      })
+    } catch (err) {
+       const message = err?.data?.message || "Registration failed. Try again."
+
+    setErrors({ password: message }) // show message under email field
+      console.error("Failed to sign up:", err)
+    }
+  }
+
 
   const handleOtpVerification = async (e) => {
     e.preventDefault()
@@ -169,7 +196,9 @@ export function SignUpForm() {
     }
     
     if (step === 2) {
-      handlePasswordSubmit()
+      // handlePasswordSubmit()
+
+      handleSimpleSignup()
     } else if (step === 3) {
       handleOtpVerification(e)
     }
@@ -489,7 +518,7 @@ export function SignUpForm() {
                     Terms of Service
                   </a>{" "}
                   and{" "}
-                  <a href="#" className="text-blue-600 hover:text-blue-800 underline font-medium">
+                  <a href="https://e-kyc-eight.vercel.app/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium">
                     Privacy Policy
                   </a>
                 </p>

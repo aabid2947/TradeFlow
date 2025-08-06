@@ -28,6 +28,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: userInfo,
       }),
     }),
+    simpleSignup: builder.mutation({
+      query: (userInfo) => ({
+        url: `${AUTH_URL}/simple-register`,
+        method: 'POST',
+        body: userInfo,
+      }),
+    }),
     
     getProfile: builder.query({
       query: () => `${USERS_URL}/profile`,
@@ -226,6 +233,7 @@ export const {
   useDemoteUserCategoryMutation,
   useUpdateAvatarMutation,
   useGetSubscriptionStatusQuery, 
+  useSimpleSignupMutation,
   useRemindSubscriptionMutation,
   useExtendSubscriptionMutation,
   useRevokeSubscriptionMutation,

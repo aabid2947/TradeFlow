@@ -87,7 +87,7 @@ export function LoginForm() {
 
     try {
       const response = await login(formData).unwrap();
-      console.log(response);
+  
       dispatch(setCredentials(response));
       navigate("/user");
     } catch (err) {
