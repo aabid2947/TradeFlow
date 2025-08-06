@@ -42,6 +42,7 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
     return originalPrice;
 };
 
+
 const ProductPage = ({ serviceId }) => {
     const currentServiceId = serviceId || window.location.pathname.split('/').pop();
     const navigate = useNavigate();

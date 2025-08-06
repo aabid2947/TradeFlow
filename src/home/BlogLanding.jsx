@@ -43,6 +43,12 @@ export default function BlogLandingPage() {
       if(sectionRef.current) observer.unobserve(sectionRef.current)
     }
   }, [])
+  useEffect(()=>{
+     window.scrollTo({
+    top: 0,
+    behavior: "smooth", 
+  });
+  },[])
 
   const getCategoryIcon = (category) => {
     switch (category) {

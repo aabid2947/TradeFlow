@@ -281,14 +281,14 @@ export default function TrustSection() {
               <CardContent className="p-8 relative z-10">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="bg-green-500 px-3 py-1 rounded-full text-xs font-bold">FEATURED</div>
-                  <Badge className="bg-white/20 text-white border-white/30">2024</Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">2025</Badge>
                 </div>
 
                 <div className="mb-4">
                   <Award className="w-12 h-12 text-green-300 mb-4" />
                   <h3 className="text-2xl font-bold mb-2">CATEGORY LEADER</h3>
                   <p className="text-green-100 leading-relaxed mb-6">
-                    VerifyMyKyc is recognized as a leader in the GRC 2024 Service Matrix™ for Identity Capture and
+                    VerifyMyKyc is recognized as a leader in the GRC 2025 Service Matrix™ for Identity Capture and
                     Verification Solutions.
                   </p>
                 </div>

@@ -12,6 +12,7 @@ import userPic from "@/assets/UserImage.svg"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import sidebarLogo from "@/assets/sidebarLogo.svg"
+import VerifyMyKyc from "@/assets/VerifyMyKyc.svg"
 
 export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   const [welcomeText, setWelcomeText] = useState("");
@@ -66,8 +67,8 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center overflow-hidden " onClick={() => navigate("/")}>
-            <img src={sidebarLogo} alt="Logo" className="h-10 w-auto" />
+          <div className="flex items-center overflow-hidden -mx-5 md:-mx-8" onClick={() => navigate("/")}>
+            <img src={VerifyMyKyc  || sidebarLogo} alt="Logo" className="h-10 w-auto" />
           </div>
           <div className="flex flex-col">
             <h1 className="hidden md:block text-lg font-semibold text-gray-900 md:text-xl">

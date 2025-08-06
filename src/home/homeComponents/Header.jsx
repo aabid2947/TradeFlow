@@ -8,7 +8,7 @@ import AppLogo from "@/assets/sidebarLogo.svg"
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice"
 import { selectCurrentUser } from "../../features/auth/authSlice"
 import { useSelector } from "react-redux"
-
+import VerifyMyKyc from "@/assets/VerifyMyKyc.svg"
 // Navigation items with Products shown first
 const staticNavItems = [
   {
@@ -46,7 +46,7 @@ const staticNavItems = [
     hasDropdown: true,
     items: [
       { name: "About Us", href: "/about-us", description: "Our mission and team" },
-      { name: "Careers", href: "#", description: "Join our growing team" },
+      { name: "Privacy Policy", href: "/privacy-policy", description: "Join our growing team" },
       { name: "Contact", href: "/contact-us", description: "Get in touch with us" },
     ],
   },
@@ -139,13 +139,13 @@ export default function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ease-out ${isScrolled ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100" : "bg-white border-b-2 border-blue-400"}`}
+        className={`sticky top-0 z-50 transition-all duration-300 ease-out ${isScrolled ? "bg-white backdrop-blur-lg shadow-lg border-b border-gray-100" : "bg-white border-b-2 border-blue-400"}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
-              <img src={AppLogo || "/placeholder.svg"} className="w-32 h-32 text-white" alt="App Logo" />
+            <div className="flex items-center  group cursor-pointer" onClick={() => navigate("/")}>
+              <img src={VerifyMyKyc || AppLogo || "/placeholder.svg"} className="w-52 -mx-4 md:w-72 md:-mx-10 h-36 text-white" alt="App Logo" />
             </div>
 
             {/* Desktop Navigation */}

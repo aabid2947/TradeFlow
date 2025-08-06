@@ -35,6 +35,12 @@ export default function BlogPage() {
   if (!isSuccess || !blogData) {
     return <div className="flex justify-center items-center h-screen text-2xl">Post not found.</div>;
   }
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30">
