@@ -247,7 +247,7 @@ const ProductPage = ({ serviceId }) => {
                                     <div className="text-sm text-gray-600">Happy Customers</div>
                                 </div>
                             </div>
-                            <button onClick={() => navigate(`/user/service/${productData._id}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
+                            <button onClick={() => navigate(`/user/service/${productData.category}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
                                 Verify Now - {productData.price}
                             </button>
                             <div className="bg-white rounded-xl p-6 shadow-lg">
