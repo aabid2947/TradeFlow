@@ -38,7 +38,7 @@ const staticNavItems = [
     items: [
       { name: "Case Studies", href: "#", description: "Customer success stories" },
       { name: "Blog", href: "/blog", description: "Industry insights and updates" },
-      { name: "Terms and Condition", href: "/t&c", description: "Support and FAQs" },
+      { name: "Support", href: "/contact-us", description: "Support and FAQs" },
     ],
   },
   {
@@ -46,7 +46,7 @@ const staticNavItems = [
     hasDropdown: true,
     items: [
       { name: "About Us", href: "/about-us", description: "Our mission and team" },
-      { name: "Privacy Policy", href: "/privacy-policy", description: "Join our growing team" },
+      { name: "Team", href: "/about-us", description: "Join our growing team" },
       { name: "Contact", href: "/contact-us", description: "Get in touch with us" },
     ],
   },

@@ -12,9 +12,9 @@ const Loader = () => {
         
         {/* Loading text with pulse animation */}
         <div className="text-center">
-          <p className="text-slate-700 font-medium text-lg animate-pulse">
+          {/* <p className="text-slate-700 font-medium text-lg animate-pulse">
             Authenticating
-          </p>
+          </p> */}
           {/* <div className="flex justify-center mt-2 space-x-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
