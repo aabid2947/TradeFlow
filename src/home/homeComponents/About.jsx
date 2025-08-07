@@ -12,6 +12,7 @@ import {
 import CompanyIntro from './Intro';
 import FounderProfile from './FounderProfile';
 import founder from "@/assets/founder.jpg";
+import employer from "@/assets/Employer.jpg"
 
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
@@ -256,7 +257,7 @@ const AboutUs = () => {
               role="CTO"
               quote="If it breaks, customers lose trust. We don't let it break."
               experience="10+ years building secure APIs • Ex-PhonePe, Flipkart"
-              image="https://images.unsplash.com/photo-1494790108755-2616b612e2c8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+              image={employer}
               delay={0.2}
             />
             <TeamMember

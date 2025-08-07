@@ -81,6 +81,7 @@ const ProductPage = ({ serviceId }) => {
     const userReview = userInfo ? reviews.find(r => r.user?._id === userInfo._id) : null;
 
     const productData = {
+       _id:service?._id,
         title: service?.name || "Service Verification",
         price: `₹${hasDiscount ? discountedPrice.toFixed(0) : (service?.price || 0)}`,
         originalPrice: hasDiscount ? `₹${service.price}` : null,
@@ -99,7 +100,8 @@ const ProductPage = ({ serviceId }) => {
         category: service?.category || "Document",
         inputFields: service?.inputFields || [],
         usedBy: service?.usedBy || [],
-        discount: service?.discount || null
+        discount: service?.discount || null,
+        image:service?.imageUrl 
     };
 
     useEffect(() => {
@@ -193,11 +195,13 @@ const ProductPage = ({ serviceId }) => {
                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                                    <div className="bg-white rounded-lg p-4 shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
                                        <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                                           <div className="text-center">
+                                        {productData.image? <img src={productData.image} alt="" />:  <div className="text-center">
                                                <Shield className="w-16 h-16 text-blue-600 mx-auto mb-4" />
                                                <div className="text-sm text-gray-600">{productData.category}</div>
                                                <div className="text-lg font-bold text-gray-800">Verification</div>
-                                           </div>
+                                           </div>}
+                                       
+                                         
                                        </div>
                                    </div>
                                </div>
@@ -243,7 +247,7 @@ const ProductPage = ({ serviceId }) => {
                                     <div className="text-sm text-gray-600">Happy Customers</div>
                                 </div>
                             </div>
-                            <button onClick={() => navigate(`/user/service/${productData.name}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
+                            <button onClick={() => navigate(`/user/service/${productData._id}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
                                 Verify Now - {productData.price}
                             </button>
                             <div className="bg-white rounded-xl p-6 shadow-lg">
@@ -275,7 +279,6 @@ const ProductPage = ({ serviceId }) => {
                             </div>
                         </div>
                         <div className="p-8">
-                            {/* ... (Overview Tab JSX - no changes here) ... */}
                              {selectedTab === "overview" && (
                                 <div className="space-y-10">
                                     <motion.div className="space-y-4">
@@ -341,8 +344,7 @@ const ProductPage = ({ serviceId }) => {
                                 <div className="space-y-8">
                                     <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
                                     
-                                    {/* --- Conditional Review Prompt Area --- */}
-                                    
+                                  
                                     {/* Case 1: User is logged in, has used the service, and has NOT reviewed yet */}
                                     {userInfo && hasUsedService && !userReview && (
                                         <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center shadow-sm">
@@ -373,7 +375,6 @@ const ProductPage = ({ serviceId }) => {
 
                                     {/* Case 3: User has already left a review (`userReview` exists). In this case, no prompt is shown at the top. Their review will appear below with edit/delete options. */}
                                     
-                                    {/* --- Dynamic Reviews List --- */}
                                     {isLoadingReviews ? (
                                         <div className="flex justify-center items-center py-10">
                                             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />

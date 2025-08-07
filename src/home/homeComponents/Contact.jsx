@@ -19,7 +19,9 @@ import {
   Eye,
   Award,
   Zap
+
 } from 'lucide-react';
+import officeBuilding from "@/assets/offceBuilding.JPG"
 
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
@@ -267,7 +269,7 @@ const ContactUs = () => {
 
                   <div className="mt-6 h-48 bg-gray-200 rounded-lg overflow-hidden">
                     <img 
-                      src="https://images.unsplash.com/photo-1524813686514-a57563d2a80f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80" 
+                      src={officeBuilding}
                       alt="Office building"
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
