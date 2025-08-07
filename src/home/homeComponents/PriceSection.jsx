@@ -146,17 +146,43 @@ export default function PricingSection() {
           <p className="text-base md:text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
             Choose the perfect plan for your verification needs.
           </p>
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <span className={`text-sm font-medium ${!isAnnual ? "text-gray-900" : "text-gray-500"}`}>Monthly</span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-200"}`}
-            >
-              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-5" : "translate-x-1"}`} />
-            </button>
-            <span className={`text-sm font-medium ${isAnnual ? "text-gray-900" : "text-gray-500"}`}>Annual</span>
-            {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">Save Big!</Badge>}
-          </div>
+          <div className="flex items-center justify-center gap-4 mb-8">
+  <span
+    className={`text-base font-semibold transition-colors duration-300 ${
+      !isAnnual ? "text-blue-700" : "text-gray-700"
+    }`}
+  >
+    Monthly
+  </span>
+
+  <button
+    onClick={() => setIsAnnual(!isAnnual)}
+    className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+      isAnnual ? "bg-blue-600" : "bg-gray-700"
+    }`}
+  >
+    <span
+      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+        isAnnual ? "translate-x-6" : "translate-x-1"
+      }`}
+    />
+  </button>
+
+  <span
+    className={`text-base font-semibold transition-colors duration-300 ${
+      isAnnual ? "text-blue-700" : "text-gray-700"
+    }`}
+  >
+    Annual
+  </span>
+
+  {isAnnual && (
+    <Badge className="bg-green-500 text-white font-semibold text-xs px-2 py-1 rounded-full shadow-md animate-pulse">
+      Save Big!
+    </Badge>
+  )}
+</div>
+
         </div>
         <TooltipProvider>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">

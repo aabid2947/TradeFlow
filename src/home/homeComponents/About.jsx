@@ -253,7 +253,7 @@ const AboutUs = () => {
               delay={0}
             />
             <TeamMember
-              name="Priya Sharma"
+              name="Arun Sharma"
               role="CTO"
               quote="If it breaks, customers lose trust. We don't let it break."
               experience="10+ years building secure APIs • Ex-PhonePe, Flipkart"

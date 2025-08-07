@@ -220,12 +220,12 @@ const PricingPage = () => {
             <span className={`text-lg font-medium ${!isAnnual ? "text-gray-900" : "text-gray-500"}`}>Monthly</span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-200"}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isAnnual ? "bg-blue-600" : "bg-gray-700"}`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"}`}/>
             </button>
             <span className={`text-lg font-medium ${isAnnual ? "text-gray-900" : "text-gray-500"}`}>Annual</span>
-            {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-sm">Save on yearly billing!</Badge>}
+            {/* {isAnnual && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-sm">Save on yearly billing!</Badge>} */}
           </motion.div>
         </div>
       </motion.div>
