@@ -45,10 +45,10 @@ const footerData = {
   // Updated links according to verify.txt requirements
   links: {
     verificationServices: [
-      { name: "Identity Verification", href: "#", icon: User },
-      { name: "Financial & Business Checks", href: "#", icon: Building },
-      { name: "Employment Verification", href: "#", icon: Briefcase },
-      { name: "Legal & Compliance Checks", href: "#", icon: FileCheck },
+      { name: "Identity Verification", href: "/product/688584e64c6ace5e2f798009", icon: User },
+      { name: "Financial & Business Checks", href: "/product/6885880c4c6ace5e2f798020", icon: Building },
+      { name: "Employment Verification", href: "/product/6885856b4c6ace5e2f79800b", icon: Briefcase },
+      { name: "Legal & Compliance Checks", href: "/product/688587b94c6ace5e2f79801e", icon: FileCheck },
     ],
     domesticServices: [
       { name: "Tenant Verification", href: "#", icon: Home },
@@ -66,6 +66,7 @@ const footerData = {
     legal: [
       { name: "Privacy Policy", href: "/privacy-policy" },
       { name: "Terms of Service", href: "/t&c" },
+       { name: "Disclaimer", href: "/disclaimer" },
     ],
   },
   social: [

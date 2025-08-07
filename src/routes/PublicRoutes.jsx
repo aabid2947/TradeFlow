@@ -15,6 +15,7 @@ import ResetPasswordPage from '@/components/ResetPasswordPage';
 import BlogLanding from '../home/BlogLanding';
 import BlogPage from '../home/BlogPage';
 import TermsAndConditionsPage from '../home/Terms&ConditionPage';
+import DisclaimerPage from '../home/Disclaimer';
 export const publicRoutes = [
   {
     path: '/',
@@ -34,6 +35,11 @@ export const publicRoutes = [
     {
     path: '/t&c',
     element:<TermsAndConditionsPage/>,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/disclaimer',
+    element:<DisclaimerPage/>,
     errorElement: <ErrorPage />
   },
    {
