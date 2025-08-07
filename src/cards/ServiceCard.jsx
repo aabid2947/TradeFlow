@@ -48,7 +48,7 @@ export default function ServiceCard({
     <Card onClick={handleCardClick} className={cardClassName}>
       <div className="relative">
         {/* MODIFIED: Changed aspect ratio to make image shorter */}
-        <div className="aspect-video overflow-hidden">
+        <div className="aspect-[4/2.5] overflow-hidden">
           <img
             src={imageSrc}
             alt={alt || serviceName}

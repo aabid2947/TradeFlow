@@ -37,7 +37,7 @@ export default function ServiceCard({
   return (
     <Card onClick={handleCardClick} className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2 cursor-pointer">
       <div className="relative">
-        <div className="aspect-[4/2.8] overflow-hidden">
+        <div className="aspect-[4/2.5] overflow-hidden">
           <img
             src={serviceImage || imageSrc}
             alt={alt || serviceName}
