@@ -45,7 +45,7 @@ const footerData = {
   // Updated links according to verify.txt requirements
   links: {
     verificationServices: [
-      { name: "Identity Verification", href: "/identity-verification", icon: User },
+      { name: "Identity Verification", href: "#", icon: User },
       { name: "Financial & Business Checks", href: "#", icon: Building },
       { name: "Employment Verification", href: "#", icon: Briefcase },
       { name: "Legal & Compliance Checks", href: "#", icon: FileCheck },
