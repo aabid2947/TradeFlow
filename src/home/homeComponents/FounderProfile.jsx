@@ -67,7 +67,7 @@ export default function FounderProfile() {
           >
             <div className="space-y-6">
               <p className="text-lg leading-relaxed text-gray-700">
-                As Founder and Chief Executive Officer of Navigant, Ankur bhatia  is responsible for the vision and the global planning with business strategies in place at Navigant. An expert at raising and mentoring teams and making them successful, Ankur being an effective leader has continually diversified its solution offerings and promised to take Navigant Technologies to the forefront of the global outsourcing industry
+                As Founder and Chief Executive Officer of Navigant, Ankur bhatia  is responsible for the vision and the global planning with business strategies in place at Navigant. An expert at raising and mentoring teams and making them successful, Ankur being an effective leader has continually diversified its solution offerings and promised to take Navigant Technologies to the forefront of the global outsourcing industry.
               </p>
             </div>
           </motion.div>

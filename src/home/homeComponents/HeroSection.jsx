@@ -437,7 +437,7 @@ export default function HeroSection() {
             </div>
           </div>
           {/* Enhanced Carousel Navigation */}
-          <div className="flex items-center justify-center gap-6 ">
+          {/* <div className="flex items-center justify-center gap-6 ">
             <Button
               onClick={prevSlide}
               disabled={isAnimating}
@@ -446,7 +446,6 @@ export default function HeroSection() {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            {/* Enhanced Slide Indicators */}
             <div className="flex gap-3 lg:hidden">
               {heroSlides.map((slide, index) => (
                 <button
@@ -471,7 +470,7 @@ export default function HeroSection() {
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
-          </div>
+          </div> */}
         </div>
       </section>
     </>
