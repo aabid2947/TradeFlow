@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import favicon from "@/assets/favicon.png"
 
 // Updated footer data according to verify.txt specifications
 const footerData = {
@@ -235,8 +236,8 @@ export default function Footer() {
           <div className="lg:col-span-4 space-y-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-white to-blue-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-[#1987BF]" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+                  <img src={favicon} alt="" />
                 </div>
                 <span className="text-2xl font-bold">{footerData.company.name}</span>
               </div>
@@ -273,7 +274,7 @@ export default function Footer() {
           </div>
 
           {/* Services Sections */}
-          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 justify-center mx-auto gap-8">
             {/* Verification Services */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Verification Services</h3>
@@ -306,7 +307,7 @@ export default function Footer() {
           </div>
 
           {/* Newsletter Section */}
-          <div className="lg:col-span-2">
+          <div className="lg:-ml-20 lg:col-span-2">
             <NewsletterSignup />
           </div>
         </div>
