@@ -310,7 +310,7 @@ export default function Header() {
                     Account
                     <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gray-600" />
                   </Button>
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
+                  <div className="absolute top-full right-0  w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
                     <button
                       onClick={() => navigate("/user")}
                       className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"

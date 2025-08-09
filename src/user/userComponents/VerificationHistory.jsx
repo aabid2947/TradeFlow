@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react";
+import { useState, useMemo ,useEffect} from "react";
 import { useGetVerificationHistoryQuery } from "@/app/api/verificationApiSlice";
 import { 
   CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Search, Filter, 
@@ -314,6 +314,14 @@ export default function VerificationHistory() {
   const results = response?.data || [];
   console.log("Verification History Response:", results);
   const pagination = response?.pagination;
+
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
 
   const filteredResults = useMemo(() => {
     return (results || []).filter(result => {

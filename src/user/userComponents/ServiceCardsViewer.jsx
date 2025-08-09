@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo,useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import ServiceCard from "@/cards/ServiceCard";
@@ -19,6 +19,14 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
 
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
+
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
 
   const accessibleServiceIds = useMemo(() => {
     if (!userInfo?.activeSubscriptions || !pricingPlans.length) {

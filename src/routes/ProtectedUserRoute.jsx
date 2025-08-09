@@ -1,6 +1,7 @@
 import UserDashBoard from "@/user/UserDashBoard";
 import ServicePage from "@/user/ServicePage";
 import ErrorPage from "@/pages/ErrorPage";
+import ServiceExecutionPage from "@/user/ServiceExecutionPage"; // <-- IMPORT NEW PAGE
 
 export const protectedUserRoutes = [
   {
@@ -9,11 +10,16 @@ export const protectedUserRoutes = [
     element: <UserDashBoard />,
     errorElement: <ErrorPage />
   },
-   
   {
-    // This route is now based on the category name passed in the URL.
+    // This route is for the list of services within a category.
     path: '/user/service/:category',
     element: <ServicePage />,
     errorElement: <ErrorPage />
   },
+  {
+    // NEW: This route is for the dedicated service execution "sandbox" page.
+    path: '/user/try/:serviceKey',
+    element: <ServiceExecutionPage />,
+    errorElement: <ErrorPage />
+  }
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,89 +6,144 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Plus, Save, Trash2, X, Edit, Eye, Image as ImageIcon } from "lucide-react";
-import { useCreateBlogMutation, useUpdateBlogMutation, useGetBlogsQuery, useDeleteBlogMutation } from '@/app/api/blogApiSlice';
+import { Plus, Trash2, X, Edit, Eye, Image as ImageIcon, Bold, Italic, Underline, List, Link2, AlignLeft, Type, Quote } from "lucide-react";
+import { useCreateBlogMutation, useUpdateBlogMutation, useGetBlogsAdminQuery, useDeleteBlogMutation } from '@/app/api/blogApiSlice';
 import { Link } from 'react-router-dom';
 
 // --- Constants ---
-const CATEGORIES = ['Technology', 'Security', 'Compliance', 'Global', 'Business', 'General'];
-const ICONS = ['ShieldCheck', 'FileText', 'Scale', 'Globe', 'Monitor', 'Gauge', 'Zap', 'BarChart'];
+const CATEGORIES = [
+  "PAN",
+  "CIN",
+  "Financial & Business Checks",
+  "Identity Verification",
+  "Employment Verification",
+  "Biometric & AI-Based Verification",
+  "Profile & Database Lookup",
+  "Legal & Compliance Checks",
+  "Vehicle Verification"
+];
+const STATUS_OPTIONS = ['draft', 'published', 'archived'];
 
 // --- Initial State Definitions ---
 const initialBlogState = {
     title: '',
     excerpt: '',
+    content: '',
     author: 'VerifyMyKyc Team',
     category: '',
-    heroSubtitle: '',
-    heroTitle: '',
-    heroDescription: '',
-    verificationTitle: '',
-    verificationDescription: '',
-    verificationFeatures: [{ title: '', description: '', icon: 'ShieldCheck' }],
-    howItWorksTitle: '',
-    howItWorksDescription: '',
-    howItWorksSteps: [{ title: '', description: '' }],
-    benefitsSubtitle: '',
-    benefitsTitle: '',
-    benefitsDescription: '',
-    productBenefits: [{ title: '', description: '', icon: 'ShieldCheck' }],
-    trustTitle: '',
-    trustCard1: { title: '', description: '' },
-    trustCard2: { title: '', description: '' },
-    trustCard3: { title: '', description: '' },
+    tags: [],
+    status: 'published',
+    metaTitle: '',
+    metaDescription: '',
 };
 
 const initialImageState = {
-    mainImage: null, heroImage1: null, heroImage2: null, howItWorksImage: null, trustImage: null
+    featuredImage: null,
 };
 
-// --- Reusable UI Components ---
+// --- Rich Text Editor Component ---
+const RichTextEditor = ({ value, onChange }) => {
+    const editorRef = useRef(null);
+    const [showLinkDialog, setShowLinkDialog] = useState(false);
+    const [linkUrl, setLinkUrl] = useState('');
 
-const AccordionSection = ({ title, openSection, setOpenSection, sectionName, children }) => {
-    const isOpen = openSection === sectionName;
+    const execCommand = (command, value = null) => {
+        document.execCommand(command, false, value);
+        editorRef.current?.focus();
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key) {
+                case 'b': e.preventDefault(); execCommand('bold'); break;
+                case 'i': e.preventDefault(); execCommand('italic'); break;
+                case 'u': e.preventDefault(); execCommand('underline'); break;
+            }
+        }
+    };
+
+    const handleInput = () => {
+        onChange(editorRef.current?.innerHTML || '');
+    };
+
+    const insertLink = () => {
+        if (linkUrl) {
+            execCommand('createLink', linkUrl);
+            setLinkUrl('');
+            setShowLinkDialog(false);
+        }
+    };
+
+    const formatBlock = (tag) => {
+        execCommand('formatBlock', `<${tag}>`);
+    };
+
+    useEffect(() => {
+        if (editorRef.current && editorRef.current.innerHTML !== value) {
+            editorRef.current.innerHTML = value;
+        }
+    }, [value]);
+
     return (
-        <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
-            <button
-                type="button"
-                className="w-full flex justify-between items-center p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
-                onClick={() => setOpenSection(isOpen ? null : sectionName)}
-            >
-                <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-                <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isOpen && <div className="p-6 space-y-6">{children}</div>}
+        <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+            <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1">
+                <select onChange={(e) => formatBlock(e.target.value)} className="px-2 py-1 text-sm border border-gray-300 rounded" defaultValue="">
+                    <option value="">Format</option>
+                    <option value="h1">Heading 1</option>
+                    <option value="h2">Heading 2</option>
+                    <option value="h3">Heading 3</option>
+                    <option value="p">Paragraph</option>
+                </select>
+                <div className="w-px bg-gray-300 mx-1"></div>
+                <button type="button" onClick={() => execCommand('bold')} className="p-1 hover:bg-gray-200 rounded" title="Bold (Ctrl+B)"><Bold className="w-4 h-4" /></button>
+                <button type="button" onClick={() => execCommand('italic')} className="p-1 hover:bg-gray-200 rounded" title="Italic (Ctrl+I)"><Italic className="w-4 h-4" /></button>
+                <button type="button" onClick={() => execCommand('underline')} className="p-1 hover:bg-gray-200 rounded" title="Underline (Ctrl+U)"><Underline className="w-4 h-4" /></button>
+                <div className="w-px bg-gray-300 mx-1"></div>
+                <button type="button" onClick={() => execCommand('insertUnorderedList')} className="p-1 hover:bg-gray-200 rounded" title="Bullet List"><List className="w-4 h-4" /></button>
+                <button type="button" onClick={() => execCommand('insertOrderedList')} className="p-1 hover:bg-gray-200 rounded" title="Numbered List"><Type className="w-4 h-4" /></button>
+                <button type="button" onClick={() => execCommand('formatBlock', '<blockquote>')} className="p-1 hover:bg-gray-200 rounded" title="Quote"><Quote className="w-4 h-4" /></button>
+                <button type="button" onClick={() => setShowLinkDialog(true)} className="p-1 hover:bg-gray-200 rounded" title="Insert Link"><Link2 className="w-4 h-4" /></button>
+                <div className="w-px bg-gray-300 mx-1"></div>
+                <button type="button" onClick={() => execCommand('justifyLeft')} className="p-1 hover:bg-gray-200 rounded" title="Align Left"><AlignLeft className="w-4 h-4" /></button>
+            </div>
+            <div ref={editorRef} contentEditable onInput={handleInput} onKeyDown={handleKeyDown} className="p-4 min-h-[200px] focus:outline-none prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
+            {showLinkDialog && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-4 rounded-lg shadow-lg w-80">
+                        <h3 className="text-lg font-semibold mb-3">Insert Link</h3>
+                        <Input type="url" placeholder="https://example.com" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className="mb-3" />
+                        <div className="flex gap-2 justify-end">
+                            <Button type="button" variant="ghost" onClick={() => setShowLinkDialog(false)}>Cancel</Button>
+                            <Button type="button" onClick={insertLink} className="bg-[#1987BF] hover:bg-blue-700">Insert</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-const ImageInput = ({ label, fieldName, preview, onChange }) => (
+const ImageInput = ({ label, fieldName, preview, onChange, currentImage }) => (
     <div className="space-y-2">
         <Label htmlFor={fieldName}>{label}</Label>
         <div className="flex items-center gap-4">
-            <div className="w-24 h-24 bg-slate-100 rounded-md flex items-center justify-center border-2 border-dashed">
-                {preview ? (
-                    <img src={preview} alt={`${label} preview`} className="w-full h-full object-cover rounded-md" />
-                ) : (
-                    <ImageIcon className="w-8 h-8 text-slate-400" />
-                )}
+            <div className="w-32 h-20 bg-slate-100 rounded-md flex items-center justify-center border-2 border-dashed">
+                {preview ? <img src={preview} alt={`${label} preview`} className="w-full h-full object-cover rounded-md" /> : currentImage ? <img src={currentImage} alt="Current" className="w-full h-full object-cover rounded-md" /> : <ImageIcon className="w-8 h-8 text-slate-400" />}
             </div>
             <Input id={fieldName} type="file" accept="image/*" onChange={(e) => onChange(e, fieldName)} className="flex-1" />
         </div>
     </div>
 );
 
-// --- Main Blog Management Component ---
-
-export default function BlogManager() {
+export default function BlogMetaDataForm() {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingBlog, setEditingBlog] = useState(null);
     const [formData, setFormData] = useState(initialBlogState);
     const [imageFiles, setImageFiles] = useState(initialImageState);
     const [imagePreviews, setImagePreviews] = useState(initialImageState);
-    const [openSection, setOpenSection] = useState('main');
+    const [tagInput, setTagInput] = useState('');
 
-    const { data: blogsResponse, isLoading: blogsLoading, refetch } = useGetBlogsQuery();
+    const { data: blogsResponse, isLoading: blogsLoading, refetch } = useGetBlogsAdminQuery();
     const [createBlog, { isLoading: createLoading }] = useCreateBlogMutation();
     const [updateBlog, { isLoading: updateLoading }] = useUpdateBlogMutation();
     const [deleteBlog] = useDeleteBlogMutation();
@@ -100,22 +155,13 @@ export default function BlogManager() {
         setFormData(initialBlogState);
         setImageFiles(initialImageState);
         setImagePreviews(initialImageState);
-        setOpenSection('main');
+        setTagInput('');
     };
 
-    const handleChange = (path, value) => {
-        setFormData(prev => {
-            const keys = path.split('.');
-            const newState = JSON.parse(JSON.stringify(prev));
-            let current = newState;
-            for (let i = 0; i < keys.length - 1; i++) {
-                current = current[keys[i]];
-            }
-            current[keys[keys.length - 1]] = value;
-            return newState;
-        });
+    const handleChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
     };
-    
+
     const handleImageChange = (e, fieldName) => {
         const file = e.target.files[0];
         if (file) {
@@ -126,41 +172,38 @@ export default function BlogManager() {
         }
     };
 
-    const addArrayItem = (arrayName, newItem) => {
-        const currentArray = formData[arrayName] || [];
-        handleChange(arrayName, [...currentArray, newItem]);
+    const handleAddTag = () => {
+        if (tagInput && !formData.tags.includes(tagInput)) {
+            handleChange('tags', [...formData.tags, tagInput.trim()]);
+            setTagInput('');
+        }
     };
 
-    const removeArrayItem = (arrayName, index) => {
-        handleChange(arrayName, formData[arrayName].filter((_, i) => i !== index));
+    const handleRemoveTag = (tagToRemove) => {
+        handleChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
     };
-
+    
     const handleEdit = (blog) => {
         setEditingBlog(blog);
-        const newFormData = {
-            ...initialBlogState,
-            ...blog,
-            verificationFeatures: blog.verificationFeatures?.length ? blog.verificationFeatures : initialBlogState.verificationFeatures,
-            howItWorksSteps: blog.howItWorksSteps?.length ? blog.howItWorksSteps : initialBlogState.howItWorksSteps,
-            productBenefits: blog.productBenefits?.length ? blog.productBenefits : initialBlogState.productBenefits,
-            trustCard1: blog.trustCard1 || initialBlogState.trustCard1,
-            trustCard2: blog.trustCard2 || initialBlogState.trustCard2,
-            trustCard3: blog.trustCard3 || initialBlogState.trustCard3,
-        };
-        setFormData(newFormData);
-        
-        const previews = {};
-        Object.keys(initialImageState).forEach(key => {
-            previews[key] = blog[key]?.url || null;
+        setFormData({
+            title: blog.title || '',
+            excerpt: blog.excerpt || '',
+            content: blog.content || '',
+            author: blog.author || 'VerifyMyKyc Team',
+            category: blog.category || '',
+            tags: blog.tags || [],
+            status:  'published',
+            metaTitle: blog.metaTitle || '',
+            metaDescription: blog.metaDescription || '',
         });
-        setImagePreviews(previews);
+        
+        setImagePreviews({ featuredImage: blog.featuredImage?.url || null });
         setImageFiles(initialImageState);
         setIsFormVisible(true);
-        setOpenSection('main');
     };
 
     const handleDelete = async (blogId) => {
-        if (window.confirm('Are you sure you want to delete this blog?')) {
+        if (window.confirm('Are you sure you want to delete this blog post?')) {
             await deleteBlog(blogId).unwrap();
             refetch();
         }
@@ -168,11 +211,25 @@ export default function BlogManager() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Create a mutable copy of the form data
+        const dataToSubmit = { ...formData };
+
+        // --- UPDATED LOGIC ---
+        // If we are editing and no new featured image file is selected,
+        // we must explicitly retain the existing featured image data in the payload.
+        if (editingBlog && !imageFiles.featuredImage) {
+            dataToSubmit.featuredImage = editingBlog.featuredImage;
+        }
+        // --- END OF UPDATE ---
+
         const formDataToSend = new FormData();
-        formDataToSend.append('blogData', JSON.stringify(formData));
-        Object.keys(imageFiles).forEach(key => {
-            if (imageFiles[key]) formDataToSend.append(key, imageFiles[key]);
-        });
+        formDataToSend.append('blogData', JSON.stringify(dataToSubmit));
+        
+        // Only append the new file if it exists
+        if (imageFiles.featuredImage) {
+            formDataToSend.append('featuredImage', imageFiles.featuredImage);
+        }
 
         try {
             if (editingBlog) {
@@ -188,35 +245,12 @@ export default function BlogManager() {
         }
     };
 
-    const renderDynamicList = (arrayName, placeholder1, placeholder2, hasIcon = false) => (
-        <div className="space-y-3">
-            {(formData[arrayName] || []).map((item, index) => (
-                <div key={index} className="grid grid-cols-12 gap-3 p-3 border rounded-md bg-slate-50 items-center">
-                    <Input className="col-span-11 md:col-span-4" placeholder={placeholder1} value={item.title} onChange={e => handleChange(`${arrayName}.${index}.title`, e.target.value)} />
-                    <Input className="col-span-11 md:col-span-4" placeholder={placeholder2} value={item.description} onChange={e => handleChange(`${arrayName}.${index}.description`, e.target.value)} />
-                    {hasIcon && (
-                         <div className="col-span-11 md:col-span-3">
-                            <Select value={item.icon} onValueChange={v => handleChange(`${arrayName}.${index}.icon`, v)}>
-                                <SelectTrigger><SelectValue placeholder="Select Icon" /></SelectTrigger>
-                                <SelectContent>{ICONS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                    )}
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeArrayItem(arrayName, index)} className="col-span-1 justify-self-end text-red-500 hover:bg-red-100"><Trash2 className="w-4 h-4"/></Button>
-                </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => addArrayItem(arrayName, { title: '', description: '', ...(hasIcon && { icon: 'ShieldCheck' }) })}>
-                <Plus className="w-4 h-4 mr-2" /> Add Item
-            </Button>
-        </div>
-    );
-
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">Blog Manager</h1>
-                    <p className="text-slate-600 mt-1">Create, edit, and manage all your blog content from one place.</p>
+                    <p className="text-slate-600 mt-1">Create, edit, and manage all your blog content.</p>
                 </div>
                 {!isFormVisible && (
                     <Button onClick={() => setIsFormVisible(true)} className="bg-[#1987BF] hover:bg-blue-700 text-white shadow-sm">
@@ -227,70 +261,50 @@ export default function BlogManager() {
 
             {isFormVisible && (
                 <Card className="mb-8 shadow-lg border-slate-200">
-                    <div className="p-4 bg-white rounded-lg  flex flex-row items-center justify-between border-b ">
-                        <CardTitle className="text-xl text-slate-800 mt-4">{editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}</CardTitle>
+                    <div className="p-4 bg-white rounded-t-lg flex items-center justify-between border-b">
+                        <CardTitle className="text-xl text-slate-800">{editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}</CardTitle>
                         <Button variant="ghost" size="icon" onClick={resetForm}><X className="w-5 h-5" /></Button>
                     </div>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4 pt-6">
-                            {/* --- Accordion Sections for the form --- */}
-                            <AccordionSection title="1. Main Details & SEO" openSection={openSection} setOpenSection={setOpenSection} sectionName="main">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label className="my-1">Title</Label><Input value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
-                                    <div><Label className="my-1">Author</Label><Input value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
-                                    <div><Label className="my-1">Category</Label><Select value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="md:col-span-2"><Label className="my-1">Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
-                                    <div className="md:col-span-2"><ImageInput label="Main Blog Image" fieldName="mainImage" preview={imagePreviews.mainImage} onChange={handleImageChange} /></div>
+                        <form onSubmit={handleSubmit} className="space-y-6 p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><Label className="my-2">Title</Label><Input  value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
+                                <div><Label className="my-2" >Author</Label><Input  value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
+                                <div><Label className="my-2" >Category</Label><Select  value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                {/* <div><Label  className="my-2">Status</Label><Select  value={formData.status} onValueChange={v => handleChange('status', v)} required><SelectTrigger><SelectValue placeholder="Select status"/></SelectTrigger><SelectContent className="bg-white">{STATUS_OPTIONS.map(s=><SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent></Select></div> */}
+                            </div>
+                            <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
+                            <div className="relative">
+                                <Label className="my-2">Content</Label>
+                                <RichTextEditor value={formData.content} onChange={value => handleChange('content', value)} />
+                            </div>
+                            <div>
+                                <Label className="my-2">Tags</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input value={tagInput} onChange={e => setTagInput(e.target.value)} placeholder="Add a tag and press enter" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag())} />
+                                    <Button type="button" onClick={handleAddTag}>Add</Button>
                                 </div>
-                            </AccordionSection>
-
-                            <AccordionSection title="2. Hero Section" openSection={openSection} setOpenSection={setOpenSection} sectionName="hero">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label className="my-1">Hero Subtitle</Label><Input value={formData.heroSubtitle} onChange={e => handleChange('heroSubtitle', e.target.value)} /></div>
-                                    <div><Label className="my-1">Hero Title</Label><Input value={formData.heroTitle} onChange={e => handleChange('heroTitle', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label className="my-1">Hero Description</Label><Textarea value={formData.heroDescription} onChange={e => handleChange('heroDescription', e.target.value)} /></div>
-                                    <ImageInput label="Hero Image 1" fieldName="heroImage1" preview={imagePreviews.heroImage1} onChange={handleImageChange} />
-                                    <ImageInput label="Hero Image 2" fieldName="heroImage2" preview={imagePreviews.heroImage2} onChange={handleImageChange} />
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {formData.tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                                            {tag}
+                                            <button type="button" onClick={() => handleRemoveTag(tag)}><X className="w-3 h-3" /></button>
+                                        </Badge>
+                                    ))}
                                 </div>
-                            </AccordionSection>
-
-                            <AccordionSection title="3. Verification Features" openSection={openSection} setOpenSection={setOpenSection} sectionName="verification">
-                                <div><Label className="my-1">Section Title</Label><Input value={formData.verificationTitle} onChange={e => handleChange('verificationTitle', e.target.value)} /></div>
-                                <div><Label className="my-1">Section Description</Label><Textarea value={formData.verificationDescription} onChange={e => handleChange('verificationDescription', e.target.value)} /></div>
-                                <h4 className="font-semibold text-slate-700 pt-4">Features List</h4>
-                                {renderDynamicList('verificationFeatures', 'Feature Title', 'Feature Description', true)}
-                            </AccordionSection>
-
-                            <AccordionSection title="4. How It Works" openSection={openSection} setOpenSection={setOpenSection} sectionName="howItWorks">
-                                <div><Label  className="my-1">Section Title</Label><Input value={formData.howItWorksTitle} onChange={e => handleChange('howItWorksTitle', e.target.value)} /></div>
-                                <div><Label  className="my-1">Section Description</Label><Textarea value={formData.howItWorksDescription} onChange={e => handleChange('howItWorksDescription', e.target.value)} /></div>
-                                <ImageInput label="How It Works Image" fieldName="howItWorksImage" preview={imagePreviews.howItWorksImage} onChange={handleImageChange} />
-                                <h4 className="font-semibold text-slate-700 pt-4">Steps</h4>
-                                {renderDynamicList('howItWorksSteps', 'Step Title', 'Step Description')}
-                            </AccordionSection>
-
-                            <AccordionSection title="5. Product Benefits" openSection={openSection} setOpenSection={setOpenSection} sectionName="benefits">
-                                <div><Label  className="my-1">Section Subtitle</Label><Input value={formData.benefitsSubtitle} onChange={e => handleChange('benefitsSubtitle', e.target.value)} /></div>
-                                <div><Label  className="my-1">Section Title</Label><Input value={formData.benefitsTitle} onChange={e => handleChange('benefitsTitle', e.target.value)} /></div>
-                                <div><Label  className="my-1">Section Description</Label><Textarea value={formData.benefitsDescription} onChange={e => handleChange('benefitsDescription', e.target.value)} /></div>
-                                <h4 className="font-semibold text-slate-700 pt-4">Benefits List</h4>
-                                {renderDynamicList('productBenefits', 'Benefit Title', 'Benefit Description', true)}
-                            </AccordionSection>
-
-                             <AccordionSection title="6. Trust Section" openSection={openSection} setOpenSection={setOpenSection} sectionName="trust">
-                                <div><Label  className="my-1">Section Title</Label><Input value={formData.trustTitle} onChange={e => handleChange('trustTitle', e.target.value)} /></div>
-                                <ImageInput label="Trust Section Image" fieldName="trustImage" preview={imagePreviews.trustImage} onChange={handleImageChange} />
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                                    <div><Label  className="my-1">Trust Card 1 Title</Label><Input value={formData.trustCard1.title} onChange={e => handleChange('trustCard1.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 1 Desc</Label><Input value={formData.trustCard1.description} onChange={e => handleChange('trustCard1.description', e.target.value)} /></div>
-                                    <div><Label  className="my-1">Trust Card 2 Title</Label><Input value={formData.trustCard2.title} onChange={e => handleChange('trustCard2.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 2 Desc</Label><Input value={formData.trustCard2.description} onChange={e => handleChange('trustCard2.description', e.target.value)} /></div>
-                                    <div><Label  className="my-1">Trust Card 3 Title</Label ><Input value={formData.trustCard3.title} onChange={e => handleChange('trustCard3.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 3 Desc</Label><Input value={formData.trustCard3.description} onChange={e => handleChange('trustCard3.description', e.target.value)} /></div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                                <div className="space-y-4">
+                                    <h3 className="font-semibold text-lg">SEO</h3>
+                                    <div><Label className="my-2">Meta Title</Label><Input value={formData.metaTitle} onChange={e => handleChange('metaTitle', e.target.value)} /></div>
+                                    <div><Label className="my-2">Meta Description</Label><Textarea value={formData.metaDescription} onChange={e => handleChange('metaDescription', e.target.value)} /></div>
                                 </div>
-                            </AccordionSection>
-                            
-                            <div className="flex justify-end gap-4 p-6">
+                                <div className="space-y-4">
+                                     <h3 className="font-semibold text-lg">Images</h3>
+                                     <ImageInput label="Featured Image" fieldName="featuredImage" preview={imagePreviews.featuredImage} onChange={handleImageChange} currentImage={editingBlog?.featuredImage?.url} />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-4 pt-6">
                                 <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
                                 <Button type="submit" disabled={createLoading || updateLoading} className="bg-[#1987BF] hover:bg-blue-700 text-white shadow-sm w-40">
                                     {(createLoading || updateLoading) ? 'Saving...' : 'Save Post'}
@@ -302,7 +316,7 @@ export default function BlogManager() {
             )}
 
             <Card className="shadow-md border-slate-200">
-                <CardHeader><CardTitle  className="my-4">Existing Blog Posts</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="my-4">Existing Blog Posts</CardTitle></CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-slate-500">
@@ -310,7 +324,7 @@ export default function BlogManager() {
                                 <tr>
                                     <th scope="col" className="px-6 py-3">Title</th>
                                     <th scope="col" className="px-6 py-3">Category</th>
-                                    <th scope="col" className="px-6 py-3">Author</th>
+                                    <th scope="col" className="px-6 py-3">Status</th>
                                     <th scope="col" className="px-6 py-3">Last Updated</th>
                                     <th scope="col" className="px-6 py-3 text-right">Actions</th>
                                 </tr>
@@ -322,7 +336,7 @@ export default function BlogManager() {
                                     <tr key={blog._id} className="bg-white border-b hover:bg-slate-50">
                                         <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{blog.title}</th>
                                         <td className="px-6 py-4"><Badge variant="secondary">{blog.category}</Badge></td>
-                                        <td className="px-6 py-4">{blog.author}</td>
+                                        <td className="px-6 py-4"><Badge variant={blog.status === 'published' ? 'default' : 'outline'}>{blog.status}</Badge></td>
                                         <td className="px-6 py-4">{new Date(blog.updatedAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end items-center">

@@ -13,9 +13,41 @@ import { ArrowLeft, X } from "lucide-react";
 
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { selectCurrentUser } from "@/features/auth/authSlice";
+
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
 import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
+// inside ServicePage.jsx - replace the Back button block with this breadcrumb nav
+// import { useNavigate } from "react-router-dom";
+// ...existing imports
+
+// Add this small Breadcrumb component inside the file (or top-level)
+const BreadcrumbWithThumb = ({ service }) => {
+  const navigate = useNavigate();
+  const thumb = service?.mainImage?.url;
+  return (
+    <nav className="flex items-center text-sm font-medium text-gray-600 gap-3">
+      <button onClick={() => navigate('/user')} className="flex items-center gap-2 hover:text-gray-800">
+        {/* small dashboard icon (or text) */}
+        <span className="text-xs font-medium">Dashboard</span>
+      </button>
+      <ChevronRight className="h-4 w-4" />
+      <button onClick={() => navigate('/user', { state: { view: 'services', category } })} className="flex items-center gap-2 hover:text-gray-800">
+        <span className="text-xs font-medium">{category ? category.replace(/_/g, " ") : 'Services'}</span>
+      </button>
+      <ChevronRight className="h-4 w-4" />
+      <div className="flex items-center gap-3">
+        {thumb ? (
+          <img src={thumb} alt="service" className="w-7 h-7 rounded-md object-cover border" />
+        ) : (
+          <div className="w-7 h-7 rounded-md bg-gray-100 border" />
+        )}
+        <span className="text-gray-800 font-semibold">{activeService ? activeService.name : `${category ? `${category.replace(/_/g, " ")}` : 'Services'}`}</span>
+      </div>
+    </nav>
+  );
+};
+
 
 const XIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
@@ -84,6 +116,8 @@ export default function ServicePage() {
       setActiveServiceId(filteredServices[0].service_key);
     }
   }, [filteredServices, activeServiceId]);
+
+  
 
   useEffect(() => {
     setVerificationResult(null);

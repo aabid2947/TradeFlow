@@ -16,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
+import DigitalIdentityVerification from "@/assets/Digital Identity Verification.png"
+import DigitalESign from "@/assets/Digital eSign.png"
 const heroSlides = [
   {
     id: 1,
@@ -27,6 +29,7 @@ const heroSlides = [
     icon: Users,
     gradient: "from-blue-600 via-purple-600 to-blue-800",
     accentColor: "#1987BF",
+
     stats: { number: "50K+", label: "Families Protected" },
   },
   {
@@ -37,6 +40,7 @@ const heroSlides = [
       "Verify all types of official documents instantly with our AI-powered verification system. From PAN cards to passports, ensure authenticity and prevent fraud with our comprehensive document verification solutions.",
     features: ["PAN Card Verification", "Aadhaar Verification", "Passport Validation", "License Checks"],
     icon: FileCheck,
+    image:DigitalIdentityVerification,
     gradient: "from-emerald-600 via-teal-600 to-cyan-800",
     accentColor: "#059669",
     stats: { number: "1M+", label: "Documents Verified" },
@@ -49,6 +53,7 @@ const heroSlides = [
       "Leverage cutting-edge facial recognition and biometric technology to ensure identity authenticity. Our advanced algorithms provide accurate face matching and likeness detection for enhanced security.",
     features: ["Face Recognition", "Biometric Matching", "Liveness Detection", "Identity Confirmation"],
     icon: Search,
+    image:DigitalESign,
     gradient: "from-orange-600 via-red-600 to-pink-800",
     accentColor: "#EA580C",
     stats: { number: "99.9%", label: "Accuracy Rate" },
@@ -336,8 +341,9 @@ export default function HeroSection() {
               className={`hidden lg:flex justify-center lg:justify-end ${isAnimating ? (direction === "right" ? "slide-out-right" : "slide-out-left") : direction === "right" ? "slide-in-right" : "slide-in-left"}`}
             >
               <div className="relative">
+
                 {/* Main Card */}
-                <Card className="w-full max-w-md bg-white/90 backdrop-blur-lg border-0 shadow-2xl overflow-hidden">
+                {currentHero.image?<img src={currentHero.image}/>:  <Card className="w-full max-w-md bg-white/90 backdrop-blur-lg border-0 shadow-2xl overflow-hidden">
                   <CardContent className="p-0">
                     {/* Header with Gradient */}
                     <div className={`h-32 bg-gradient-to-br ${currentHero.gradient} relative overflow-hidden`}>
@@ -419,7 +425,8 @@ export default function HeroSection() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card>}
+              
                 {/* Floating Elements Around Card */}
                 <FloatingElement
                   delay={0}

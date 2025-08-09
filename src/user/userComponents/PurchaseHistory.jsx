@@ -209,12 +209,22 @@ export default function PurchaseHistory() {
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [isMobile, setIsMobile] = useState(false)
 
+  
+
   const {
     data: transactionsResponse,
     isLoading,
     isError,
     error,
   } = useGetMyTransactionsQuery();
+
+  useEffect(()=>{
+     window.scrollTo({
+    top: 0,
+    behavior: "smooth", 
+  });
+  },[])
+
 
   const buyers = useMemo(() => {
     if (!transactionsResponse?.data) {

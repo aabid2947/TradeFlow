@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react";
+import { useMemo ,useEffect} from "react";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
@@ -16,6 +16,14 @@ const chartData = [
 
 export default function DashboardAnalytics({ transactions, isLoading }) {
   const userInfo = useSelector(selectCurrentUser);
+
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
 
   const statsData = useMemo(() => {
     if (!userInfo || !userInfo.usedServices || userInfo.usedServices.length === 0) {

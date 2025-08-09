@@ -1,46 +1,32 @@
-import React, { useState, useEffect ,useMemo} from "react";
+// UserInfoCard.jsx
+import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CheckCircle, Shield, FileText, Award, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Shield, FileText, Award } from "lucide-react";
 
 const toTitleCase = (str) => {
   if (!str) return "";
   return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-export function UserInfoCard({ services = [], activeServiceId, onVerify, isVerifying, isSubscribed, onSubscribeClick }) {
-  const [formData, setFormData] = useState({});
-  
+export function UserInfoCard({ services = [], activeServiceId, isSubscribed, onSubscribeClick }) {
+  const navigate = useNavigate();
+
   const currentService = useMemo(() => {
     return services.find((s) => s.service_key === activeServiceId);
-  }, [activeServiceId, services]);
+  }, [services, activeServiceId]);
 
-  useEffect(() => {
-    setFormData({});
-  }, [activeServiceId]);
-
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === "file" ? files[0] : value }));
-  };
-
-  const handleVerify = (e) => {
-    e.preventDefault();
-    if (!currentService || !onVerify) return;
-
-    let payload;
-    if (currentService.apiType === 'form') {
-      payload = new FormData();
-      Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
-    } else {
-      payload = { ...formData };
+  const handleTryOut = () => {
+    if (!currentService) return;
+    if (!isSubscribed) {
+      // open subscription purchase flow
+      onSubscribeClick && onSubscribeClick();
+      return;
     }
-    onVerify(payload);
+    // navigate to execution page and pass the full service data via state for convenience
+    navigate(`/user/try/${currentService.service_key}`, { state: { service: currentService } });
   };
-  
-  const isFormFilled = currentService ? currentService.inputFields.every(field => formData[field.name]) : false;
 
   return (
     <Card className="shadow-lg border-2 border-blue-200 hover:shadow-xl transition-all">
@@ -50,65 +36,45 @@ export function UserInfoCard({ services = [], activeServiceId, onVerify, isVerif
           {currentService ? currentService.name : "Select a Service"}
         </CardTitle>
         <p className="text-blue-100 text-sm">
-          {isSubscribed 
-            ? "You have access. Please provide the required inputs to verify."
-            : "Subscribe to this category to get access to this service."
-          }
+          {isSubscribed
+            ? "You have access. Click Try Out to execute this service."
+            : "Subscribe to this category to get access to Try Out."}
         </p>
       </CardHeader>
-      <CardContent className="px-6 pb-6 space-y-6">
-        <div className="space-y-4 pt-6">
-          {!currentService ? (
-             <p className="text-sm text-gray-500 text-center py-4">Select a service from the list to begin.</p>
-          ) : (
-            currentService.inputFields.map(({ name, type, label, placeholder }) => (
-              <div key={name} className="grid w-full items-center gap-1.5">
-                <Label htmlFor={name} className="text-sm font-semibold text-gray-800 flex items-center gap-1">
-                  <FileText className="w-3 h-3 text-gray-500"/>
-                  {label || toTitleCase(name)}
-                </Label>
-                <Input 
-                  id={name} 
-                  name={name} 
-                  type={type} 
-                  placeholder={placeholder || `Enter ${toTitleCase(name)}...`} 
-                  onChange={handleInputChange} 
-                  className="border-2" 
-                  disabled={!isSubscribed} // Input is disabled if not subscribed
-                />
-              </div>
-            ))
-          )}
-        </div>
 
-        {currentService && (
-            <div className="bg-white border-2 border-blue-200 rounded-lg p-4 space-y-4">
-              {isSubscribed ? (
-                <>
-                  <div className="flex items-center justify-center pt-4">
-                      <Button onClick={handleVerify} disabled={isVerifying || !isFormFilled} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 h-11 w-full">
-                          {isVerifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
-                          {isVerifying ? "Processing..." : "Verify Now"}
-                      </Button>
-                  </div>
-                  <div className="flex items-center justify-center gap-4 pt-3 border-t">
-                      <div className="flex items-center gap-1 text-xs text-gray-500"><Shield className="w-3 h-3 text-green-500" /><span>SSL Secured</span></div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500"><CheckCircle className="w-3 h-3 text-green-500" /><span>Verified Service</span></div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500"><Award className="w-3 h-3 text-green-500" /><span>Subscribed Access</span></div>
-                  </div>
-                </>
+      <CardContent className="px-6 pb-6 space-y-4">
+        {!currentService ? (
+          <p className="text-sm text-gray-500 text-center py-6">Select a service from the list to begin.</p>
+        ) : (
+          <>
+            <div className="flex items-start gap-4">
+              {/* {currentService.mainImage?.url ? (
+                <img src={currentService.mainImage.url} alt={currentService.name} className="w-20 h-20 rounded-md object-cover border" />
               ) : (
-                <>
-                  <div className="flex items-center justify-center pt-4">
-                    <Button onClick={onSubscribeClick} className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 h-11 w-full">
-                        <Award className="w-4 h-4 mr-2" />
-                        Subscribe to Access
-                    </Button>
-                  </div>
-                   <p className="text-center text-xs text-gray-500 pt-2">You need a plan that includes this service.</p>
-                </>
-              )}
+                <div className="w-20 h-20 rounded-md bg-gray-100 border" />
+              )} */}
+              <div>
+                <h3 className="font-semibold text-gray-900">{currentService.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{currentService.description || currentService.excerpt}</p>
+                <p className="text-xs text-gray-500 mt-2">{toTitleCase(currentService.category)}</p>
+              </div>
             </div>
+
+            <div className="pt-4">
+              {isSubscribed ? (
+                <Button onClick={handleTryOut} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 h-11 w-full">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Try Out
+                </Button>
+              ) : (
+                <Button onClick={handleTryOut} className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 h-11 w-full">
+                  <Award className="w-4 h-4 mr-2" />
+                  Subscribe to Access / Try Out
+                </Button>
+              )}
+              <p className="text-xs text-center text-gray-500 mt-2">Try Out runs the service sandbox without requiring user inputs on this panel.</p>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
