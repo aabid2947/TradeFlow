@@ -9,11 +9,12 @@ import SubscriptionPurchaseCard from "./userComponents/SubscriptionPurchaseCard"
 import SidebarComponent from "./userComponents/SidebarComponent";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, X } from "lucide-react";
+
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { selectCurrentUser } from "@/features/auth/authSlice";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
-// Import the new hook to get all pricing plans
 import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
 
 const XIcon = (props) => (
@@ -23,7 +24,7 @@ const XIcon = (props) => (
 );
 
 export default function ServicePage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [activeServiceId, setActiveServiceId] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
@@ -34,7 +35,6 @@ export default function ServicePage() {
   const { category: encodedCategory } = useParams();
   const category = decodeURIComponent(encodedCategory || '');
 
-  // Fetch all necessary data
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const userInfo = useSelector(selectCurrentUser);
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery();
@@ -51,42 +51,36 @@ export default function ServicePage() {
   }, [allServices, category]);
 
   const isSubscribedToCategory = useMemo(() => {
-    if (!userInfo?.activeSubscriptions || !allPricingPlans.length) {
-      return false;
-    }
-    
-    // Get all service IDs the user has access to from all their active plans
+    if (!userInfo?.activeSubscriptions || !allPricingPlans.length) return false;
     const accessibleServiceIds = new Set();
     const userActivePlanNames = new Set(
       userInfo.activeSubscriptions
         .filter(sub => new Date(sub.expiresAt) > new Date())
         .map(sub => sub.category)
     );
-
     allPricingPlans.forEach(plan => {
       if (userActivePlanNames.has(plan.name)) {
         plan.includedServices.forEach(service => accessibleServiceIds.add(service._id));
       }
     });
-
-    // Check if any service in the current category is in the user's accessible list
     return filteredServices.some(service => accessibleServiceIds.has(service._id));
-
   }, [userInfo, allPricingPlans, filteredServices]);
-
-  // Find the correct individual plan to purchase for this category
+  
   const planToPurchase = useMemo(() => {
     if (isSubscribedToCategory || !category) return null;
     return allPricingPlans.find(p => p.name === `${category} Plan`);
   }, [allPricingPlans, category, isSubscribedToCategory]);
 
-  const activeService = useMemo(() => {
-    return allServices.find(s => s.service_key === activeServiceId);
-  }, [allServices, activeServiceId]);
+  const activeService = useMemo(() => allServices.find(s => s.service_key === activeServiceId), [allServices, activeServiceId]);
 
   useEffect(() => {
-    const isDesktop = window.innerWidth >= 1024;
-    if (isDesktop && filteredServices.length > 0 && !activeServiceId) {
+    const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  useEffect(() => {
+    if (filteredServices.length > 0 && !activeServiceId) {
       setActiveServiceId(filteredServices[0].service_key);
     }
   }, [filteredServices, activeServiceId]);
@@ -97,6 +91,30 @@ export default function ServicePage() {
     setInputData(null);
   }, [activeServiceId]);
 
+  const handleGoBack = () => {
+    navigate('/user', { 
+      state: { 
+        view: 'services', 
+        category: category 
+      },
+      replace: true 
+    });
+  };
+
+  const handleSidebarNavigate = (view) => {
+    navigate('/user', { state: { view } });
+  };
+  
+  // CORRECTED: This now navigates back to the UserDashBoard to show the new category's cards
+  const handleCategorySelect = (newCategory) => {
+    navigate('/user', {
+        state: {
+            view: 'services',
+            category: newCategory
+        }
+    });
+  };
+  
   const handleServiceSelect = (serviceKey) => {
     setActiveServiceId(serviceKey);
     setShowSubscriptionCard(false);
@@ -132,26 +150,14 @@ export default function ServicePage() {
     if (!isSubscribedToCategory && showSubscriptionCard && planToPurchase) {
       return (
         <div className="md:col-span-2">
-          <SubscriptionPurchaseCard
-            planData={planToPurchase}
-            userInfo={userInfo}
-            onClose={() => setShowSubscriptionCard(false)}
-          />
+          <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
         </div>
       );
     }
-
     return (
       <>
         <div className="md:col-span-1">
-          <UserInfoCard
-            services={filteredServices}
-            activeServiceId={activeServiceId}
-            onVerify={handleExecuteVerification}
-            isVerifying={isVerifying}
-            isSubscribed={isSubscribedToCategory}
-            onSubscribeClick={handleSubscribeClick}
-          />
+          <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribedToCategory} onSubscribeClick={handleSubscribeClick} />
         </div>
         <div className="md:col-span-1">
           {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData}/>}
@@ -162,14 +168,27 @@ export default function ServicePage() {
 
   return (
     <div className="relative min-h-screen bg-gray-50">
-      <SidebarComponent isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="flex flex-col flex-1">
-        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 md:ml-12">
+      <SidebarComponent 
+        isOpen={sidebarOpen}
+        activeView="services"
+        onNavigate={handleSidebarNavigate}
+        activeCategory={category}
+        onCategorySelect={handleCategorySelect}
+      />
+      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+        <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
           <div className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500">
-            <h1 className="text-2xl font-bold mb-6">
-              {category ? `${category.replace(/_/g, " ")} Services` : 'Verification Services'}
-            </h1>
+            <div className="flex items-center justify-start mb-6 space-x-4">
+                <Button variant="outline" onClick={handleGoBack} className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Services
+                </Button>
+                <h1 className="text-xl md:text-2xl font-bold text-right">
+                    {category ? `${category.replace(/_/g, " ")} Services` : 'Verification Services'}
+                </h1>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
                 <ServicesList services={filteredServices} isLoading={isLoadingServices || isLoadingPricing} activeServiceId={activeServiceId} onServiceSelect={handleServiceSelect} />
@@ -182,7 +201,7 @@ export default function ServicePage() {
         </main>
       </div>
 
-      {activeServiceId && (
+      {activeServiceId && !sidebarOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
           <div className="relative z-10 w-full max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
@@ -191,21 +210,10 @@ export default function ServicePage() {
             </Button>
             <div className="overflow-y-auto p-6 space-y-6">
                 { !isSubscribedToCategory && showSubscriptionCard && planToPurchase ? (
-                  <SubscriptionPurchaseCard 
-                    planData={planToPurchase} 
-                    userInfo={userInfo} 
-                    onClose={() => setShowSubscriptionCard(false)} 
-                  />
+                  <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
                 ) : (
                   <>
-                    <UserInfoCard 
-                      services={filteredServices} 
-                      activeServiceId={activeServiceId} 
-                      onVerify={handleExecuteVerification} 
-                      isVerifying={isVerifying} 
-                      isSubscribed={isSubscribedToCategory}
-                      onSubscribeClick={handleSubscribeClick}
-                    />
+                    <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribedToCategory} onSubscribeClick={handleSubscribeClick} />
                     {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData} />}
                   </>
                 )}

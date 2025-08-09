@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronDown, Menu, X, Phone, ArrowRight ,User} from "lucide-react"
+import { ChevronDown, Menu, X, Phone, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import AppLogo from "@/assets/sidebarLogo.svg"
@@ -38,7 +38,7 @@ const staticNavItems = [
     items: [
       { name: "Case Studies", href: "#", description: "Customer success stories" },
       { name: "Blog", href: "/blog", description: "Industry insights and updates" },
-      { name: "Support", href: "/contact-us", description: "Support and FAQs" },
+      // { name: "Support", href: "/contact-us", description: "Support and FAQs" },
     ],
   },
   {
@@ -46,7 +46,7 @@ const staticNavItems = [
     hasDropdown: true,
     items: [
       { name: "About Us", href: "/about-us", description: "Our mission and team" },
-      { name: "Team", href: "/about-us", description: "Join our growing team" },
+      // { name: "Team", href: "/about-us", description: "Join our growing team" },
       { name: "Contact", href: "/contact-us", description: "Get in touch with us" },
     ],
   },
@@ -72,14 +72,43 @@ export default function Header() {
   // Process services data to group by category
   useEffect(() => {
     if (servicesData && Array.isArray(servicesData.data)) {
-      const groupedServices = servicesData.data.reduce((acc, service) => {
-        const category = service.category || "Other"
+      let groupedServices = servicesData.data.reduce((acc, service) => {
+        const category = service.category || "Other";
         if (!acc[category]) {
-          acc[category] = []
+          acc[category] = [];
         }
-        acc[category].push(service)
-        return acc
-      }, {})
+        acc[category].push(service);
+        return acc;
+      }, {});
+
+      // Step 1: Rename categories if they exist
+      if (groupedServices["PAN"]) {
+        groupedServices["PAN verification"] = groupedServices["PAN"];
+        delete groupedServices["PAN"];
+      }
+      if (groupedServices["CIN"]) {
+        groupedServices["CIN verification"] = groupedServices["CIN"];
+        delete groupedServices["CIN"];
+      }
+
+      // Step 2: Move them to the end
+      const reordered = {};
+      Object.keys(groupedServices).forEach(key => {
+        if (key !== "PAN verification" && key !== "CIN verification") {
+          reordered[key] = groupedServices[key];
+        }
+      });
+      if (groupedServices["PAN verification"]) {
+        reordered["PAN verification"] = groupedServices["PAN verification"];
+      }
+      if (groupedServices["CIN verification"]) {
+        reordered["CIN verification"] = groupedServices["CIN verification"];
+      }
+
+      groupedServices = reordered;
+
+      // console.log(groupedServices);
+
       setProcessedProducts(groupedServices)
 
       // Create the new dynamic navigation items array
@@ -269,39 +298,39 @@ export default function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-5">
-    
-{user ? (
-  <div className="hidden lg:block relative group">
-    <Button
-     onClick={() => navigate("/user")}
-      variant="ghost"
-      className="flex items-center gap-2 text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 py-2 bg-white shadow-sm transition duration-200"
-    >
-      <User className="w-5 h-5 text-gray-600" />
-      Account
-      <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gray-600" />
-    </Button>
-    <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
-      <button
-        onClick={() => navigate("/user")}
-        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
-      >
-        Go to Account
-      </button>
-    </div>
-  </div>
-) : (
-  <div className="hidden lg:block">
-    <Button
-      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
-      type="button"
-      onClick={() => navigate("/signup")}
-    >
-      Get Started
-      <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
-    </Button>
-  </div>
-)}
+
+              {user ? (
+                <div className="hidden lg:block relative group">
+                  <Button
+
+                    variant="ghost"
+                    className="flex items-center gap-2 text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 py-2 bg-white shadow-sm transition duration-200"
+                  >
+                    <User className="w-5 h-5 text-gray-600" />
+                    Account
+                    <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gray-600" />
+                  </Button>
+                  <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
+                    <button
+                      onClick={() => navigate("/user")}
+                      className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Go to Account
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="hidden lg:block">
+                  <Button
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-7 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-2 text-[1.1rem]"
+                    type="button"
+                    onClick={() => navigate("/signup")}
+                  >
+                    Get Started
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </Button>
+                </div>
+              )}
 
               {/* <div className="hidden lg:block">
                 <Button

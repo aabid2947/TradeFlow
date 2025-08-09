@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SidebarComponent from "./userComponents/SidebarComponent";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import DashboardAnalytics from "./userComponents/DashboardAnalytics";
@@ -17,7 +17,7 @@ import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
 
-// Updated renderContent to pass down all necessary data
+// renderContent function remains unchanged
 const renderContent = (activeView, services, pricingPlans, isLoading, userInfo, transactions) => {
   switch (activeView) {
     case "dashboard":
@@ -41,6 +41,7 @@ export default function UserDashBoard() {
   const [activeView, setActiveView] = useState("dashboard");
   const [categoryFilter, setCategoryFilter] = useState("All Services");
   const location = useLocation();
+  const navigate = useNavigate();
 
   const userInfo = useSelector(selectCurrentUser);
 
@@ -49,7 +50,6 @@ export default function UserDashBoard() {
   const { data: pricingPlansResponse, isLoading: isLoadingPricing, isError: isErrorPricing, error: pricingError } = useGetPricingPlansQuery();
   const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
 
-  // Safely extract data arrays, defaulting to empty arrays
   const services = servicesResponse?.data || [];
   const pricingPlans = pricingPlansResponse || [];
   const transactions = transactionsResponse?.data || [];
@@ -57,10 +57,18 @@ export default function UserDashBoard() {
   const isLoading = isLoadingServices || isLoadingPricing || isLoadingTransactions;
 
   useEffect(() => {
-    if (location.state?.view) {
-      setActiveView(location.state.view);
+    // This effect handles state passed on navigation (e.g., from ServicePage)
+    if (location.state) {
+      if (location.state.view) {
+        setActiveView(location.state.view);
+      }
+      if (location.state.category) {
+        setCategoryFilter(location.state.category);
+      }
+      // Clear location state after applying it
+      navigate(location.pathname, { replace: true });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   useEffect(() => {
     const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
@@ -68,12 +76,6 @@ export default function UserDashBoard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const uniqueCategories = useMemo(() => {
-    const categories = new Set(services.map(s => s.category).filter(Boolean));
-    return ["All Services", ...Array.from(categories)];
-  }, [services]);
-
-  // Filter services based on the selected category for display
   const filteredServices = useMemo(() => {
     if (categoryFilter === "All Services") {
       return services;
@@ -83,16 +85,18 @@ export default function UserDashBoard() {
 
   const handleNavigate = (view) => {
     setActiveView(view);
+    // When navigating to a main view, reset the category filter
+    setCategoryFilter("All Services");
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
+  // CORRECTED: This now only updates the state to show ServiceCardsViewer
   const handleCategorySelect = (category) => {
     setActiveView("services");
     setCategoryFilter(category);
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
   
-  // Consolidated error handling for all data fetching
   if (isErrorServices || isErrorPricing || isErrorTransactions) {
     const error = servicesError || pricingError || transactionsError;
     return (
@@ -109,22 +113,19 @@ export default function UserDashBoard() {
     <div className="relative min-h-screen bg-gray-50">
       <SidebarComponent
         isOpen={sidebarOpen}
-        setIsOpen={setSidebarOpen}
         activeView={activeView}
         onNavigate={handleNavigate}
-        categories={uniqueCategories}
         activeCategory={categoryFilter}
         onCategorySelect={handleCategorySelect}
       />
 
-      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-60' : 'md:pl-20'}`}>
+      <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
         <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-12">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
             <div
               key={activeView + categoryFilter}
               className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
             >
-              {/* Pass the filtered services but the complete pricing plan list */}
               {renderContent(activeView, filteredServices, pricingPlans, isLoading, userInfo, transactions)}
             </div>
         </main>

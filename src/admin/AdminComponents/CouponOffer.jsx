@@ -115,53 +115,72 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
       <Card className="group relative overflow-hidden border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-60" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        <div className="absolute top-1 right-4 z-20 flex gap-2">
-           <Button
-            onClick={() => onEdit(offer)}
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-blue-100/80 rounded-full transition-all duration-200 hover:scale-110"
-          >
-            <Pencil className="w-4 h-4 text-blue-500" />
-          </Button>
-          <Button
-            onClick={() => onDelete(offer.id)}
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-red-100/80 rounded-full transition-all duration-200 hover:scale-110"
-          >
-            <Trash2 className="w-4 h-4 text-red-500" />
-          </Button>
-        </div>
 
-
-        <CardHeader className="pb-4 pt-8 px-8 relative z-10">
+        <CardHeader className="pb-4 pt-6 px-6 relative z-10">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
               {offer.discountType === "percentage" ? (
-                <Percent className="w-7 h-7 text-[#1987BF]" />
+                <Percent className="w-6 h-6 text-[#1987BF]" />
               ) : (
-                <DollarSign className="w-7 h-7 text-[#1987BF]" />
+                <DollarSign className="w-6 h-6 text-[#1987BF]" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-xl font-bold text-gray-900 mb-2 leading-tight">{offer.title}</CardTitle>
+            <div className="flex-1 min-w-0 pr-2">
+              <CardTitle 
+                className="text-lg font-bold text-gray-900 mb-2 leading-tight break-words hyphens-auto"
+                title={offer.title} // Tooltip for full text on hover
+              >
+                {offer.title.length > 50 ? `${offer.title.substring(0, 47)}...` : offer.title}
+              </CardTitle>
             </div>
-             <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-4 py-2 text-sm rounded-full shadow-lg shadow-blue-500/25">
-                {formatDiscount()}
+          </div>
+          
+          {/* Discount badge moved below title for better layout */}
+          <div className="flex justify-end mt-2">
+            <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-3 py-1.5 text-sm rounded-full shadow-lg shadow-blue-500/25">
+              {formatDiscount()}
             </Badge>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 px-8 pb-8 relative z-10">
-           <p className="text-sm text-gray-600 leading-relaxed -mt-4">{offer.description}</p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        <CardContent className="space-y-5 px-6 pb-6 relative z-10">
+          {/* Description with proper text handling */}
+          <p 
+            className="text-sm text-gray-600 leading-relaxed break-words hyphens-auto -mt-2"
+            title={offer.description} // Tooltip for full text
+          >
+            {offer.description.length > 80 
+              ? `${offer.description.substring(0, 77)}...` 
+              : offer.description
+            }
+          </p>
+
+          {/* Timer and Action buttons - now side by side */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-shrink-0">
+              <CountdownTimer expiryDate={offer.expiryDate} />
             </div>
-            <CountdownTimer expiryDate={offer.expiryDate} />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => onEdit(offer)}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm hover:bg-blue-50 border border-white/50 rounded-lg transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <Pencil className="w-4 h-4 text-blue-600" />
+              </Button>
+              <Button
+                onClick={() => onDelete(offer.id)}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm hover:bg-red-50 border border-white/50 rounded-lg transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <Trash2 className="w-4 h-4 text-red-600" />
+              </Button>
+            </div>
           </div>
 
+          {/* Usage progress */}
           {offer.maxUsage && (
             <div className="space-y-3">
               <div className="flex justify-between text-sm text-gray-600">
@@ -171,9 +190,9 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
                 </span>
               </div>
               <div className="relative">
-                <div className="w-full bg-gray-200/60 rounded-full h-3 backdrop-blur-sm">
+                <div className="w-full bg-gray-200/60 rounded-full h-2.5 backdrop-blur-sm">
                   <div
-                    className="bg-gradient-to-r from-[#1987BF] to-blue-600 h-3 rounded-full transition-all duration-1000 ease-out shadow-sm"
+                    className="bg-gradient-to-r from-[#1987BF] to-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-out shadow-sm"
                     style={{ width: `${Math.min((offer.usageCount / offer.maxUsage) * 100, 100)}%` }}
                   />
                 </div>
@@ -182,29 +201,26 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
             </div>
           )}
 
-          {/* {offer.minOrderValue > 0 && (
-            <div className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-[#1987BF] rounded-full" />
-                <span className="text-sm font-medium text-gray-700">Minimum order value: ₹{offer.minOrderValue}</span>
-              </div>
-            </div>
-          )} */}
-
+          {/* Coupon code section */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
+            <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-3 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-base font-bold text-gray-900 tracking-wider">{offer.code}</span>
+                <span 
+                  className="font-mono text-sm font-bold text-gray-900 tracking-wider break-all flex-1"
+                  title={offer.code} // Tooltip for full code
+                >
+                  {offer.code.length > 12 ? `${offer.code.substring(0, 9)}...` : offer.code}
+                </span>
                 <Button
                   onClick={handleCopy}
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-white/80 rounded-lg transition-all duration-200 hover:scale-110"
+                  className="h-7 w-7 p-0 hover:bg-white/80 rounded-lg transition-all duration-200 hover:scale-110 ml-2 flex-shrink-0"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
+                    <Check className="w-3.5 h-3.5 text-green-600" />
                   ) : (
-                    <Copy className="w-4 h-4 text-gray-600 hover:text-[#1987BF]" />
+                    <Copy className="w-3.5 h-3.5 text-gray-600 hover:text-[#1987BF]" />
                   )}
                 </Button>
               </div>

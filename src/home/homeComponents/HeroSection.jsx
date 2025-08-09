@@ -323,7 +323,7 @@ export default function HeroSection() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="group border-2 text-gray-700 hover:text-white px-8 py-4 text-lg font-semibold rounded-xl bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                  className="group border-2 text-gray-700 px-8 py-4 text-lg font-semibold rounded-xl bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                   style={{ borderColor: currentHero.accentColor }}
                 >
                   <Play className="w-5 h-5 mr-2 group-hover:animate-pulse" />

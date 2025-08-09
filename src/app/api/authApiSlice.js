@@ -170,7 +170,8 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: 'User', id: 'PROFILE' },
-        { type: 'User', id: userId }
+        { type: 'User', id: userId },
+         { type: 'Transaction', id: 'LIST' },
       ],
     }),
 
@@ -182,7 +183,8 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: 'User', id: 'PROFILE' },
-        { type: 'User', id: userId }
+        { type: 'User', id: userId },
+         { type: 'Transaction', id: 'LIST' },
       ],
     }),
         updateAvatar: builder.mutation({

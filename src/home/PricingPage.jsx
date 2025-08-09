@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import useRazorpay from "@/hooks/useRazorpay"
 import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice"
 import { selectCurrentUser } from "@/features/auth/authSlice"
-
+import SubscriptionComponent from "./homeComponents/SubsciptionSection"
 // Animation variants for sections
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -261,14 +261,14 @@ const PricingPage = () => {
                   </div>
                 )} */}
 
-                {isPlanActive && (
+                {/* {isPlanActive && (
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-green-100 text-green-800 border-green-200">
                       <Check className="w-3 h-3 mr-1" />
                       Active Plan
                     </Badge>
                   </div>
-                )}
+                )} */}
 
                 <div className="p-8 flex-1">
                   <div className="text-center mb-8">
@@ -299,9 +299,9 @@ const PricingPage = () => {
                       handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
                     }}
                     disabled={isLoading || isPlanActive}
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : isSelected ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${ isSelected ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                   >
-                    {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.buttonText)}
+                    { (isLoading ? "Processing..." : plan.buttonText)}
                   </button>
                 </div>
               </motion.div>
@@ -310,7 +310,7 @@ const PricingPage = () => {
         </div>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         className="py-20 bg-gradient-to-br from-blue-50 to-sky-50 overflow-hidden"
         initial="hidden"
         whileInView="visible"
@@ -358,7 +358,7 @@ const PricingPage = () => {
             </button>
           </motion.div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         className="py-20 bg-white overflow-hidden"
@@ -394,11 +394,12 @@ const PricingPage = () => {
         </div>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         className="py-20 bg-gradient-to-r from-blue-700 to-sky-800 overflow-hidden"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
+        viewport
+        ={{ once: true, amount: 0.3 }}
         variants={sectionVariants}
       >
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -417,7 +418,8 @@ const PricingPage = () => {
             </button>
           </motion.div>
         </div>
-      </motion.div>
+      </motion.div> */}
+      <SubscriptionComponent/>
       <Footer/>
     </div>
   )

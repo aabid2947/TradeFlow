@@ -103,10 +103,188 @@ const TrendChart = ({ data, dataKey, title, color = "#3B82F6" }) => (
 );
 
 export default function DashboardOverview() {
-  const [timeFilter, setTimeFilter] = useState('30d');
+  const [timeFilter, setTimeFilter] = useState('all'); // Changed default to 'all'
+  const [isExporting, setIsExporting] = useState(false);
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   
   // Fetch transaction data using the RTK Query hook
   const { data: transactionData, isLoading, isError, error } = useGetAllTransactionsQuery();
+
+  // Export functionality
+  const exportToCSV = (data, filename) => {
+    const csvContent = data.map(row => 
+      Object.values(row).map(val => 
+        typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+      ).join(',')
+    ).join('\n');
+    
+    const headers = Object.keys(data[0]).join(',');
+    const csv = headers + '\n' + csvContent;
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Generate comprehensive report data
+  const generateDetailedReport = () => {
+    if (!transactionData || !transactionData.data) return;
+
+    setIsExporting(true);
+
+    const now = new Date();
+    let startDate, endDate;
+    let periodDescription = '';
+    
+    if (timeFilter === 'custom' && customStartDate && customEndDate) {
+      startDate = new Date(customStartDate);
+      endDate = new Date(customEndDate);
+      endDate.setHours(23, 59, 59, 999); // Include the entire end date
+      periodDescription = `${startDate.toLocaleDateString('en-IN')} to ${endDate.toLocaleDateString('en-IN')}`;
+    } else if (timeFilter === 'today') {
+      startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+      periodDescription = 'Today';
+    } else if (timeFilter === '7d') {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      endDate = now;
+      periodDescription = 'Last 7 Days';
+    } else if (timeFilter === 'all') {
+      // For all time, use the earliest transaction date or a very old date
+      startDate = new Date('2020-01-01'); // Default start date for all time
+      endDate = now;
+      periodDescription = 'All Time';
+    } else {
+      // Default fallback
+      startDate = new Date('2020-01-01');
+      endDate = now;
+      periodDescription = 'All Time';
+    }
+    
+    const filteredTransactions = transactionData.data.filter(t => {
+      const transactionDate = new Date(t.createdAt);
+      return transactionDate >= startDate && transactionDate <= endDate;
+    });
+
+    // Generate comprehensive report data
+    const reportData = filteredTransactions.map(transaction => ({
+      'Transaction ID': transaction._id || 'N/A',
+      'Date': new Date(transaction.createdAt).toLocaleDateString('en-IN'),
+      'Time': new Date(transaction.createdAt).toLocaleTimeString('en-IN'),
+      'User ID': transaction.user?._id || 'N/A',
+      'User Name': transaction.user?.name || 'N/A',
+      'User Email': transaction.user?.email || 'N/A',
+      'Category': transaction.category || 'N/A',
+      'Plan': transaction.plan || 'N/A',
+      'Amount (₹)': transaction.amount || 0,
+      'Status': transaction.status || 'N/A',
+      'Payment Method': transaction.paymentMethod || 'N/A',
+      'Description': transaction.description || 'N/A',
+      'Created At': new Date(transaction.createdAt).toISOString(),
+      'Updated At': transaction.updatedAt ? new Date(transaction.updatedAt).toISOString() : 'N/A'
+    }));
+
+    // Generate summary data
+    const summaryData = [
+      {
+        'Metric': 'Report Period',
+        'Value': periodDescription,
+        'Details': `${filteredTransactions.length} transactions found`
+      },
+      {
+        'Metric': 'Total Transactions',
+        'Value': filteredTransactions.length,
+        'Details': 'All transactions in period'
+      },
+      {
+        'Metric': 'Total Revenue',
+        'Value': `₹${filteredTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? (t.amount || 0) : 0), 0).toLocaleString('en-IN')}`,
+        'Details': 'Completed transactions only'
+      },
+      {
+        'Metric': 'Completed Transactions',
+        'Value': filteredTransactions.filter(t => t.status === 'completed').length,
+        'Details': 'Successfully processed'
+      },
+      {
+        'Metric': 'Pending Transactions',
+        'Value': filteredTransactions.filter(t => t.status === 'pending').length,
+        'Details': 'Awaiting processing'
+      },
+      {
+        'Metric': 'Failed Transactions',
+        'Value': filteredTransactions.filter(t => t.status === 'failed').length,
+        'Details': 'Unsuccessful transactions'
+      },
+      {
+        'Metric': 'Success Rate',
+        'Value': `${filteredTransactions.length > 0 ? ((filteredTransactions.filter(t => t.status === 'completed').length / filteredTransactions.length) * 100).toFixed(1) : 0}%`,
+        'Details': 'Completed / Total transactions'
+      },
+      {
+        'Metric': 'Average Order Value',
+        'Value': `₹${filteredTransactions.filter(t => t.status === 'completed').length > 0 ? (filteredTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? (t.amount || 0) : 0), 0) / filteredTransactions.filter(t => t.status === 'completed').length).toFixed(2) : 0}`,
+        'Details': 'Average value of completed transactions'
+      }
+    ];
+
+    // Generate category analysis
+    const categoryData = {};
+    filteredTransactions.forEach(t => {
+      if (!categoryData[t.category]) {
+        categoryData[t.category] = { count: 0, revenue: 0, completed: 0, pending: 0, failed: 0 };
+      }
+      categoryData[t.category].count++;
+      if (t.status === 'completed') {
+        categoryData[t.category].revenue += (t.amount || 0);
+        categoryData[t.category].completed++;
+      } else if (t.status === 'pending') {
+        categoryData[t.category].pending++;
+      } else if (t.status === 'failed') {
+        categoryData[t.category].failed++;
+      }
+    });
+
+    const categoryAnalysis = Object.entries(categoryData).map(([category, data]) => ({
+      'Category': category,
+      'Total Transactions': data.count,
+      'Completed': data.completed,
+      'Pending': data.pending,
+      'Failed': data.failed,
+      'Revenue (₹)': data.revenue.toLocaleString('en-IN'),
+      'Success Rate (%)': data.count > 0 ? ((data.completed / data.count) * 100).toFixed(1) : 0,
+      'Average Value (₹)': data.completed > 0 ? (data.revenue / data.completed).toFixed(2) : 0
+    }));
+
+    // Export multiple sheets if needed, or create a comprehensive single file
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    
+    // Export detailed transactions
+    exportToCSV(reportData, `transactions_detailed_report_${timeFilter}_${timestamp}.csv`);
+    
+    // Small delay to allow first download to start
+    setTimeout(() => {
+      exportToCSV(summaryData, `transactions_summary_${timeFilter}_${timestamp}.csv`);
+    }, 500);
+    
+    setTimeout(() => {
+      exportToCSV(categoryAnalysis, `category_analysis_${timeFilter}_${timestamp}.csv`);
+    }, 1000);
+
+    setTimeout(() => {
+      setIsExporting(false);
+    }, 1500);
+  };
 
   // Process transaction data for analytics using useMemo for performance
   const analytics = useMemo(() => {
@@ -119,57 +297,124 @@ export default function DashboardOverview() {
     }
 
     const now = new Date();
-    let startDate;
-    let daysToTrack;
-    switch (timeFilter) {
-      case '7d':
-        daysToTrack = 7;
-        break;
-      case '90d':
-        daysToTrack = 90;
-        break;
-      case '1y':
-        daysToTrack = 365;
-        break;
-      default:
-        daysToTrack = 30;
+    let startDate, endDate;
+    let daysToTrack = 30; // default for chart generation
+    
+    if (timeFilter === 'custom' && customStartDate && customEndDate) {
+      startDate = new Date(customStartDate);
+      endDate = new Date(customEndDate);
+      endDate.setHours(23, 59, 59, 999);
+      daysToTrack = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
+    } else if (timeFilter === 'today') {
+      startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+      daysToTrack = 1;
+    } else if (timeFilter === '7d') {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      endDate = now;
+      daysToTrack = 7;
+    } else if (timeFilter === 'all') {
+      // For all time, find the earliest transaction or use default
+      const earliestTransaction = transactionData.data.length > 0 
+        ? new Date(Math.min(...transactionData.data.map(t => new Date(t.createdAt))))
+        : new Date('2020-01-01');
+      startDate = earliestTransaction;
+      endDate = now;
+      daysToTrack = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
+      // Limit to reasonable number for chart rendering
+      daysToTrack = Math.min(daysToTrack, 365);
+    } else {
+      // Default fallback to all time
+      startDate = new Date('2020-01-01');
+      endDate = now;
+      daysToTrack = 30;
     }
-    startDate = new Date(now.getTime() - daysToTrack * 24 * 60 * 60 * 1000);
 
     // Filter transactions based on the selected time filter
     const filteredTransactions = transactionData.data.filter(t => {
       const transactionDate = new Date(t.createdAt);
-      return transactionDate >= startDate;
+      return transactionDate >= startDate && transactionDate <= endDate;
     });
-    console.log('Debugging transactions:');
 
-
-const totalRevenue = filteredTransactions.reduce((sum, t) => {
-  if (t.status === 'completed' && t.amount && !isNaN(Number(t.amount))) {
-    return sum + Number(t.amount);
-  }
-  return sum;
-}, 0);
+    const totalRevenue = filteredTransactions.reduce((sum, t) => {
+      if (t.status === 'completed' && t.amount && !isNaN(Number(t.amount))) {
+        return sum + Number(t.amount);
+      }
+      return sum;
+    }, 0);
+    
     const totalTransactions = filteredTransactions.length;
     const completedTransactions = filteredTransactions.filter(t => t.status == 'completed').length;
     const successRate = totalTransactions > 0 ? (completedTransactions / totalTransactions * 100).toFixed(1) : 0;
     const avgOrderValue = completedTransactions > 0 ? (totalRevenue / completedTransactions).toFixed(2) : 0;
 
-    // Daily trend data
+    // Daily trend data - adjust for different periods
     const dailyData = [];
-    for (let i = daysToTrack - 1; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayTransactions = filteredTransactions.filter(t => {
-        const tDate = new Date(t.createdAt);
-        return tDate.toDateString() === date.toDateString();
-      });
-      
-      dailyData.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        revenue: dayTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
-        transactions: dayTransactions.length,
-        users: new Set(dayTransactions.map(t => t.user._id)).size
-      });
+    if (timeFilter === 'today') {
+      // For today, show hourly data
+      for (let i = 0; i < 24; i++) {
+        const hourStart = new Date(startDate);
+        hourStart.setHours(i, 0, 0, 0);
+        const hourEnd = new Date(startDate);
+        hourEnd.setHours(i, 59, 59, 999);
+        
+        const hourTransactions = filteredTransactions.filter(t => {
+          const tDate = new Date(t.createdAt);
+          return tDate >= hourStart && tDate <= hourEnd;
+        });
+        
+        dailyData.push({
+          date: `${i.toString().padStart(2, '0')}:00`,
+          revenue: hourTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
+          transactions: hourTransactions.length,
+          users: new Set(hourTransactions.map(t => t.user._id)).size
+        });
+      }
+    } else if (timeFilter === 'all' && daysToTrack > 90) {
+      // For all time with long periods, show monthly data
+      const monthsToShow = Math.min(12, Math.ceil(daysToTrack / 30));
+      for (let i = monthsToShow - 1; i >= 0; i--) {
+        const monthStart = new Date(endDate);
+        monthStart.setMonth(monthStart.getMonth() - i);
+        monthStart.setDate(1);
+        monthStart.setHours(0, 0, 0, 0);
+        
+        const monthEnd = new Date(monthStart);
+        monthEnd.setMonth(monthEnd.getMonth() + 1);
+        monthEnd.setDate(0);
+        monthEnd.setHours(23, 59, 59, 999);
+        
+        const monthTransactions = filteredTransactions.filter(t => {
+          const tDate = new Date(t.createdAt);
+          return tDate >= monthStart && tDate <= monthEnd;
+        });
+        
+        dailyData.push({
+          date: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          revenue: monthTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
+          transactions: monthTransactions.length,
+          users: new Set(monthTransactions.map(t => t.user._id)).size
+        });
+      }
+    } else {
+      // For other periods, show daily data
+      const daysToShow = Math.min(daysToTrack, 30); // Limit to 30 days for readability
+      for (let i = daysToShow - 1; i >= 0; i--) {
+        const date = new Date(endDate.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayTransactions = filteredTransactions.filter(t => {
+          const tDate = new Date(t.createdAt);
+          return tDate.toDateString() === date.toDateString();
+        });
+        
+        dailyData.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: dayTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
+          transactions: dayTransactions.length,
+          users: new Set(dayTransactions.map(t => t.user._id)).size
+        });
+      }
     }
 
     // Category analysis
@@ -216,7 +461,7 @@ const totalRevenue = filteredTransactions.reduce((sum, t) => {
       statusData,
       planData
     };
-  }, [timeFilter, transactionData]);
+  }, [timeFilter, transactionData, customStartDate, customEndDate]);
 
   if (isLoading) {
     return <Loader />;
@@ -227,11 +472,25 @@ const totalRevenue = filteredTransactions.reduce((sum, t) => {
   }
   
   const timeFilterText = {
+      'today': 'Today',
       '7d': 'Last 7 Days',
-      '30d': 'Last 30 Days',
-      '90d': 'Last 90 Days',
-      '1y': 'Last Year',
+      'all': 'All Time',
+      'custom': 'Custom Range',
   }[timeFilter];
+
+  const handleTimeFilterChange = (value) => {
+    setTimeFilter(value);
+    if (value === 'custom') {
+      setShowCustomDatePicker(true);
+      // Set default dates for custom range
+      const today = new Date();
+      const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      setCustomStartDate(lastWeek.toISOString().split('T')[0]);
+      setCustomEndDate(today.toISOString().split('T')[0]);
+    } else {
+      setShowCustomDatePicker(false);
+    }
+  };
 
   return (
     <div className="min-h-screen  bg-gray-50 p-6">
@@ -243,19 +502,54 @@ const totalRevenue = filteredTransactions.reduce((sum, t) => {
             <p className="text-gray-600">Comprehensive insights into your KYC verification platform</p>
           </div>
           <div className="flex items-center gap-3">
-            <select 
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
+            <div className="flex items-center gap-2">
+              <select 
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={timeFilter}
+                onChange={(e) => handleTimeFilterChange(e.target.value)}
+              >
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              
+              {showCustomDatePicker && (
+                <div className="flex items-center gap-2 ml-2 p-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">From:</label>
+                    <input
+                      type="date"
+                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      max={customEndDate || new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">To:</label>
+                    <input
+                      type="date"
+                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      min={customStartDate}
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button 
+              className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+                isExporting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={generateDetailedReport}
+              disabled={isExporting || !transactionData?.data || (timeFilter === 'custom' && (!customStartDate || !customEndDate))}
             >
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-              <option value="1y">Last Year</option>
-            </select>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
+              <Download className={`w-4 h-4 ${isExporting ? 'animate-bounce' : ''}`} />
+              {isExporting ? 'Exporting...' : 'Export Report'}
             </button>
           </div>
         </div>
@@ -364,64 +658,6 @@ const totalRevenue = filteredTransactions.reduce((sum, t) => {
           </div>
         </div>
       </div>
-
-      {/* User Activity & Real-time Analytics (Static Data) */}
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">User Activity</h3>
-            <Eye className="w-5 h-5 text-gray-400" />
-          </div>
-          <div className="space-y-4">
-            {userActivityData.map((page, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">{page.page}</p>
-                  <p className="text-sm text-gray-600">{page.visitors} visitors</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{page.avgTime}s avg</p>
-                  <p className="text-xs text-gray-500">{page.bounceRate}% bounce</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Real-time Activity (Static)</h3>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live</span>
-            </div>
-          </div>
-          <div className="space-y-4">
-           
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg"><Users className="w-4 h-4 text-blue-600" /></div>
-                <div><p className="font-medium">Active Users</p><p className="text-sm text-gray-600">Currently online</p></div>
-              </div>
-              <span className="text-xl font-bold text-blue-600">127</span>
-            </div>
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg"><Activity className="w-4 h-4 text-green-600" /></div>
-                <div><p className="font-medium">Active Sessions</p><p className="text-sm text-gray-600">In progress</p></div>
-              </div>
-              <span className="text-xl font-bold text-green-600">89</span>
-            </div>
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg"><Clock className="w-4 h-4 text-orange-600" /></div>
-                <div><p className="font-medium">Avg Session</p><p className="text-sm text-gray-600">Duration</p></div>
-              </div>
-              <span className="text-xl font-bold text-orange-600">4m 32s</span>
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       {/* Detailed Analytics Table */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">

@@ -488,14 +488,14 @@ export function UserDetailsCard({ result, error, serviceName, inputData }) {
               <Clock className="w-4 h-4" />
               <span>{currentTime}</span>
             </div>
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Award className="w-4 h-4" />
               <span>SSL Secured</span>
             </div>
             <div className="flex items-center gap-1">
               <FileText className="w-4 h-4" />
               <span>Digitally Signed</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </CardHeader>
@@ -520,6 +520,19 @@ export function UserDetailsCard({ result, error, serviceName, inputData }) {
           </div>
         </div>
 
+        {details ? (
+          <div className="bg-white border border-green-200 rounded-lg p-4">
+            <h4 className="font-semibold text-green-800 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Verification Results
+            </h4>
+            <DataRenderer data={details} />
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+            <p className="text-sm text-gray-500 italic">No displayable data found in the response.</p>
+          </div>
+        )}
         {/* Service Information */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white border border-green-200 rounded-lg p-4">
@@ -566,19 +579,6 @@ export function UserDetailsCard({ result, error, serviceName, inputData }) {
         </div>
 
         {/* Verification Results */}
-        {details ? (
-          <div className="bg-white border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-4 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Verification Results
-            </h4>
-            <DataRenderer data={details} />
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-            <p className="text-sm text-gray-500 italic">No displayable data found in the response.</p>
-          </div>
-        )}
 
         {/* Download Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4">

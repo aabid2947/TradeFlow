@@ -227,70 +227,70 @@ export default function BlogManager() {
 
             {isFormVisible && (
                 <Card className="mb-8 shadow-lg border-slate-200">
-                    <CardHeader className="bg-slate-100 flex flex-row items-center justify-between border-b">
-                        <CardTitle className="text-xl text-slate-800">{editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}</CardTitle>
+                    <div className="p-4 bg-white rounded-lg  flex flex-row items-center justify-between border-b ">
+                        <CardTitle className="text-xl text-slate-800 mt-4">{editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}</CardTitle>
                         <Button variant="ghost" size="icon" onClick={resetForm}><X className="w-5 h-5" /></Button>
-                    </CardHeader>
+                    </div>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4 pt-6">
                             {/* --- Accordion Sections for the form --- */}
                             <AccordionSection title="1. Main Details & SEO" openSection={openSection} setOpenSection={setOpenSection} sectionName="main">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label>Title</Label><Input value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
-                                    <div><Label>Author</Label><Input value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
-                                    <div><Label>Category</Label><Select value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent>{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="md:col-span-2"><Label>Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
+                                    <div><Label className="my-1">Title</Label><Input value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
+                                    <div><Label className="my-1">Author</Label><Input value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
+                                    <div><Label className="my-1">Category</Label><Select value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                    <div className="md:col-span-2"><Label className="my-1">Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
                                     <div className="md:col-span-2"><ImageInput label="Main Blog Image" fieldName="mainImage" preview={imagePreviews.mainImage} onChange={handleImageChange} /></div>
                                 </div>
                             </AccordionSection>
 
                             <AccordionSection title="2. Hero Section" openSection={openSection} setOpenSection={setOpenSection} sectionName="hero">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label>Hero Subtitle</Label><Input value={formData.heroSubtitle} onChange={e => handleChange('heroSubtitle', e.target.value)} /></div>
-                                    <div><Label>Hero Title</Label><Input value={formData.heroTitle} onChange={e => handleChange('heroTitle', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label>Hero Description</Label><Textarea value={formData.heroDescription} onChange={e => handleChange('heroDescription', e.target.value)} /></div>
+                                    <div><Label className="my-1">Hero Subtitle</Label><Input value={formData.heroSubtitle} onChange={e => handleChange('heroSubtitle', e.target.value)} /></div>
+                                    <div><Label className="my-1">Hero Title</Label><Input value={formData.heroTitle} onChange={e => handleChange('heroTitle', e.target.value)} /></div>
+                                    <div className="md:col-span-2"><Label className="my-1">Hero Description</Label><Textarea value={formData.heroDescription} onChange={e => handleChange('heroDescription', e.target.value)} /></div>
                                     <ImageInput label="Hero Image 1" fieldName="heroImage1" preview={imagePreviews.heroImage1} onChange={handleImageChange} />
                                     <ImageInput label="Hero Image 2" fieldName="heroImage2" preview={imagePreviews.heroImage2} onChange={handleImageChange} />
                                 </div>
                             </AccordionSection>
 
                             <AccordionSection title="3. Verification Features" openSection={openSection} setOpenSection={setOpenSection} sectionName="verification">
-                                <div><Label>Section Title</Label><Input value={formData.verificationTitle} onChange={e => handleChange('verificationTitle', e.target.value)} /></div>
-                                <div><Label>Section Description</Label><Textarea value={formData.verificationDescription} onChange={e => handleChange('verificationDescription', e.target.value)} /></div>
+                                <div><Label className="my-1">Section Title</Label><Input value={formData.verificationTitle} onChange={e => handleChange('verificationTitle', e.target.value)} /></div>
+                                <div><Label className="my-1">Section Description</Label><Textarea value={formData.verificationDescription} onChange={e => handleChange('verificationDescription', e.target.value)} /></div>
                                 <h4 className="font-semibold text-slate-700 pt-4">Features List</h4>
                                 {renderDynamicList('verificationFeatures', 'Feature Title', 'Feature Description', true)}
                             </AccordionSection>
 
                             <AccordionSection title="4. How It Works" openSection={openSection} setOpenSection={setOpenSection} sectionName="howItWorks">
-                                <div><Label>Section Title</Label><Input value={formData.howItWorksTitle} onChange={e => handleChange('howItWorksTitle', e.target.value)} /></div>
-                                <div><Label>Section Description</Label><Textarea value={formData.howItWorksDescription} onChange={e => handleChange('howItWorksDescription', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Title</Label><Input value={formData.howItWorksTitle} onChange={e => handleChange('howItWorksTitle', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Description</Label><Textarea value={formData.howItWorksDescription} onChange={e => handleChange('howItWorksDescription', e.target.value)} /></div>
                                 <ImageInput label="How It Works Image" fieldName="howItWorksImage" preview={imagePreviews.howItWorksImage} onChange={handleImageChange} />
                                 <h4 className="font-semibold text-slate-700 pt-4">Steps</h4>
                                 {renderDynamicList('howItWorksSteps', 'Step Title', 'Step Description')}
                             </AccordionSection>
 
                             <AccordionSection title="5. Product Benefits" openSection={openSection} setOpenSection={setOpenSection} sectionName="benefits">
-                                <div><Label>Section Subtitle</Label><Input value={formData.benefitsSubtitle} onChange={e => handleChange('benefitsSubtitle', e.target.value)} /></div>
-                                <div><Label>Section Title</Label><Input value={formData.benefitsTitle} onChange={e => handleChange('benefitsTitle', e.target.value)} /></div>
-                                <div><Label>Section Description</Label><Textarea value={formData.benefitsDescription} onChange={e => handleChange('benefitsDescription', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Subtitle</Label><Input value={formData.benefitsSubtitle} onChange={e => handleChange('benefitsSubtitle', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Title</Label><Input value={formData.benefitsTitle} onChange={e => handleChange('benefitsTitle', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Description</Label><Textarea value={formData.benefitsDescription} onChange={e => handleChange('benefitsDescription', e.target.value)} /></div>
                                 <h4 className="font-semibold text-slate-700 pt-4">Benefits List</h4>
                                 {renderDynamicList('productBenefits', 'Benefit Title', 'Benefit Description', true)}
                             </AccordionSection>
 
                              <AccordionSection title="6. Trust Section" openSection={openSection} setOpenSection={setOpenSection} sectionName="trust">
-                                <div><Label>Section Title</Label><Input value={formData.trustTitle} onChange={e => handleChange('trustTitle', e.target.value)} /></div>
+                                <div><Label  className="my-1">Section Title</Label><Input value={formData.trustTitle} onChange={e => handleChange('trustTitle', e.target.value)} /></div>
                                 <ImageInput label="Trust Section Image" fieldName="trustImage" preview={imagePreviews.trustImage} onChange={handleImageChange} />
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                                    <div><Label>Trust Card 1 Title</Label><Input value={formData.trustCard1.title} onChange={e => handleChange('trustCard1.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label>Trust Card 1 Desc</Label><Input value={formData.trustCard1.description} onChange={e => handleChange('trustCard1.description', e.target.value)} /></div>
-                                    <div><Label>Trust Card 2 Title</Label><Input value={formData.trustCard2.title} onChange={e => handleChange('trustCard2.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label>Trust Card 2 Desc</Label><Input value={formData.trustCard2.description} onChange={e => handleChange('trustCard2.description', e.target.value)} /></div>
-                                    <div><Label>Trust Card 3 Title</Label><Input value={formData.trustCard3.title} onChange={e => handleChange('trustCard3.title', e.target.value)} /></div>
-                                    <div className="md:col-span-2"><Label>Trust Card 3 Desc</Label><Input value={formData.trustCard3.description} onChange={e => handleChange('trustCard3.description', e.target.value)} /></div>
+                                    <div><Label  className="my-1">Trust Card 1 Title</Label><Input value={formData.trustCard1.title} onChange={e => handleChange('trustCard1.title', e.target.value)} /></div>
+                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 1 Desc</Label><Input value={formData.trustCard1.description} onChange={e => handleChange('trustCard1.description', e.target.value)} /></div>
+                                    <div><Label  className="my-1">Trust Card 2 Title</Label><Input value={formData.trustCard2.title} onChange={e => handleChange('trustCard2.title', e.target.value)} /></div>
+                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 2 Desc</Label><Input value={formData.trustCard2.description} onChange={e => handleChange('trustCard2.description', e.target.value)} /></div>
+                                    <div><Label  className="my-1">Trust Card 3 Title</Label ><Input value={formData.trustCard3.title} onChange={e => handleChange('trustCard3.title', e.target.value)} /></div>
+                                    <div className="md:col-span-2"><Label  className="my-1">Trust Card 3 Desc</Label><Input value={formData.trustCard3.description} onChange={e => handleChange('trustCard3.description', e.target.value)} /></div>
                                 </div>
                             </AccordionSection>
                             
-                            <div className="flex justify-end gap-4 pt-6">
+                            <div className="flex justify-end gap-4 p-6">
                                 <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
                                 <Button type="submit" disabled={createLoading || updateLoading} className="bg-[#1987BF] hover:bg-blue-700 text-white shadow-sm w-40">
                                     {(createLoading || updateLoading) ? 'Saving...' : 'Save Post'}
@@ -302,7 +302,7 @@ export default function BlogManager() {
             )}
 
             <Card className="shadow-md border-slate-200">
-                <CardHeader><CardTitle>Existing Blog Posts</CardTitle></CardHeader>
+                <CardHeader><CardTitle  className="my-4">Existing Blog Posts</CardTitle></CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-slate-500">

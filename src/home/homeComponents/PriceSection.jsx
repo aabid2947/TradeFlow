@@ -197,7 +197,7 @@ export default function PricingSection() {
                 <Card
                   key={plan.name}
                   onClick={() => setSelectedPlanName(plan.name)}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group cursor-pointer ${isSelected ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} ${isPlanActive ? "!border-green-500" : ""}`}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group cursor-pointer ${isSelected ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} `}
                 >
                   {/* {isSelected && (
                     <div className="absolute top-1 left-1/2 transform -translate-x-1/2">
@@ -206,7 +206,7 @@ export default function PricingSection() {
                       </div>
                     </div>
                   )} */}
-
+{/* 
                   {isPlanActive && (
                       <div className="absolute top-1 right-1">
                           <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
@@ -214,7 +214,7 @@ export default function PricingSection() {
                               Active
                           </Badge>
                       </div>
-                  )}
+                  )} */}
 
                   <CardHeader className="text-center pb-4 pt-7">
                     <div className="flex justify-center mb-3">
@@ -261,10 +261,10 @@ export default function PricingSection() {
                         e.stopPropagation(); // Prevent card's onClick from firing
                         handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
                       }}
-                      disabled={isLoading || isPlanActive}
-                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${isPlanActive ? "bg-green-100 text-green-800 cursor-not-allowed" : isSelected ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                      disabled={isLoading }
+                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${ isSelected ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
                     >
-                      {isPlanActive ? "Currently Active" : (isLoading ? "Processing..." : plan.cta)}
+                      { (isLoading ? "Processing..." : plan.cta)}
                     </Button>
                     <p className="text-[10px] text-gray-500 text-center mt-3">
                       No setup fees • Cancel anytime
@@ -276,7 +276,7 @@ export default function PricingSection() {
           </div>
         </TooltipProvider>
         <div className="text-center mt-10">
-          <p className="text-gray-600 text-sm mb-3 font-semibold text-lg">Need a custom solution?</p>
+          <p className="text-gray-600 text-sm mb-3 font-semibold text-xl">Need a custom solution?</p>
           <Button
             onClick={() => navigate("/contact-us")}
             variant="outline"

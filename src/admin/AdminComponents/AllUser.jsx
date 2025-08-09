@@ -183,16 +183,16 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
                     <Badge variant={user.isVerified ? 'default' : 'destructive'}>{user.isVerified ? 'Verified' : 'Not Verified'}</Badge>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                    <Button variant="outline" size="sm" className="w-full bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
+                <div className="mt-4 pt-4 border-t  border-gray-100 flex gap-1">
+                    <Button variant="outline" size="sm" className="w-[95%] bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
                         <Award className="w-4 h-4 mr-2" />
                         Promote User
                     </Button>
-                    {(user.promotedCategories && user.promotedCategories.length > 0) && (
+                    {/* {(user.promotedCategories && user.promotedCategories.length > 0) && (
                         <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 whitespace-nowrap">
-                            {user.promotedCategories.length} Promo{user.promotedCategories.length > 1 ? 's' : ''}
+                            {user.promotedCategories.length} 
                         </Badge>
-                    )}
+                    )} */}
                 </div>
             </CardContent>
         </Card>

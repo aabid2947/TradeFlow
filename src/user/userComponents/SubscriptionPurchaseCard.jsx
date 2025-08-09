@@ -189,14 +189,14 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold text-lg text-gray-900">Monthly Plan</h3>
-                      <p className="text-sm text-gray-600">Billed monthly</p>
+                      <h3 className="font-bold text-lg text-gray-900">One Time Plan</h3>
+                      {/* <p className="text-sm text-gray-600">Billed monthly</p> */}
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-gray-900">
                         ₹{planData.monthly.price}
                       </div>
-                      <div className="text-sm text-gray-500">per month</div>
+                      {/* <div className="text-sm text-gray-500"></div> */}
                     </div>
                   </div>
                   {selectedPlan === 'monthly' && (
@@ -206,17 +206,12 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
                   )}
                 </div>
 
-                <div
+                {/* <div
                   className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${selectedPlan === 'yearly' ? 'border-green-500 bg-green-50 shadow-md' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
                   onClick={() => setSelectedPlan('yearly')}
-                >
-                  {yearlySavings > 0 && (
-                    <div className="absolute -top-3 left-6 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      Save {yearlySavings}%
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
+                > */}
+                 
+                  {/* <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-lg text-gray-900">Yearly Plan</h3>
                       <p className="text-sm text-gray-600">Billed annually</p>
@@ -235,13 +230,13 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
                         (₹{(planData.yearly.price / 12).toFixed(0)}/month)
                       </div>
                     </div>
-                  </div>
-                  {selectedPlan === 'yearly' && (
+                  </div> */}
+                  {/* {selectedPlan === 'yearly' && (
                     <div className="absolute top-4 left-4 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
-                  )}
-                </div>
+                  )} */}
+                {/* </div> */}
               </div>
             </div>
 

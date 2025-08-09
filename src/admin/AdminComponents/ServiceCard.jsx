@@ -47,9 +47,9 @@ export default function ServiceCard({
   };
 
   return (
-    <Card onClick={() => navigate(`/user/service/${serviceId}`)} className="overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
-      <div className="relative">
-        <div className="aspect-[4/2.8] overflow-hidden">
+    <Card onClick={() => navigate(`/user/service/${serviceId}`)} className="overflow-hidden border gap-3 border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
+      <div className="relative ">
+        <div className="aspect-[4/2.5] overflow-hidden ">
           {imageSrc ? (
             <img
               src={imageSrc}
@@ -61,16 +61,17 @@ export default function ServiceCard({
           )}
         </div>
       </div>
+      {/* <div className="border border-b-1 border-blue-500 w-[20%]"></div> */}
 
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between gap-4">
+      <CardContent className="p-2 space-y-3">
+        {/* <div className="flex items-center justify-between gap-4">
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
             {demandLevel}
           </Badge>
           <button className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors">
             <Heart className="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors" />
           </button>
-        </div>
+        </div> */}
 
         <h3 className="text-lg font-semibold text-gray-900 truncate">
           {serviceName}

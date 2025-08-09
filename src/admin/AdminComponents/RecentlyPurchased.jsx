@@ -10,7 +10,7 @@ import {
   MapPin,
   User,
   Package,
-  DollarSign,
+  IndianRupee ,
   Eye,
   Download,
   AlertTriangle,
@@ -91,7 +91,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
           <div onClick={onToggle} className="p-4 cursor-pointer">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+                <div onClick={handleNameClick} className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                   {buyer.name?.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
@@ -127,7 +127,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                   </div>
                 </div>
                  <div className="flex items-start gap-3">
-                  <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <IndianRupee  className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-gray-900 mb-1">Pricing Details</h4>
                      <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
@@ -225,7 +225,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                   </div>
                 </div>
                  <div className="flex items-start gap-3">
-                  <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <IndianRupee  className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Financials</h4>
                     <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
@@ -440,7 +440,7 @@ export default function RecentlyPurchased() {
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <DollarSign className="w-6 h-6 text-blue-600" />
+                        <IndianRupee  className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
                         <p className="text-sm text-gray-600">Total Revenue</p>

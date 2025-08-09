@@ -3,7 +3,7 @@
 import {
   LayoutDashboard, Shield, User, BarChart3, PieChart, Settings, LogOut,
   ChevronDown, Tag,  Building, Scale, FileText, Scan, Database,
-  AlertTriangle, MapPin,MoreVertical
+  AlertTriangle, MapPin,MoreVertical,IdCard ,Briefcase, LayoutGrid // Added LayoutGrid for "All Services"
 } from "lucide-react"
 import { useState,useRef,useEffect } from "react"
 import { useNavigate } from "react-router-dom"
@@ -16,16 +16,19 @@ import { logOut } from "@/features/auth/authSlice"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 
-
+// UPDATED: Added "All Services" as the first option
 const serviceCategories = [
+  { value: 'All Services', label: 'All Services', icon: LayoutGrid },
   { value: 'Identity Verification', label: 'Identity Verification', icon: User },
   { value: 'Financial & Business Checks', label: 'Financial & Business Checks', icon: Building },
   { value: 'Legal & Compliance Checks', label: 'Legal & Compliance Checks', icon: Scale },
-  { value: 'Health & Government Records', label: 'Health & Government Records', icon: FileText },
+  // { value: 'Health & Government Records', label: 'Health & Government Records', icon: FileText },
   { value: 'Biometric & AI-Based Verification', label: 'Biometric & AI-Based Verification', icon: Scan },
   { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup', icon: Database },
-  { value: 'Criminal Verification', label: 'Criminal Verification', icon: AlertTriangle },
-  { value: 'Land Record Check', label: 'Land Record Check', icon: MapPin }
+  // { value: 'Criminal Verification', label: 'Criminal Verification', icon: AlertTriangle },
+  // { value: 'Land Record Check', label: 'Land Record Check', icon: MapPin },
+  { value: 'PAN', label: 'PAN', icon: IdCard  },
+  { value: 'CIN', label: 'CIN', icon: Briefcase  }
 ];
 
 const navigationData = {
@@ -47,7 +50,6 @@ export default function SidebarComponent({
   isOpen,
   activeView,
   onNavigate,
-  categories = [],
   activeCategory,
   onCategorySelect,
 }) {
@@ -71,8 +73,6 @@ export default function SidebarComponent({
 
  
    const handleProfileClick = () => {
-      // Navigate to the same dashboard URL but pass 'profile' in the state
-      // The UserDashBoard component will detect this and switch its view.
       navigate('/user', { state: { view: 'profile' }, replace: true });
       setShowDropdown(!showDropdown);
   };
@@ -93,11 +93,6 @@ export default function SidebarComponent({
     if (onNavigate) {
       onNavigate(view);
     }
-  };
-
-  const getCategoryIcon = (categoryName) => {
-    const category = serviceCategories.find(cat => cat.value === categoryName || cat.label === categoryName);
-    return category ? category.icon : Tag;
   };
 
   const MenuButton = ({ icon: Icon, label, isActive, onClick, className = "" }) => (
@@ -132,7 +127,7 @@ export default function SidebarComponent({
       />
 
       <aside
-        className={`fixed  left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${
+        className={`fixed left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${
           isOpen ? "w-64" : "w-20"
         } ${
           isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
@@ -171,7 +166,7 @@ export default function SidebarComponent({
               >
                 <div className={`flex items-center ${isOpen ? 'gap-2' : 'gap-0'}`}>
                   <Shield className="w-5 h-5" />
-                  {isOpen && <span className="font-medium text-xs">API Verification</span>}
+                  {isOpen && <span className="font-medium text-xs">Verifications</span>}
                 </div>
                 {isOpen && (
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isServicesOpen ? "rotate-180" : ""}`} />
@@ -185,29 +180,31 @@ export default function SidebarComponent({
 
               {isServicesOpen && (
                 <div className={`mt-2 space-y-0.5 pb-2 ${isOpen ? '' : 'hidden md:block'}`}>
-                  {categories.map((category) => {
-                    const IconComponent = getCategoryIcon(category);
+                  {serviceCategories.map((categoryItem) => {
+                    const IconComponent = categoryItem.icon;
+                    const categoryLabel = categoryItem.label;
+
                     return isOpen ? (
                       <SubMenuButton 
-                        key={category} 
+                        key={categoryItem.value} 
                         icon={IconComponent} 
-                        label={category} 
-                        isActive={activeView === "services" && activeCategory === category} 
-                        onClick={() => onCategorySelect(category)} 
+                        label={categoryLabel} 
+                        isActive={activeView === "services" && activeCategory === categoryLabel} 
+                        onClick={() => onCategorySelect(categoryLabel)} 
                       />
                     ) : (
                       <button
-                        key={category}
-                        onClick={() => onCategorySelect(category)}
+                        key={categoryItem.value}
+                        onClick={() => onCategorySelect(categoryLabel)}
                         className={`group relative w-12 h-12 mx-auto mb-2 rounded-xl transition-all duration-200 ease-in-out flex items-center justify-center ${
-                          activeView === "services" && activeCategory === category
+                          activeView === "services" && activeCategory === categoryLabel
                             ? 'bg-blue-50 text-blue-600' 
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                       >
                         <IconComponent className="w-4 h-4" />
                         <div className="absolute left-16 bg-gray-900 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                          {category}
+                          {categoryLabel}
                         </div>
                       </button>
                     );
@@ -263,7 +260,6 @@ export default function SidebarComponent({
                     <p className="text-xs text-gray-500">{user?.role || 'Administrator'}</p>
                   </div>
 
-                  {/* Three-dot menu button */}
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
@@ -273,7 +269,6 @@ export default function SidebarComponent({
                   </button>
                 </div>
 
-                {/* Dropdown menu - positioned outside the profile container */}
                 {showDropdown && (
                   <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-[60] ">
                     <button
@@ -298,7 +293,6 @@ export default function SidebarComponent({
               </div>
             )}
 
-            {/* Collapsed state - show minimal profile */}
             {!isOpen && (
               <div className="flex flex-col items-center space-y-3">
                 <div className="relative group">

@@ -202,7 +202,7 @@ export default function StatsBanner() {
           <h2
             className={`text-4xl lg:text-5xl font-bold text-gray-900 mb-6 ${isVisible ? "animate-in slide-in-from-top-4 fade-in duration-700" : "opacity-0"}`}
           >
-            Trusted by Millions
+            Trusted by 10,000+
           </h2>
 
           <p
@@ -225,8 +225,8 @@ export default function StatsBanner() {
           className={`text-center mt-16 ${isVisible ? "animate-in slide-in-from-bottom-4 fade-in duration-700" : "opacity-0"}`}
           style={{ animationDelay: "800ms" }}
         >
-          <div className="inline-flex items-center gap-2 text-gray-600 text-sm">
-            <Shield className="w-4 h-4 text-[#1987BF]" />
+          <div className="inline-flex items-center gap-2 text-gray-600 text-2xl">
+            <Shield className="w-6 h-6 text-[#1987BF] text-2xl" />
             <span>Trusted by 10,000+ businesses worldwide</span>
           </div>
         </div>

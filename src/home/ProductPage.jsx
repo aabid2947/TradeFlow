@@ -20,7 +20,7 @@ import { motion } from "framer-motion";
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import {selectCurrentUser} from "@/features/auth/authSlice";
+import { selectCurrentUser } from "@/features/auth/authSlice";
 // API Hooks
 import { useGetServiceByIdQuery } from "@/app/api/serviceApiSlice";
 import { useGetReviewsByServiceQuery, useDeleteReviewMutation } from "@/app/api/reviewApiSlice";
@@ -46,7 +46,7 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
 const ProductPage = ({ serviceId }) => {
     const currentServiceId = serviceId || window.location.pathname.split('/').pop();
     const navigate = useNavigate();
-    
+
     // Global State
     const userInfo = useSelector(selectCurrentUser);
 
@@ -62,14 +62,14 @@ const ProductPage = ({ serviceId }) => {
         isError,
         error
     } = useGetServiceByIdQuery(currentServiceId);
-    
-    const { 
-        data: reviewsResponse, 
-        isLoading: isLoadingReviews 
+
+    const {
+        data: reviewsResponse,
+        isLoading: isLoadingReviews
     } = useGetReviewsByServiceQuery(currentServiceId);
 
     const [deleteReview, { isLoading: isDeletingReview }] = useDeleteReviewMutation();
-    
+
     // Safely derive state from API response
     const service = serviceResponse?.data;
     const discountedPrice = calculateDiscountedPrice(service?.price, service?.discount);
@@ -81,11 +81,11 @@ const ProductPage = ({ serviceId }) => {
     const userReview = userInfo ? reviews.find(r => r.user?._id === userInfo._id) : null;
 
     const productData = {
-       _id:service?._id,
+        _id: service?._id,
         title: service?.name || "Service Verification",
         price: `₹${hasDiscount ? discountedPrice.toFixed(0) : (service?.price || 0)}`,
         originalPrice: hasDiscount ? `₹${service.price}` : null,
-        rating: 4.8, 
+        rating: 4.8,
         totalReviews: service?.globalUsageCount || 100,
         description: service?.description || "Get your documents verified instantly with our secure and reliable verification service.",
         features: service?.features || [
@@ -101,7 +101,7 @@ const ProductPage = ({ serviceId }) => {
         inputFields: service?.inputFields || [],
         usedBy: service?.usedBy || [],
         discount: service?.discount || null,
-        image:service?.imageUrl 
+        image: service?.imageUrl
     };
 
     useEffect(() => {
@@ -182,7 +182,7 @@ const ProductPage = ({ serviceId }) => {
             </div>
         );
     }
-    
+
     return (
         <>
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -191,30 +191,35 @@ const ProductPage = ({ serviceId }) => {
                     <div className="grid lg:grid-cols-2 gap-12 mb-12">
                         {/* Product Image Section */}
                         <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="relative">
-                           <div className="bg-gradient-to-br from-blue-500 to-sky-600 rounded-2xl p-8 shadow-2xl">
-                               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                                   <div className="bg-white rounded-lg p-4 shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                                       <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                                        {productData.image? <img src={productData.image} alt="" />:  <div className="text-center">
-                                               <Shield className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                                               <div className="text-sm text-gray-600">{productData.category}</div>
-                                               <div className="text-lg font-bold text-gray-800">Verification</div>
-                                           </div>}
-                                       
-                                         
-                                       </div>
-                                   </div>
-                               </div>
-                           </div>
-                           {productData.originalPrice && (
-                               <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold shadow-lg">
-                                   {productData.discount?.type === 'percentage'
-                                       ? `${productData.discount.value}% OFF`
-                                       : `₹${productData.discount.value} OFF`
-                                   }
-                               </div>
-                           )}
-                       </motion.div>
+                            <div className=" rounded-2xl py-8 flex items-center justify-center">
+                                {/* <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6"> */}
+                                {/* <div className=" rounded-lg p-4 shadow-lg "> */}
+                                {/* <div className="w-full h-full rounded-lg flex items-center justify-center overflow-hidden"> */}
+                                    {productData.image ? (
+                                        <img
+                                            src={productData.image}
+                                            alt=""
+                                            className="transform rounded-2xl shadow-2xl scale-100 hover:scale-110 transition-transform duration-300 ease-in-out"
+                                        />
+                                    ) : (
+                                        <div className="text-center">
+                                            <Shield className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+                                            <div className="text-sm text-gray-600">{productData.category}</div>
+                                            <div className="text-lg font-bold text-gray-800">Verification</div>
+                                        </div>
+                                    )}
+                                {/* </div> */}
+
+                            </div>
+                            {productData.originalPrice && (
+                                <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold shadow-lg">
+                                    {productData.discount?.type === 'percentage'
+                                        ? `${productData.discount.value}% OFF`
+                                        : `₹${productData.discount.value} OFF`
+                                    }
+                                </div>
+                            )}
+                        </motion.div>
 
                         {/* Product Details Section */}
                         <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="space-y-6">
@@ -279,7 +284,7 @@ const ProductPage = ({ serviceId }) => {
                             </div>
                         </div>
                         <div className="p-8">
-                             {selectedTab === "overview" && (
+                            {selectedTab === "overview" && (
                                 <div className="space-y-10">
                                     <motion.div className="space-y-4">
                                         <h3 className="text-3xl font-bold text-gray-900 flex items-center gap-3"><Lightbulb className="w-8 h-8 text-blue-600" /> About This Service</h3>
@@ -329,7 +334,7 @@ const ProductPage = ({ serviceId }) => {
                                                 {productData.inputFields.map((field, index) => (
                                                     <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
                                                         <h5 className="font-semibold text-gray-900 mb-1">{field.label}</h5>
-                                                        <p className="text-sm text-gray-600">Type: {field.type}</p>
+                                                        {/* <p className="text-sm text-gray-600">Type: {field.type}</p> */}
                                                         {field.placeholder && <p className="text-xs text-gray-500 mt-1">Example: {field.placeholder}</p>}
                                                     </div>
                                                 ))}
@@ -339,12 +344,12 @@ const ProductPage = ({ serviceId }) => {
                                 </div>
                             )}
 
-                             {/* --- MODIFIED: Reviews tab with new conditional logic --- */}
-                             {selectedTab === "reviews" && (
+                            {/* --- MODIFIED: Reviews tab with new conditional logic --- */}
+                            {selectedTab === "reviews" && (
                                 <div className="space-y-8">
                                     <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
-                                    
-                                  
+
+
                                     {/* Case 1: User is logged in, has used the service, and has NOT reviewed yet */}
                                     {userInfo && hasUsedService && !userReview && (
                                         <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center shadow-sm">
@@ -374,7 +379,7 @@ const ProductPage = ({ serviceId }) => {
                                     )}
 
                                     {/* Case 3: User has already left a review (`userReview` exists). In this case, no prompt is shown at the top. Their review will appear below with edit/delete options. */}
-                                    
+
                                     {isLoadingReviews ? (
                                         <div className="flex justify-center items-center py-10">
                                             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
@@ -389,11 +394,11 @@ const ProductPage = ({ serviceId }) => {
                                                             <div className="flex items-center gap-3 mb-2">
                                                                 <h4 className="font-bold text-gray-900">{review.user?.name || 'Anonymous'}</h4>
                                                                 <span className="text-gray-500 text-sm">{new Date(review.createdAt).toLocaleDateString()}</span>
-                                                                
+
                                                                 {userInfo && review.user?._id === userInfo._id && (
                                                                     <div className="ml-auto flex items-center gap-4">
-                                                                        <button onClick={() => handleOpenReviewModal(review)} title="Edit Review" className="text-gray-500 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4"/></button>
-                                                                        <button onClick={() => handleDeleteReview(review._id)} disabled={isDeletingReview} title="Delete Review" className="text-gray-500 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                                                                        <button onClick={() => handleOpenReviewModal(review)} title="Edit Review" className="text-gray-500 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                                                                        <button onClick={() => handleDeleteReview(review._id)} disabled={isDeletingReview} title="Delete Review" className="text-gray-500 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -417,7 +422,7 @@ const ProductPage = ({ serviceId }) => {
                 </div>
                 <Footer />
             </div>
-            
+
             {isReviewModalOpen && (
                 <ReviewModal
                     onClose={() => setReviewModalOpen(false)}

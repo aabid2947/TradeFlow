@@ -214,7 +214,7 @@ export default function SubscriptionComponent() {
                         focus:border-[#1987BF] focus:ring-4 focus:ring-[#1987BF]/20 transition-all duration-200
                         ${emailError ? "border-red-400 focus:border-red-500" : "border-gray-200"}
                       `}
-                      disabled={isSubmitting || (!!user)} // Disable if user is logged in and email is pre-filled
+                      // disabled={isSubmitting || (!!user)} // Disable if user is logged in and email is pre-filled
                     />
                     {emailError && (
                       <p className="text-red-500 text-sm mt-2 animate-in slide-in-from-top-2 fade-in duration-200">

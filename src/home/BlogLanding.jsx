@@ -76,38 +76,42 @@ export default function BlogLandingPage() {
       <Header />
       <main ref={sectionRef} className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section
-          className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2126&q=80')` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/80 via-transparent to-teal-600/80" />
-          <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }} transition={{ duration: 1, ease: "easeOut" }}>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                VerifyMyKyc
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-300">
-                  Knowledge Hub
-                </span>
-              </h1>
-              <motion.p className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed max-w-3xl mx-auto" initial={{ opacity: 0, y: 30 }} animate={isVisible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}>
-                Stay ahead in the world of digital identity verification with expert insights, industry trends, and comprehensive guides on KYC compliance and security.
-              </motion.p>
-              {/* ... Hero buttons and stats ... */}
-            </motion.div>
-          </div>
-        </section>
-
+             <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16">
+               <div className="max-w-4xl mx-auto px-6">
+                 <motion.div
+                   initial={{ opacity: 0, y: 30 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.6 }}
+                   className="text-center"
+                 >
+                   {/* <Shield className="w-16 h-16 mx-auto mb-6 text-white" /> */}
+                   <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Blog</h1>
+                   <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                      Read our Blogs for better Insigts.
+                   </p>
+                   <div className="mt-6 text-sm text-gray-400">
+                     Last updated:{" "}
+                     {new Date().toLocaleDateString("en-US", {
+                       year: "numeric",
+                       month: "long",
+                       day: "numeric",
+                     })}
+                   </div>
+                 </motion.div>
+               </div>
+             </div>
+       
         {/* Blog Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
           <div className="max-w-7xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={isVisible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, delay: 0.2 }} className="text-center mb-16">
+            {/* <motion.div initial={{ opacity: 0, y: 30 }} animate={isVisible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, delay: 0.2 }} className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                 Latest <span className="text-[#1987BF]">Insights</span>
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                 Discover expert perspectives on identity verification, compliance strategies, and the future of digital security.
               </p>
-            </motion.div>
+            </motion.div> */}
 
             {isLoading && <div className="text-center text-xl font-semibold">Loading Articles...</div>}
             {error && <div className="text-center text-red-500">Error: Could not load articles. Please try again later.</div>}

@@ -5,6 +5,7 @@ import { Gauge, Target, FileCheck, ArrowRight, Award, Shield, Users, TrendingUp,
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 
 const trustFeatures = [
   {
@@ -169,6 +170,8 @@ export default function TrustSection() {
   const [isVisible, setIsVisible] = useState(false)
   const [hoveredLogo, setHoveredLogo] = useState(null)
   const sectionRef = useRef(null)
+  const navigate = useNavigate()
+  
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -294,6 +297,7 @@ export default function TrustSection() {
                 </div>
 
                 <Button
+                onClick={()=>navigate("/about-us")}
                   variant="link"
                   className="text-white p-0 h-auto font-semibold text-sm group hover:text-green-200 transition-colors duration-200"
                 >

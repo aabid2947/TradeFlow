@@ -89,11 +89,11 @@ export default function ServiceCard({
         {/* MODIFIED: Reduced top padding */}
         <div className="flex items-center justify-between pt-1.5 border-t border-gray-100">
           <div>
-            {isPurchased ? (
-              <Badge variant="outline" className="text-green-600 border-green-600">Subscribed</Badge>
+            {/* {isPurchased ? (
+              // <Badge variant="outline" className="text-green-600 border-green-600">Subscribed</Badge>
             ) : (
               <div className="text-xl font-bold text-orange-500">₹ {price}</div>
-            )}
+            )} */}
           </div>
           <Button
             size="sm"

@@ -40,12 +40,12 @@ const getRandomImage = (index) => {
 };
 
 // Helper function to get demand level based on usage count
-const getDemandLevel = (usageCount) => {
- if (usageCount > 1000) return "Most Demanding";
- if (usageCount > 500) return "High Demanding";
- if (usageCount > 100) return "Average Demanding";
- return "Low Demanding";
-};
+// const getDemandLevel = (usageCount) => {
+//  if (usageCount > 1000) return "Most Demanding";
+//  if (usageCount > 500) return "High Demanding";
+//  if (usageCount > 100) return "Average Demanding";
+//  return "Low Demanding";
+// };
 
 // Helper function to calculate discounted price
 const calculateDiscountedPrice = (originalPrice, discount) => {
@@ -187,7 +187,7 @@ export default function ServicesSection() {
                    >
                      <ServiceCard
                        imageSrc={getRandomImage(index)}
-                       demandLevel={getDemandLevel(service.globalUsageCount)}
+                      //  demandLevel={getDemandLevel(service.globalUsageCount)}
                        serviceName={service.name}
                        verificationCount={service.globalUsageCount}
                        durationDays={7}
