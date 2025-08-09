@@ -6,7 +6,7 @@ import { TrendingUp, Users, Clock, Award, Zap, Shield } from "lucide-react"
 const statsData = [
   {
     value: "95%",
-    description: "Coverage for Indians",
+    description: "Coverage across India",
     icon: Users,
     color: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-50",
@@ -14,7 +14,7 @@ const statsData = [
   },
   {
     value: "~0.5",
-    description: "Seconds - Speed to Verification",
+    description: "Seconds - Average Time to Verify a user",
     icon: Zap,
     color: "from-green-500 to-emerald-500",
     bgColor: "bg-green-50",
@@ -22,7 +22,7 @@ const statsData = [
   },
   {
     value: "~3",
-    description: "Seconds Same speed as phone OTP",
+    description: "Seconds - End-to-end verification speed -as fast as receiving an OTP",
     icon: Clock,
     color: "from-orange-500 to-amber-500",
     bgColor: "bg-orange-50",
@@ -30,7 +30,7 @@ const statsData = [
   },
   {
     value: "#1",
-    description: "OTP based solution in India",
+    description: "Verification solution trusted by top buissness in India",
     icon: Award,
     color: "from-purple-500 to-violet-500",
     bgColor: "bg-purple-50",
