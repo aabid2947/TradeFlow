@@ -56,7 +56,8 @@ const CustomNotification = ({ notification, onClose }) => {
         </div>
     );
 };
-const toTitleCase =(str)=>{
+
+const toTitleCase = (str) => {
     if (!str) return "";
     return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
@@ -221,6 +222,54 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     );
 };
 
+// **FIXED** Helper function to correctly check if verification was successful
+const isVerificationSuccessful = (result) => {
+    // A result is not successful if it's falsy or has no data property.
+    if (!result || !result.data) {
+        return false;
+    }
+
+    // The actual API response is nested in the `data` property.
+    const apiData = result.data;
+
+    // Define known error codes from the backend API (Gridline).
+    const errorCodes = ['1004', '1001', '1002', '1003', '1005', '1006', '404', '400'];
+
+    // If the response contains a known error code, it's not successful.
+    if (apiData.code && errorCodes.includes(String(apiData.code))) {
+        return false;
+    }
+
+    // If the response status is explicitly 'INVALID', it's not successful.
+    if (apiData.status === 'INVALID') {
+        return false;
+    }
+
+    // A top-level `success: true` flag in the wrapper is a strong success indicator.
+    if (result.success === true) {
+        return true;
+    }
+
+    // A message containing "verified successfully" is also a reliable success indicator.
+    if (apiData.message && apiData.message.toLowerCase().includes('verified successfully')) {
+        return true;
+    }
+
+    // Other explicit success statuses from the API.
+    if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) {
+        return true;
+    }
+
+    // A success code like '1000' is a positive indicator.
+    if (String(apiData.code) === '1000') {
+      return true;
+    }
+
+    // Default to false if no clear success indicators are found.
+    return false;
+};
+
+
 export default function ServiceExecutionPage() {
     const { serviceKey } = useParams();
     const navigate = useNavigate();
@@ -259,37 +308,44 @@ export default function ServiceExecutionPage() {
     const hideNotification = () => {
         setNotification(null);
     };
-
+    
+    // **FIXED** Handler to correctly process success and error states
     const handleExecuteVerification = async (payload) => {
         setInputData(payload);
         setVerificationResult(null);
         setVerificationError(null);
+        
         try {
             const result = await executeService({ serviceKey: service.service_key, payload }).unwrap();
+            console.log('API Response:', result); // For debugging
             
-            // Check if the result indicates an error or no data found
-            if (result.data && result.data.code && result.data.message) {
-                // Handle specific error codes with custom messages
-                const errorMessages = {
-                    "1004": "No matching GSTIN found for the given PAN",
-                    "1001": "Invalid PAN format provided",
-                    "1002": "PAN number not found in database",
-                    "1003": "Service temporarily unavailable",
-                    "1005": "Data not found in government database",
-                    "1006": "Invalid document number format",
-                    // Add more error codes as needed
-                };
+            // Use the improved function to check for success
+            if (isVerificationSuccessful(result)) {
+                // On success, set the result to trigger the UserDetailsCard success view.
+                setVerificationResult(result);
+            } else {
+                // On failure, construct the error object.
+                const data = result.data || {};
                 
-                const customMessage = errorMessages[result.data.code] || result.data.message;
-                showNotification(customMessage, 'error');
-                return; // Don't set verification result or error
+                // Use the exact message from the API if it exists, otherwise provide a fallback.
+                const errorMessage = data.message || "Verification failed. The details could not be found or are invalid.";
+                
+                // Show the error notification with the exact API message.
+                showNotification(errorMessage, 'error');
+
+                // Set the error state to render the error view in UserDetailsCard.
+                setVerificationError({ 
+                    message: errorMessage, 
+                    code: String(data.code || 'UNKNOWN'),
+                    details: data 
+                });
             }
             
-            setVerificationResult(result);
-            showNotification("Verification completed successfully!", 'success');
         } catch (err) {
-            // Handle network errors or other exceptions
-            const errorMessage = err.data?.message || "Could not execute service. Please try again.";
+            console.error('Service execution error:', err); // For debugging
+            
+            // Handle critical network errors or exceptions from `unwrap()`.
+            const errorMessage = err.data?.message || "An unexpected error occurred. Please try again.";
             showNotification(errorMessage, 'error');
             setVerificationError(err.data || { message: "Service execution failed." });
         }
@@ -382,13 +438,51 @@ export default function ServiceExecutionPage() {
                             
                             {/* Results Section */}
                             <div className="space-y-6">
+                                {/* Show results when there's verification data or error */}
                                 {(verificationResult || verificationError) && (
                                     <UserDetailsCard 
+                                        service={service}
                                         result={verificationResult} 
                                         error={verificationError} 
-                                        serviceName={service?.name} 
-                                        inputData={inputData} 
+                                        inputData={inputData}
+                                        serviceName={service?.name}
+                                        isSubscribed={true}
                                     />
+                                )}
+                                
+                                {/* Show default service info when no verification has been performed */}
+                                {!verificationResult && !verificationError && (
+                                    <CustomCard>
+                                        <CustomCardHeader>
+                                            <h3 className="text-lg font-semibold text-gray-800">Service Information</h3>
+                                        </CustomCardHeader>
+                                        <CustomCardContent>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h4 className="font-medium text-gray-700 mb-2">About this service:</h4>
+                                                    <p className="text-gray-600 text-sm">{service.description}</p>
+                                                </div>
+                                                
+                                                <div>
+                                                    <h4 className="font-medium text-gray-700 mb-2">Required Information:</h4>
+                                                    <ul className="space-y-1">
+                                                        {service.inputFields.map((field, index) => (
+                                                            <li key={index} className="text-sm text-gray-600 flex items-center">
+                                                                <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>
+                                                                {field.label || toTitleCase(field.name)}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                                
+                                                <div className="bg-blue-50 p-3 rounded-lg">
+                                                    <p className="text-blue-800 text-sm">
+                                                        <strong>💡 Tip:</strong> Fill out the form on the left to verify your details instantly.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CustomCardContent>
+                                    </CustomCard>
                                 )}
                             </div>
                         </div>

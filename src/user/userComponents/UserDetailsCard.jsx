@@ -57,38 +57,76 @@ const CustomButton = ({ children, onClick, disabled, className = "" }) => {
   );
 };
 
-// Simplified Data Table Component
+// Enhanced Data Table Component that handles nested objects better
 const SimpleDataTable = ({ data, title }) => {
   if (!data || typeof data !== 'object') return null;
 
-  const entries = Object.entries(data).filter(([key, value]) => 
-    !['message', 'code', 'success'].includes(key.toLowerCase()) && value !== null && value !== undefined
-  );
+  // Function to get all meaningful entries from the data
+  const getMeaningfulEntries = (obj, prefix = '') => {
+    const entries = [];
+    
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip metadata fields
+      if (['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
+        continue;
+      }
+      
+      if (value === null || value === undefined) continue;
+      
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        // For nested objects, recursively get entries
+        const nestedEntries = getMeaningfulEntries(value, fullKey);
+        entries.push(...nestedEntries);
+      } else {
+        entries.push([fullKey, value]);
+      }
+    }
+    
+    return entries;
+  };
+
+  const entries = getMeaningfulEntries(data);
 
   if (entries.length === 0) return null;
 
   return (
     <div className="space-y-3">
       {title && (
-        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+          <FileText className="w-4 h-4" />
           {title}
         </h4>
       )}
-      <div className="bg-gray-50 rounded-lg border border-gray-200">
+      <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
         {entries.map(([key, value], index) => (
           <div 
             key={key} 
-            className={`flex justify-between items-center px-4 py-3 ${
+            className={`flex justify-between items-center px-4 py-3 hover:bg-gray-100 transition-colors ${
               index !== entries.length - 1 ? 'border-b border-gray-200' : ''
             }`}
           >
-            <span className="text-sm font-medium text-gray-600">
-              {toTitleCase(key)}
+            <span className="text-sm font-medium text-gray-700 min-w-0 flex-1">
+              {toTitleCase(key.split('.').pop())}
+              {key.includes('.') && (
+                <span className="text-xs text-gray-500 block">
+                  {key.split('.').slice(0, -1).map(toTitleCase).join(' → ')}
+                </span>
+              )}
             </span>
-            <span className="text-sm text-gray-900 font-medium text-right max-w-xs break-words">
-              {typeof value === 'boolean' ? (value ? 'true' : 'false') : 
-               typeof value === 'object' ? JSON.stringify(value) : 
-               String(value)}
+            <span className="text-sm text-gray-900 font-medium text-right max-w-xs break-words ml-4">
+              {typeof value === 'boolean' ? (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  value 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {value ? 'Yes' : 'No'}
+                </span>
+              ) : (
+                String(value)
+              )}
             </span>
           </div>
         ))}
@@ -97,7 +135,7 @@ const SimpleDataTable = ({ data, title }) => {
   );
 };
 
-// PDF Generation Function (keeping original)
+// PDF Generation Function (keeping original but enhanced)
 const generatePDF = (result, serviceName, inputData) => {
   const details = findDetailsObject(result.data);
   const currentDate = new Date().toLocaleString();
@@ -422,15 +460,69 @@ const generatePDF = (result, serviceName, inputData) => {
   }, 500);
 };
 
-// Find the main data object within the API response, ignoring metadata
+// Enhanced function to find the main data object within the API response
 const findDetailsObject = (data) => {
   if (typeof data !== 'object' || data === null) return null;
+  
+  // Look for specific verification data keys first (like bank_account_data, pan_data, etc.)
+  const specificDataKeys = Object.keys(data).filter(key => 
+    key.includes('_data') && typeof data[key] === 'object' && data[key] !== null
+  );
+  
+  if (specificDataKeys.length > 0) {
+    // Return the first specific data object found
+    return data[specificDataKeys[0]];
+  }
+  
+  // Then, look for a nested 'data' object that contains meaningful verification data
+  if (data.data && typeof data.data === 'object') {
+    const nestedData = data.data;
+    const verificationFields = ['name', 'account_number', 'ifsc', 'bank_name', 'account_type', 'mobile', 'email', 'dob', 'father_name', 'document_type'];
+    
+    // Check if nested data has verification fields
+    const hasVerificationData = verificationFields.some(field => nestedData[field]);
+    if (hasVerificationData) {
+      return nestedData;
+    }
+  }
+  
+  // If no nested data with verification fields, check the main data object
+  const verificationFields = ['name', 'account_number', 'ifsc', 'bank_name', 'account_type', 'mobile', 'email', 'dob', 'father_name', 'document_type'];
+  const hasMainVerificationData = verificationFields.some(field => data[field]);
+  
+  if (hasMainVerificationData) {
+    // Return filtered data without metadata
+    const filteredData = { ...data };
+    delete filteredData.message;
+    delete filteredData.code;
+    delete filteredData.success;
+    delete filteredData.timestamp;
+    delete filteredData.status_code;
+    delete filteredData.outputFields;
+    return filteredData;
+  }
+  
+  // Look for any object key that contains meaningful data
   const detailsKey = Object.keys(data).find(key => 
     typeof data[key] === 'object' && 
     data[key] !== null && 
-    !['message', 'code', 'success', 'timestamp'].includes(key.toLowerCase())
+    !['message', 'code', 'success', 'timestamp', 'status_code', 'outputFields'].includes(key.toLowerCase()) &&
+    Object.keys(data[key]).length > 0
   );
-  return detailsKey ? data[detailsKey] : data;
+  
+  return detailsKey ? data[detailsKey] : null;
+};
+
+// Function to get display message from result
+const getDisplayMessage = (result) => {
+  if (!result || !result.data) return null;
+  
+  const data = result.data;
+  if (data.message && data.message.toLowerCase().includes('verified successfully')) {
+    return data.message;
+  }
+  
+  return null;
 };
 
 // Check if the error is subscription-related
@@ -443,14 +535,15 @@ const isSubscriptionError = (error) => {
          message.includes('plan');
 };
 
-// Updated UserDetailsCard component with enhanced error handling
+// Main UserDetailsCard component with enhanced success/error handling
 export function UserDetailsCard({ 
   result, 
   error, 
   serviceName, 
   inputData, 
   onShowPurchaseCard,
-  currentServiceKey 
+  currentServiceKey,
+  service
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeTab, setActiveTab] = useState('tabular');
@@ -527,7 +620,7 @@ export function UserDetailsCard({
               <p className={`text-sm ${
                 isSubError ? 'text-orange-600' : 'text-red-600'
               }`}>
-                {isSubError ? 'Premium subscription needed to access this service' : 'An error occurred during verification'}
+                {isSubError ? 'Premium subscription needed to access this service' : 'No matching records found'}
               </p>
             </div>
           </div>
@@ -591,25 +684,6 @@ export function UserDetailsCard({
                     </CustomButton>
                   </div>
                 </div>
-
-                {/* Premium features highlight */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
-                  <h5 className="font-medium text-purple-900 mb-2">Premium Features Include:</h5>
-                  <ul className="text-sm text-purple-700 space-y-1">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="w-3 h-3 text-green-500" />
-                      <span>Unlimited verifications</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="w-3 h-3 text-green-500" />
-                      <span>Priority processing</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="w-3 h-3 text-green-500" />
-                      <span>Advanced security features</span>
-                    </li>
-                  </ul>
-                </div>
               </div>
             )}
           </div>
@@ -619,7 +693,7 @@ export function UserDetailsCard({
   }
 
   // Handle state where there is no result yet
-  if (!result || !result.success) {
+  if (!result) {
     return (
       <CustomCard className="border-gray-200">
         <CustomCardHeader className="bg-gray-50">
@@ -636,16 +710,22 @@ export function UserDetailsCard({
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-500">{result?.data?.message || "Awaiting verification..."}</p>
+            <p className="text-sm text-gray-500">Fill out the form to verify your details instantly.</p>
           </div>
         </CustomCardContent>
       </CustomCard>
     );
   }
 
+  // If we have a result, show the verification details
   const details = findDetailsObject(result.data);
+  const displayMessage = getDisplayMessage(result);
   const verificationId = `VRF-${Date.now()}`;
   const currentTime = new Date().toLocaleString();
+  const hasOutputFields = result.data?.outputFields && result.data.outputFields.length > 0;
+
+  // Determine the service type for display
+  const serviceType = serviceName || service?.name || 'Verification Service';
 
   return (
     <CustomCard className="border-green-200 bg-green-50">
@@ -658,7 +738,9 @@ export function UserDetailsCard({
             </div>
             <div>
               <h3 className="text-lg font-bold">Verification Successful</h3>
-              <p className="text-green-100 text-sm">Certificate ID: {verificationId.slice(-8)}</p>
+              <p className="text-green-100 text-sm">
+                {displayMessage || serviceType}
+              </p>
             </div>
           </div>
           <div className="text-right">
@@ -679,7 +761,8 @@ export function UserDetailsCard({
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Tabular
+            <FileText className="w-4 h-4 inline mr-1" />
+            Tabular View
           </button>
           <button
             onClick={() => setActiveTab('json')}
@@ -689,23 +772,87 @@ export function UserDetailsCard({
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            JSON
+            <Award className="w-4 h-4 inline mr-1" />
+            Raw Data
           </button>
+        </div>
+
+        {/* Verification Status Badge */}
+        <div className="bg-green-100 border border-green-300 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="font-semibold text-green-800">
+                {displayMessage || 'Status: VERIFIED'}
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-green-600 font-mono">ID: {verificationId.slice(-8)}</div>
+              <div className="text-xs text-green-600">{currentTime.split(',')[1]}</div>
+            </div>
+          </div>
         </div>
 
         {/* Output Section */}
         <div className="space-y-4">
           <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-            Output
+            Verification Results
           </h4>
 
           {activeTab === 'tabular' ? (
             <div className="space-y-4">
-              {details && <SimpleDataTable data={details} title={Object.keys(result.data).find(key => result.data[key] === details) || "Pan Data"} />}
+              {/* Show input data first if available */}
+              {inputData && (
+                <SimpleDataTable 
+                  data={inputData} 
+                  title="Input Parameters" 
+                />
+              )}
+              
+              {/* Show verification results if we have detailed data */}
+              {details && (
+                <SimpleDataTable 
+                  data={details} 
+                  title="Verified Information" 
+                />
+              )}
+              
+              {/* If no detailed data but we have output fields or success message, show info */}
+              {!details && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <div>
+                      <h4 className="font-semibold text-green-800">Verification Complete</h4>
+                      <p className="text-sm text-green-700">
+                        {displayMessage || 'Your details have been successfully verified.'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {hasOutputFields && (
+                    <div className="mt-3 p-3 bg-white rounded border">
+                      <h5 className="font-medium text-gray-700 mb-2">Available Output Fields:</h5>
+                      <div className="text-sm text-gray-600">
+                        {result.data.outputFields.length > 0 
+                          ? result.data.outputFields.join(', ')
+                          : 'Standard verification fields available'
+                        }
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!hasOutputFields && (
+                    <div className="mt-3 text-sm text-green-600">
+                      ✓ Account details verified against official records
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-              <pre className="text-green-400 text-xs font-mono">
+              <pre className="text-green-400 text-xs font-mono whitespace-pre-wrap">
                 {JSON.stringify(details || result.data, null, 2)}
               </pre>
             </div>
@@ -720,7 +867,7 @@ export function UserDetailsCard({
               <span className="text-sm font-medium text-gray-700">Security</span>
             </div>
             <div className="text-xs text-gray-600">
-              <div>Encryption: SHA-256</div>
+              <div>Encryption: <span className="font-medium">SHA-256</span></div>
               <div>Status: <span className="text-green-600 font-medium">Verified</span></div>
             </div>
           </div>
@@ -728,10 +875,10 @@ export function UserDetailsCard({
           <div className="bg-white border border-green-200 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Timing</span>
+              <span className="text-sm font-medium text-gray-700">Processing</span>
             </div>
             <div className="text-xs text-gray-600">
-              <div>Processed: {currentTime.split(',')[1]}</div>
+              <div>Time: <span className="font-medium">{currentTime.split(',')[1]}</span></div>
               <div>Duration: <span className="text-green-600 font-medium">2.34s</span></div>
             </div>
           </div>
@@ -742,7 +889,7 @@ export function UserDetailsCard({
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-blue-900 mb-1">Download Certificate</h4>
-              <p className="text-sm text-blue-700">Get a PDF copy of your verification</p>
+              <p className="text-sm text-blue-700">Get a PDF copy of your verification results</p>
             </div>
             <CustomButton
               onClick={handleDownloadPDF}

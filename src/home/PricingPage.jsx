@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -34,7 +33,7 @@ const PricingPage = () => {
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
-  
+
   const [createSubscriptionOrder, { isLoading: isCreatingOrder }] = useCreateSubscriptionOrderMutation()
   const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation()
 
@@ -51,10 +50,7 @@ const PricingPage = () => {
     }
 
     try {
-      const orderData = await createSubscriptionOrder({
-         planName: planName, 
-         planType: planType,
-      }).unwrap()
+      const orderData = await createSubscriptionOrder({ planName, planType }).unwrap()
 
       if (orderData.paymentSkipped) {
         toast.success("Subscription activated successfully!")
@@ -97,7 +93,7 @@ const PricingPage = () => {
           color: "#2563EB",
         },
       }
-      
+
       const rzp = new window.Razorpay(options)
       rzp.open()
 
@@ -164,7 +160,7 @@ const PricingPage = () => {
       buttonVariant: "outline",
     },
   ]
-  
+
   // Hardcoded data for service display section
   const verificationServices = [
     { name: "Address Verification", price: 299, popular: false },
@@ -184,7 +180,7 @@ const PricingPage = () => {
     { name: "Employment Verification", price: 299, popular: false },
     { name: "Vehicle RC Verification", price: 299, popular: false },
   ]
-  
+
   // Hardcoded data for features section
   const features = [
     { icon: Shield, title: "Bank-grade Security", description: "End-to-end encryption and compliance with industry standards" },
@@ -200,7 +196,7 @@ const PricingPage = () => {
   return (
     <div className="min-h-screen bg-white text-gray-800">
       <Header />
-      
+
       <motion.div
         className="bg-gradient-to-br from-blue-50 to-sky-100 py-20 overflow-hidden"
         initial="hidden"
@@ -215,7 +211,7 @@ const PricingPage = () => {
           <motion.p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto" variants={itemVariants}>
             Choose the perfect plan for your verification needs. All plans include access to our comprehensive suite of verification services.
           </motion.p>
-          
+
           <motion.div className="flex items-center justify-center gap-3 mb-8" variants={itemVariants}>
             <span className={`text-lg font-medium ${!isAnnual ? "text-gray-900" : "text-gray-500"}`}>Monthly</span>
             <button

@@ -4,7 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 import { 
-  TrendingUp, TrendingDown, Users, DollarSign, CreditCard, Activity,
+  TrendingUp, TrendingDown, Users, IndianRupee, CreditCard, Activity,
   Calendar, Filter, Download, Eye, Clock, MapPin, Smartphone,
   AlertTriangle, CheckCircle, XCircle, BarChart3,
   Target, Zap, Globe, ShoppingCart, Star, ArrowUpRight, ArrowDownRight
@@ -560,7 +560,7 @@ export default function DashboardOverview() {
         <MetricCard
           title="Total Revenue"
           value={`₹${analytics.totalRevenue.toLocaleString('en-IN')}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           color="green"
         />
         <MetricCard

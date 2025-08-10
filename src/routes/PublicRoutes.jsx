@@ -16,6 +16,7 @@ import BlogLanding from '../home/BlogLanding';
 import BlogPage from '../home/BlogPage';
 import TermsAndConditionsPage from '../home/Terms&ConditionPage';
 import DisclaimerPage from '../home/Disclaimer';
+import HowToVerifyPage from '../home/HowToGetVerify';
 export const publicRoutes = [
   {
     path: '/',
@@ -32,8 +33,13 @@ export const publicRoutes = [
     element:<PrivacyPolicy/>,
     errorElement: <ErrorPage />
   },
+  {
+    path: '/how-to-get-verify',
+    element:<HowToVerifyPage/>,
+    errorElement: <ErrorPage />
+  },
     {
-    path: '/t&c',
+    path: '/terms-and-condition',
     element:<TermsAndConditionsPage/>,
     errorElement: <ErrorPage />
   },

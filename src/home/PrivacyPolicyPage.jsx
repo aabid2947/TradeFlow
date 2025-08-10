@@ -577,7 +577,7 @@ useEffect(()=>{
     <div className="min-h-screen bg-white">
       {/* Header */}
       <HomePageHeader/>
-      <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
+      {/* <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -600,7 +600,31 @@ useEffect(()=>{
             </div>
           </motion.div>
         </div>
-      </div>
+      </div> */}
+       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16">
+              <div className="max-w-4xl mx-auto px-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-center"
+                >
+                  <Shield className="w-16 h-16 mx-auto mb-6 text-white" />
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+                  <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                     Your privacy is important to us. Learn how we collect, use, and protect your personal information.
+                  </p>
+                  <div className="mt-6 text-sm text-gray-400">
+                    Last updated:{" "}
+                    {new Date().toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+            </div>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
@@ -633,6 +657,7 @@ useEffect(()=>{
                     </div>
                   </div>
                 </button>
+                
 
                 <motion.div
                   initial={false}
