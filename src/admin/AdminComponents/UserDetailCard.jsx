@@ -24,6 +24,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { 
     useExtendSubscriptionMutation,
+    useGetAllUsersQuery,
     useRevokeSubscriptionMutation
 } from '@/app/api/authApiSlice';
 import { toast } from "react-hot-toast";
@@ -86,6 +87,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
   const currentUser = useSelector(selectCurrentUser);
   const [extendSubscription, { isLoading: isExtending }] = useExtendSubscriptionMutation();
   const [revokeSubscription, { isLoading: isRevoking }] = useRevokeSubscriptionMutation();
+  const { refetch: refetchAllUsers } = useGetAllUsersQuery();
   const [modal, setModal] = useState({ type: null, sub: null });
 
   useEffect(() => {
@@ -104,6 +106,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
     try {
         await revokeSubscription({ userId: user._id, category: modal.sub.category }).unwrap();
         toast.success(`Subscription for "${modal.sub.category.replace(/_/g, ' ')}" revoked.`);
+        await refetchAllUsers();
         setModal({ type: null, sub: null });
     } catch (err) {
         toast.error(err.data?.message || 'Failed to revoke subscription.');
@@ -115,6 +118,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
     try {
         await extendSubscription({ userId: user._id, category: modal.sub.category, duration }).unwrap();
         toast.success(`Subscription for "${modal.sub.category.replace(/_/g, ' ')}" extended.`);
+        await refetchAllUsers();
         setModal({ type: null, sub: null });
     } catch (err) {
         toast.error(err.data?.message || 'Failed to extend subscription.');

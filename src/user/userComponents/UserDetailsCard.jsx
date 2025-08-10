@@ -6,6 +6,7 @@ import { useGetProfileQuery } from "@/app/api/authApiSlice";
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { apiSlice } from "@/app/api/apiSlice";
 import { useDispatch } from "react-redux";
+// import { useGetProfileQuery } from "@/app/api/authApiSlice";
 
 // Helper function to format keys into titles
 const toTitleCase = (str) => {
@@ -548,6 +549,7 @@ export function UserDetailsCard({
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeTab, setActiveTab] = useState('tabular');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // const { refetch: refetchUserProfile } = useGetProfileQuery();
 
   const dispatch = useDispatch();
   
@@ -565,10 +567,12 @@ export function UserDetailsCard({
       setTimeout(() => setIsDownloading(false), 1000);
     }
   };
-
+  
   const handleRefreshAndPurchase = async () => {
     setIsRefreshing(true);
+
     
+    console.log(9)
     try {
       // 1. Invalidate user and service tags
       dispatch(apiSlice.util.invalidateTags([
