@@ -108,7 +108,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
         </div>
       </div>
 
-      <div className="flex gap-2 pt-4 border-t border-gray-200 mt-4">
+      {/* <div className="flex gap-2 pt-4 border-t border-gray-200 mt-4">
         <Button size="sm" variant="outline" className="flex-1 bg-transparent">
           <Eye className="w-4 h-4 mr-2" />
           View Details
@@ -117,7 +117,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
           <Download className="w-4 h-4 mr-2" />
           Download Invoice
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 

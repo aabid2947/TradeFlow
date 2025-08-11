@@ -186,7 +186,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
       {/* Overlay for mobile view. This was already correctly implemented. */}
       {isOpen && (
         <div
-          className={`fixed inset-0 modal-overlay bg-black bg-opacity-30 backdrop-blur-sm z-30 lg:hidden transition-opacity ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          className={`fixed inset-0 modal-overlay bg-transparent bg-opacity-30 backdrop-blur-sm z-30 lg:hidden transition-opacity ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           onClick={() => setIsOpen(false)}
           aria-hidden="true"

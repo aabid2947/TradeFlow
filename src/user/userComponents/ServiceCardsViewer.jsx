@@ -1,4 +1,4 @@
-import { useState, useMemo,useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import ServiceCard from "@/cards/ServiceCard";
@@ -7,7 +7,7 @@ import { UserDetailsCard } from "./UserDetailsCard";
 import SubscriptionPurchaseCard from "./SubscriptionPurchaseCard";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice";
-import { X, RefreshCw } from 'lucide-react'; // Import RefreshCw for the new button
+import { X, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 export default function ServiceCardsViewer({ services = [], pricingPlans = [], isLoading, userInfo }) {
@@ -20,48 +20,80 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
 
-  useEffect(()=>{
-       window.scrollTo({
+  useEffect(() => {
+    window.scrollTo({
       top: 0,
-      behavior: "smooth", 
+      behavior: "smooth",
     });
-    },[])
-  
+  }, []);
 
+  // --- THIS IS THE CORRECTED LOGIC ---
   const accessibleServiceIds = useMemo(() => {
-    if (!userInfo?.activeSubscriptions || !pricingPlans.length) {
+    if (!userInfo?.activeSubscriptions) {
       return new Set();
     }
+
     const serviceIdSet = new Set();
-    const userPlanNames = new Set(
-      userInfo.activeSubscriptions
-        .filter(sub => new Date(sub.expiresAt) > new Date())
-        .map(sub => sub.category)
+    const activeUserSubs = userInfo.activeSubscriptions.filter(
+      sub => new Date(sub.expiresAt) > new Date()
     );
-    pricingPlans.forEach(plan => {
-      if (userPlanNames.has(plan.name)) {
-        plan.includedServices.forEach(service => serviceIdSet.add(service._id));
+
+    // Create a map of static plans for efficient lookup: { "Plan Name": [serviceId1, serviceId2] }
+    const staticPlanMap = new Map(
+      pricingPlans.map(p => [p.name, p.includedServices.map(s => s._id)])
+    );
+
+    // Iterate over each of the user's active subscriptions
+    activeUserSubs.forEach(sub => {
+      const subName = sub.category; // This can be "Identity Verification Plan" OR "GSTIN verification"
+
+      // CHECK 1: Is this a pre-defined static plan?
+      if (staticPlanMap.has(subName)) {
+        // If yes, add all services from that static plan to the user's accessible set.
+        const includedServiceIds = staticPlanMap.get(subName) || [];
+        includedServiceIds.forEach(id => serviceIdSet.add(id));
+      } 
+      // CHECK 2: If not, assume it's a dynamic subcategory plan.
+      else {
+        // If yes, find all services that have this subcategory name and add them.
+        services.forEach(service => {
+          if (service.subcategory === subName) {
+            serviceIdSet.add(service._id);
+          }
+        });
       }
     });
+
     return serviceIdSet;
-  }, [userInfo, pricingPlans]);
+  }, [userInfo, pricingPlans, services]); // `services` is now a dependency
+
 
   const handleActionButtonClick = (service) => {
     setVerificationResult(null);
     setVerificationError(null);
     setInputData(null);
+
     const isSubscribed = accessibleServiceIds.has(service._id);
+
     if (isSubscribed) {
       setActiveService(service);
       setPurchasePlan(null);
     } else {
-      const planToPurchase = pricingPlans.find(p => p.name === `${service.category} Plan`);
-      if (planToPurchase) {
-        setPurchasePlan(planToPurchase);
+      if (service.subcategory) {
+        const dynamicPlanForPurchase = {
+          name: service.subcategory,
+          monthly: {
+            price: 299,
+          },
+        };
+        setPurchasePlan(dynamicPlanForPurchase);
+        setActiveService(null);
       } else {
-        toast.error(`No individual purchase plan found for the "${service.category}" category.`);
+        const staticPlanName = `${service.category} Plan`;
+        toast.error(`This service can only be accessed by purchasing the "${staticPlanName}".`);
+        setActiveService(null);
+        setPurchasePlan(null);
       }
-      setActiveService(null);
     }
   };
 
@@ -89,7 +121,6 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
     }
   };
 
-  // --- NEW: Function to reset the modal view to the input card ---
   const handleNewVerification = () => {
     setVerificationResult(null);
     setVerificationError(null);
@@ -109,6 +140,7 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
       <h1 className="font-bold text-xl my-2">KYC Verification Services</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {services.map((svc) => {
+          // This check is now correct because `accessibleServiceIds` is calculated properly.
           const isSubscribed = accessibleServiceIds.has(svc._id);
           return (
             <ServiceCard
@@ -125,7 +157,7 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
         })}
       </div>
 
-      {/* Verification Modal with Updated Logic */}
+      {/* Verification Modal Logic (Unchanged) */}
       {activeService && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -145,11 +177,8 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
             >
               <X size={20} />
             </button>
-
             <div className="p-6 space-y-4">
-              {/* --- CORE UI CHANGE: Conditional Rendering --- */}
               {!(verificationResult || verificationError) ? (
-                // STATE 1: Show input form
                 <UserInfoCard
                   services={[activeService]}
                   activeServiceId={activeService.service_key}
@@ -158,7 +187,6 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
                   isSubscribed={true}
                 />
               ) : (
-                // STATE 2: Show result and a "New Verification" button
                 <>
                   <UserDetailsCard
                     result={verificationResult}
@@ -181,7 +209,7 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
         </div>
       )}
       
-      {/* Purchase Modal (No changes needed here) */}
+      {/* Purchase Modal (Unchanged) */}
       {purchasePlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal}></div>

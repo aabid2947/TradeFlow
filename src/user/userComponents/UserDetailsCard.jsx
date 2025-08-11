@@ -136,8 +136,8 @@ const SimpleDataTable = ({ data, title }) => {
   );
 };
 
-// PDF Generation Function (keeping original but enhanced)
-const generatePDF = (result, serviceName, inputData) => {
+// PDF Generation Function (updated to remove input parameters)
+const generatePDF = (result, serviceName) => {
   const details = findDetailsObject(result.data);
   const currentDate = new Date().toLocaleString();
   const verificationId = `VRF-${Date.now()}`;
@@ -394,20 +394,6 @@ const generatePDF = (result, serviceName, inputData) => {
                     </div>
                 </div>
                 
-                ${inputData ? `
-                <div class="data-section">
-                    <h3>Input Parameters</h3>
-                    <table class="data-table">
-                        ${Object.entries(inputData).map(([key, value]) => `
-                            <tr>
-                                <td><strong>${toTitleCase(key)}</strong></td>
-                                <td>${typeof value === 'object' ? JSON.stringify(value) : value}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </div>
-                ` : ''}
-                
                 ${details ? `
                 <div class="data-section">
                     <h3>Verification Results</h3>
@@ -560,7 +546,7 @@ export function UserDetailsCard({
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
-      generatePDF(result, serviceName, inputData);
+      generatePDF(result, serviceName);
     } catch (err) {
       console.error('Error generating PDF:', err);
     } finally {
@@ -733,30 +719,43 @@ export function UserDetailsCard({
 
   return (
     <CustomCard className="border-green-200 bg-green-50">
-      {/* Success Header */}
-      <CustomCardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+      {/* Simplified Success Banner */}
+      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-white" />
+            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-bold">Verification Successful</h3>
-              <p className="text-green-100 text-sm">
-                {displayMessage || serviceType}
-              </p>
+              <p className="text-green-100 text-sm">{serviceType}</p>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">✓</div>
-            <div className="text-xs text-green-100">VERIFIED</div>
+          <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
+            <span className="text-xs font-semibold">VERIFIED</span>
           </div>
         </div>
-      </CustomCardHeader>
+      </div>
 
       <CustomCardContent className="space-y-6">
+        {/* Status Information */}
+        {/* <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="font-semibold text-green-800">
+                {displayMessage || 'Details verified successfully'}
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-green-600 font-mono">ID: {verificationId.slice(-8)}</div>
+              <div className="text-xs text-green-600">{currentTime.split(',')[1]}</div>
+            </div>
+          </div>
+        </div> */}
+
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-200">
+        {/* <div className="flex border-b border-gray-200">
           <button
             onClick={() => setActiveTab('tabular')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
@@ -766,7 +765,7 @@ export function UserDetailsCard({
             }`}
           >
             <FileText className="w-4 h-4 inline mr-1" />
-            Tabular View
+            Details
           </button>
           <button
             onClick={() => setActiveTab('json')}
@@ -779,40 +778,12 @@ export function UserDetailsCard({
             <Award className="w-4 h-4 inline mr-1" />
             Raw Data
           </button>
-        </div>
+        </div> */}
 
-        {/* Verification Status Badge */}
-        <div className="bg-green-100 border border-green-300 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="font-semibold text-green-800">
-                {displayMessage || 'Status: VERIFIED'}
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-green-600 font-mono">ID: {verificationId.slice(-8)}</div>
-              <div className="text-xs text-green-600">{currentTime.split(',')[1]}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Output Section */}
+        {/* Content Section */}
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-            Verification Results
-          </h4>
-
           {activeTab === 'tabular' ? (
             <div className="space-y-4">
-              {/* Show input data first if available */}
-              {inputData && (
-                <SimpleDataTable 
-                  data={inputData} 
-                  title="Input Parameters" 
-                />
-              )}
-              
               {/* Show verification results if we have detailed data */}
               {details && (
                 <SimpleDataTable 

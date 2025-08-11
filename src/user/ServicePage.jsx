@@ -17,37 +17,6 @@ import { selectCurrentUser } from "@/features/auth/authSlice";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice"; 
 import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
-// inside ServicePage.jsx - replace the Back button block with this breadcrumb nav
-// import { useNavigate } from "react-router-dom";
-// ...existing imports
-
-// Add this small Breadcrumb component inside the file (or top-level)
-const BreadcrumbWithThumb = ({ service }) => {
-  const navigate = useNavigate();
-  const thumb = service?.mainImage?.url;
-  return (
-    <nav className="flex items-center text-sm font-medium text-gray-600 gap-3">
-      <button onClick={() => navigate('/user')} className="flex items-center gap-2 hover:text-gray-800">
-        {/* small dashboard icon (or text) */}
-        <span className="text-xs font-medium">Dashboard</span>
-      </button>
-      <ChevronRight className="h-4 w-4" />
-      <button onClick={() => navigate('/user', { state: { view: 'services', category } })} className="flex items-center gap-2 hover:text-gray-800">
-        <span className="text-xs font-medium">{category ? category.replace(/_/g, " ") : 'Services'}</span>
-      </button>
-      <ChevronRight className="h-4 w-4" />
-      <div className="flex items-center gap-3">
-        {thumb ? (
-          <img src={thumb} alt="service" className="w-7 h-7 rounded-md object-cover border" />
-        ) : (
-          <div className="w-7 h-7 rounded-md bg-gray-100 border" />
-        )}
-        <span className="text-gray-800 font-semibold">{activeService ? activeService.name : `${category ? `${category.replace(/_/g, " ")}` : 'Services'}`}</span>
-      </div>
-    </nav>
-  );
-};
-
 
 const XIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
@@ -64,8 +33,8 @@ export default function ServicePage() {
   const [showSubscriptionCard, setShowSubscriptionCard] = useState(false);
   
   const navigate = useNavigate();
-  const { category: encodedCategory } = useParams();
-  const category = decodeURIComponent(encodedCategory || '');
+  const { category: encodedSubcategory } = useParams();
+  const subcategory = decodeURIComponent(encodedSubcategory || '');
 
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const userInfo = useSelector(selectCurrentUser);
@@ -78,30 +47,49 @@ export default function ServicePage() {
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
 
   const filteredServices = useMemo(() => {
-    if (!category) return [];
-    return allServices.filter(service => service.category === category);
-  }, [allServices, category]);
+    if (!subcategory) return [];
+    return allServices.filter(service => service.subcategory === subcategory);
+  }, [allServices, subcategory]);
 
-  const isSubscribedToCategory = useMemo(() => {
-    if (!userInfo?.activeSubscriptions || !allPricingPlans.length) return false;
-    const accessibleServiceIds = new Set();
+  const parentCategory = useMemo(() => {
+    if (filteredServices.length > 0) {
+      return filteredServices[0].category;
+    }
+    return null;
+  }, [filteredServices]);
+
+  // --- 1. CORRECTED SUBSCRIPTION CHECK ---
+  const isSubscribed = useMemo(() => {
+    if (!userInfo?.activeSubscriptions) return false;
+    
+    // Get a set of all active subscription names for the user.
     const userActivePlanNames = new Set(
       userInfo.activeSubscriptions
         .filter(sub => new Date(sub.expiresAt) > new Date())
         .map(sub => sub.category)
     );
-    allPricingPlans.forEach(plan => {
-      if (userActivePlanNames.has(plan.name)) {
-        plan.includedServices.forEach(service => accessibleServiceIds.add(service._id));
-      }
-    });
-    return filteredServices.some(service => accessibleServiceIds.has(service._id));
-  }, [userInfo, allPricingPlans, filteredServices]);
+
+    // Define the name of the main category plan (e.g., "Identity Verification Plan")
+    const parentPlanName = parentCategory ? `${parentCategory} Plan` : '';
+    
+    // A user is considered subscribed if they have EITHER the main category plan OR the specific subcategory plan.
+    return userActivePlanNames.has(parentPlanName) || userActivePlanNames.has(subcategory);
+  }, [userInfo, parentCategory, subcategory]);
   
+  // --- 2. CORRECTED PLAN TO PURCHASE LOGIC ---
   const planToPurchase = useMemo(() => {
-    if (isSubscribedToCategory || !category) return null;
-    return allPricingPlans.find(p => p.name === `${category} Plan`);
-  }, [allPricingPlans, category, isSubscribedToCategory]);
+    // If the user is already subscribed, or there's no subcategory, there's nothing to purchase.
+    if (isSubscribed || !subcategory) return null;
+    
+    // If not subscribed, the ONLY plan to offer is the dynamic one for this specific subcategory.
+    // This creates the exact object the SubscriptionPurchaseCard needs for the dynamic flow.
+    return {
+      name: subcategory, // The plan "name" is the subcategory.
+      monthly: {
+        price: 299, // The fixed price for dynamic plans.
+      },
+    };
+  }, [isSubscribed, subcategory]);
 
   const activeService = useMemo(() => allServices.find(s => s.service_key === activeServiceId), [allServices, activeServiceId]);
 
@@ -117,8 +105,6 @@ export default function ServicePage() {
     }
   }, [filteredServices, activeServiceId]);
 
-  
-
   useEffect(() => {
     setVerificationResult(null);
     setVerificationError(null);
@@ -129,7 +115,7 @@ export default function ServicePage() {
     navigate('/user', { 
       state: { 
         view: 'services', 
-        category: category 
+        category: parentCategory || 'All Services' 
       },
       replace: true 
     });
@@ -139,7 +125,6 @@ export default function ServicePage() {
     navigate('/user', { state: { view } });
   };
   
-  // CORRECTED: This now navigates back to the UserDashBoard to show the new category's cards
   const handleCategorySelect = (newCategory) => {
     navigate('/user', {
         state: {
@@ -172,26 +157,40 @@ export default function ServicePage() {
       }
   };
   
+  // --- 3. THIS FUNCTION NOW WORKS CORRECTLY ---
+  // It relies on the corrected `planToPurchase` hook above.
   const handleSubscribeClick = () => {
       if (!planToPurchase) {
-          toast.error("No individual purchase plan is available for this category.");
+          toast.error("This plan is not available for purchase or you are already subscribed.");
           return;
       }
       setShowSubscriptionCard(true);
   };
 
   const renderRightPanel = () => {
-    if (!isSubscribedToCategory && showSubscriptionCard && planToPurchase) {
+    // This rendering logic is now correct because `planToPurchase` provides the right data.
+    if (showSubscriptionCard && planToPurchase) {
       return (
         <div className="md:col-span-2">
-          <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
+          <SubscriptionPurchaseCard 
+            planData={planToPurchase} 
+            userInfo={userInfo} 
+            onClose={() => setShowSubscriptionCard(false)} 
+          />
         </div>
       );
     }
     return (
       <>
         <div className="md:col-span-1">
-          <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribedToCategory} onSubscribeClick={handleSubscribeClick} />
+          <UserInfoCard 
+            services={filteredServices} 
+            activeServiceId={activeServiceId} 
+            onVerify={handleExecuteVerification} 
+            isVerifying={isVerifying} 
+            isSubscribed={isSubscribed} 
+            onSubscribeClick={handleSubscribeClick} 
+          />
         </div>
         <div className="md:col-span-1">
           {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData}/>}
@@ -206,7 +205,7 @@ export default function ServicePage() {
         isOpen={sidebarOpen}
         activeView="services"
         onNavigate={handleSidebarNavigate}
-        activeCategory={category}
+        activeCategory={parentCategory}
         onCategorySelect={handleCategorySelect}
       />
       <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
@@ -219,7 +218,7 @@ export default function ServicePage() {
                     Back to Services
                 </Button>
                 <h1 className="text-xl md:text-2xl font-bold text-right">
-                    {category ? `${category.replace(/_/g, " ")} Services` : 'Verification Services'}
+                    {subcategory ? `${subcategory.replace(/_/g, " ")} Services` : 'Verification Services'}
                 </h1>
             </div>
 
@@ -235,6 +234,7 @@ export default function ServicePage() {
         </main>
       </div>
 
+      {/* This modal logic also works correctly now */}
       {activeServiceId && !sidebarOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
@@ -243,11 +243,11 @@ export default function ServicePage() {
               <XIcon className="h-5 w-5" />
             </Button>
             <div className="overflow-y-auto p-6 space-y-6">
-                { !isSubscribedToCategory && showSubscriptionCard && planToPurchase ? (
+                { showSubscriptionCard && planToPurchase ? (
                   <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
                 ) : (
                   <>
-                    <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribedToCategory} onSubscribeClick={handleSubscribeClick} />
+                    <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribed} onSubscribeClick={handleSubscribeClick} />
                     {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData} />}
                   </>
                 )}

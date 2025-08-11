@@ -22,6 +22,14 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+     createDynamicSubscriptionOrder: builder.mutation({
+      query: (data) => ({
+        url: `${PAYMENT_URL}/dynamic-order`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
     /**
      * @desc Mutation to verify a subscription payment and activate it.
      * @param {object} verificationData - Object containing Razorpay details and transactionId.
@@ -53,5 +61,6 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
 
 export const { 
   useCreateSubscriptionOrderMutation, 
+  useCreateDynamicSubscriptionOrderMutation,
   useVerifySubscriptionPaymentMutation 
 } = paymentApiSlice;

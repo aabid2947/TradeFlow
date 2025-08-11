@@ -175,6 +175,28 @@ export const authApiSlice = apiSlice.injectEndpoints({
          { type: 'Transaction', id: 'LIST' },
       ],
     }),
+      promoteUserToSubcategory: builder.mutation({
+      query: ({ userId, subcategory }) => ({
+        url: `${USERS_URL}/admin/promote-subcategory`,
+        method: 'POST',
+        body: { userId, subcategory },
+      }),
+      invalidatesTags: (result, error, { userId }) => [{ type: 'User', id: userId }, { type: 'User', id: 'LIST' }],
+    }),
+
+    // The revokeSubscription mutation is now used for demotion
+    // revokeSubscription: builder.mutation({
+    //   query: ({ userId, category }) => ({
+    //     url: `${USERS_URL}/admin/revoke-subscription`,
+    //     method: 'POST',
+    //     body: { userId, category },
+    //   }),
+    //   invalidatesTags: (result, error, { userId }) => [
+    //     { type: 'User', id: 'PROFILE' },
+    //     { type: 'User', id: userId },
+    //     { type: 'User', id: 'LIST' },
+    //   ],
+    // }),
 
     revokeSubscription: builder.mutation({
       query: ({ userId, category }) => ({
@@ -232,6 +254,8 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation, 
   useUpdateProfileMutation,
+    usePromoteUserToSubcategoryMutation,
+  
   usePromoteUserCategoryMutation,
   useDemoteUserCategoryMutation,
   useUpdateAvatarMutation,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+// import React, from "react";
 import {
     Star,
     Shield,
@@ -16,6 +16,8 @@ import {
     Edit,
     Trash2,
 } from "lucide-react";
+import React from "react";
+import { useState,useEffect }from "react";
 import { motion } from "framer-motion";
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
@@ -24,7 +26,7 @@ import { selectCurrentUser } from "@/features/auth/authSlice";
 // API Hooks
 import { useGetServiceByIdQuery } from "@/app/api/serviceApiSlice";
 import { useGetReviewsByServiceQuery, useDeleteReviewMutation } from "@/app/api/reviewApiSlice";
-
+import SubscriptionPurchaseCard from "../user/userComponents/SubscriptionPurchaseCard";
 // Components
 import Header from "./homeComponents/Header";
 import Footer from "./homeComponents/Footer";
@@ -54,6 +56,7 @@ const ProductPage = ({ serviceId }) => {
     const [selectedTab, setSelectedTab] = useState("overview");
     const [isReviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewToEdit, setReviewToEdit] = useState(null);
+    const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false); // State for purchase modal
 
     // Data Fetching
     const {
@@ -77,8 +80,22 @@ const ProductPage = ({ serviceId }) => {
     const reviews = reviewsResponse?.data || [];
 
     // --- MODIFIED: Updated review authorization logic ---
-    const hasUsedService = userInfo?.usedServices?.some(s => s.service === currentServiceId) || false; //
+    const hasUsedService = userInfo?.usedServices?.some(s => s.service === currentServiceId) || false;
     const userReview = userInfo ? reviews.find(r => r.user?._id === userInfo._id) : null;
+
+    // This ref and effect combo detects a successful purchase and redirects the user.
+    // A purchase is deemed successful when `hasUsedService` changes from false to true
+    // while the purchase modal is open, which occurs after the user profile is refetched.
+    const prevHasUsedService = React.useRef(hasUsedService);
+    React.useEffect(() => {
+        if (!prevHasUsedService.current && hasUsedService && isPurchaseModalOpen) {
+            toast.success("Purchase successful! Redirecting...");
+            navigate(`/user/service/${service?.category}`);
+            setPurchaseModalOpen(false);
+        }
+        prevHasUsedService.current = hasUsedService;
+    }, [hasUsedService, isPurchaseModalOpen, navigate, service?.category]);
+
 
     const productData = {
         _id: service?._id,
@@ -104,6 +121,16 @@ const ProductPage = ({ serviceId }) => {
         image: service?.imageUrl
     };
 
+    // Data for the purchase card modal
+    console.log(service)
+    const planDataForPurchase = {
+        name: service?.subcategory,
+        monthly: {
+            price: discountedPrice
+        }
+    };
+
+
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     }, []);
@@ -123,10 +150,21 @@ const ProductPage = ({ serviceId }) => {
     const handleNavigateAction = () => {
         if (userInfo) {
             navigate('/user');
-            // toast.info("You must use this service first to leave a review.");
         } else {
             toast.error("Please log in to get started.");
             navigate('/login');
+        }
+    };
+    
+    // --- NEW: Handler for initiating the purchase flow ---
+    const handlePurchaseClick = () => {
+        if (userInfo) {
+            // Update the ref before opening the modal to ensure we have the correct "before" state.
+            prevHasUsedService.current = hasUsedService;
+            setPurchaseModalOpen(true);
+        } else {
+            toast.error("Please log in to purchase this service.");
+            navigate("/login");
         }
     };
 
@@ -192,9 +230,6 @@ const ProductPage = ({ serviceId }) => {
                         {/* Product Image Section */}
                         <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="relative">
                             <div className=" rounded-2xl py-8 flex items-center justify-center">
-                                {/* <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6"> */}
-                                {/* <div className=" rounded-lg p-4 shadow-lg "> */}
-                                {/* <div className="w-full h-full rounded-lg flex items-center justify-center overflow-hidden"> */}
                                     {productData.image ? (
                                         <img
                                             src={productData.image}
@@ -208,17 +243,8 @@ const ProductPage = ({ serviceId }) => {
                                             <div className="text-lg font-bold text-gray-800">Verification</div>
                                         </div>
                                     )}
-                                {/* </div> */}
 
                             </div>
-                            {productData.originalPrice && (
-                                <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold shadow-lg">
-                                    {productData.discount?.type === 'percentage'
-                                        ? `${productData.discount.value}% OFF`
-                                        : `₹${productData.discount.value} OFF`
-                                    }
-                                </div>
-                            )}
                         </motion.div>
 
                         {/* Product Details Section */}
@@ -252,7 +278,8 @@ const ProductPage = ({ serviceId }) => {
                                     <div className="text-sm text-gray-600">Happy Customers</div>
                                 </div>
                             </div>
-                            <button onClick={() => navigate(`/user/service/${productData.category}`)} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
+                            {/* --- MODIFIED: OnClick now opens the purchase modal --- */}
+                            <button onClick={handlePurchaseClick} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
                                 Verify Now - {productData.price}
                             </button>
                             <div className="bg-white rounded-xl p-6 shadow-lg">
@@ -334,7 +361,6 @@ const ProductPage = ({ serviceId }) => {
                                                 {productData.inputFields.map((field, index) => (
                                                     <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
                                                         <h5 className="font-semibold text-gray-900 mb-1">{field.label}</h5>
-                                                        {/* <p className="text-sm text-gray-600">Type: {field.type}</p> */}
                                                         {field.placeholder && <p className="text-xs text-gray-500 mt-1">Example: {field.placeholder}</p>}
                                                     </div>
                                                 ))}
@@ -344,13 +370,10 @@ const ProductPage = ({ serviceId }) => {
                                 </div>
                             )}
 
-                            {/* --- MODIFIED: Reviews tab with new conditional logic --- */}
+                            {/* Reviews tab remains unchanged */}
                             {selectedTab === "reviews" && (
                                 <div className="space-y-8">
                                     <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
-
-
-                                    {/* Case 1: User is logged in, has used the service, and has NOT reviewed yet */}
                                     {userInfo && hasUsedService && !userReview && (
                                         <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center shadow-sm">
                                             <h4 className="font-bold text-xl text-gray-800 mb-2">Share Your Experience</h4>
@@ -363,8 +386,6 @@ const ProductPage = ({ serviceId }) => {
                                             </button>
                                         </div>
                                     )}
-
-                                    {/* Case 2: User has NOT used the service (works for both logged-in and logged-out users) */}
                                     {!hasUsedService && (
                                         <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center shadow-sm">
                                             <h4 className="font-bold text-xl text-gray-800 mb-2">Want to leave a review?</h4>
@@ -377,9 +398,6 @@ const ProductPage = ({ serviceId }) => {
                                             </button>
                                         </div>
                                     )}
-
-                                    {/* Case 3: User has already left a review (`userReview` exists). In this case, no prompt is shown at the top. Their review will appear below with edit/delete options. */}
-
                                     {isLoadingReviews ? (
                                         <div className="flex justify-center items-center py-10">
                                             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
@@ -394,7 +412,6 @@ const ProductPage = ({ serviceId }) => {
                                                             <div className="flex items-center gap-3 mb-2">
                                                                 <h4 className="font-bold text-gray-900">{review.user?.name || 'Anonymous'}</h4>
                                                                 <span className="text-gray-500 text-sm">{new Date(review.createdAt).toLocaleDateString()}</span>
-
                                                                 {userInfo && review.user?._id === userInfo._id && (
                                                                     <div className="ml-auto flex items-center gap-4">
                                                                         <button onClick={() => handleOpenReviewModal(review)} title="Edit Review" className="text-gray-500 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
@@ -428,6 +445,15 @@ const ProductPage = ({ serviceId }) => {
                     onClose={() => setReviewModalOpen(false)}
                     existingReview={reviewToEdit}
                     serviceId={currentServiceId}
+                />
+            )}
+            
+            {/* --- NEW: Conditionally render the purchase modal --- */}
+            {isPurchaseModalOpen && userInfo && (
+                <SubscriptionPurchaseCard
+                    planData={planDataForPurchase}
+                    userInfo={userInfo}
+                    onClose={() => setPurchaseModalOpen(false)}
                 />
             )}
         </>

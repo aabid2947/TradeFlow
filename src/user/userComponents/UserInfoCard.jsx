@@ -72,7 +72,7 @@ export function UserInfoCard({ services = [], activeServiceId, isSubscribed, onS
                   Subscribe to Access / Try Out
                 </Button>
               )}
-              <p className="text-xs text-center text-gray-500 mt-2">Try Out runs the service sandbox without requiring user inputs on this panel.</p>
+              {/* <p className="text-xs text-center text-gray-500 mt-2">Try Out runs the service sandbox without requiring user inputs on this panel.</p> */}
             </div>
           </>
         )}

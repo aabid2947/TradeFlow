@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, Shield, Award, Loader2, Tag, X, Zap, Check, Star, Crown } from "lucide-react";
+import { CheckCircle, Shield, Award, Loader2, Tag, X, Zap, Crown } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 
+// API hooks for coupon and the DYNAMIC payment flow
 import { useLazyValidateCouponCodeQuery } from "@/app/api/couponApiSlice";
-import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice";
+import { useCreateDynamicSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice";
 import { useGetProfileQuery } from "@/app/api/authApiSlice";
+import { useNavigate } from "react-router-dom";
 
 const loadScript = (src) => {
   return new Promise((resolve) => {
@@ -23,24 +25,27 @@ const loadScript = (src) => {
   });
 };
 
-// The component now correctly expects a `planData` prop
+// The component is now simplified for a single purpose.
 export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }) {
-  const [selectedPlan, setSelectedPlan] = useState('monthly');
+  // State for coupon handling
   const [showCouponInput, setShowCouponInput] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
 
-  const [createSubscriptionOrder, { isLoading: isCreatingOrder }] = useCreateSubscriptionOrderMutation();
+  const navigate = useNavigate()
+  // REMOVED: Unnecessary state for plan selection
+
+  // API mutation hooks, now only for the dynamic flow
+  const [createDynamicOrder, { isLoading: isCreatingOrder }] = useCreateDynamicSubscriptionOrderMutation();
   const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation();
   const [triggerValidation, { isLoading: isValidatingCoupon }] = useLazyValidateCouponCodeQuery();
   const { refetch: refetchUserProfile } = useGetProfileQuery();
 
   const isProcessing = isCreatingOrder || isVerifyingPayment;
   
-  // Correctly reads price and calculates savings from the `planData` object
-  const currentPrice = planData[selectedPlan]?.price || 0;
-  const yearlySavings = Math.round(((planData.monthly.price * 12 - planData.yearly.price) / (planData.monthly.price * 12)) * 100);
+  // The price is now directly taken from the monthly property of the dynamic plan
+  const currentPrice = planData.monthly?.price || 0;
 
   const handleApplyCoupon = async () => {
     if (!couponInput || !planData?.name) return;
@@ -50,6 +55,7 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
       const result = await triggerValidation(couponInput).unwrap();
       const coupon = result.data;
 
+      // ... Coupon validation logic remains the same and works correctly
       if (new Date(coupon.expiryDate) < new Date()) {
         const errorMessage = "This coupon has expired.";
         setCouponError(errorMessage); toast.error(errorMessage); return;
@@ -58,7 +64,6 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
         const errorMessage = "This coupon has reached its usage limit.";
         setCouponError(errorMessage); toast.error(errorMessage); return;
       }
-      // Correctly validates the coupon against the plan's name
       if (coupon.applicableCategories.length > 0 && !coupon.applicableCategories.includes(planData.name)) {
         const errorMessage = `This coupon is not valid for the "${planData.name}" plan.`;
         setCouponError(errorMessage); toast.error(errorMessage); return;
@@ -88,11 +93,10 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
 
   const handlePurchase = async () => {
     try {
-      // Correctly sends `planName` and `planType` to the API
-      const orderResponse = await createSubscriptionOrder({
-        planName: planData.name,
-        planType: selectedPlan,
-        couponCode: appliedCoupon?.code,
+      // The component now ONLY calls the dynamic order creation endpoint.
+      console.log(planData)
+      const orderResponse = await createDynamicOrder({
+        subcategory: planData.name, // The plan's name is the subcategory
       }).unwrap();
 
       const { order, key_id, transactionId } = orderResponse;
@@ -104,7 +108,7 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
         amount: order.amount,
         currency: order.currency,
         name: "eKYC Solutions",
-        description: `Subscription for ${planData.name} (${selectedPlan})`,
+        description: `Subscription for ${planData.name}`,
         order_id: order.id,
         handler: async function (response) {
           try {
@@ -115,6 +119,7 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
               transactionId: transactionId,
             }).unwrap();
             toast.success("Subscription activated successfully!");
+            navigate(`/user/service/${planData.name}`)
             await refetchUserProfile();
             onClose();
           } catch (err) {
@@ -134,6 +139,7 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
     }
   };
 
+  // Price calculation logic
   let finalPrice = currentPrice;
   let discountAmount = 0;
   if (appliedCoupon) {
@@ -162,10 +168,10 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
             <div className="mb-3">
               <Crown className="w-10 h-10 mx-auto mb-2 text-yellow-300" />
               <CardTitle className="text-xl font-bold mb-1">
-                Premium Access
+                One-Time Access
               </CardTitle>
               <p className="text-blue-100 text-sm font-medium">
-                {planData.name.toUpperCase()}
+                {planData.name}
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 text-sm text-blue-100">
@@ -173,76 +179,23 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
               <span>Secure Payment</span>
               <span>•</span>
               <Award className="w-4 h-4" />
-              <span>Premium Features</span>
+              <span>Instant Access</span>
             </div>
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold text-gray-800 block">
-                Choose Your Plan
-              </Label>
-              <div className="grid grid-cols-1 gap-4">
-                <div
-                  className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${selectedPlan === 'monthly' ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
-                  onClick={() => setSelectedPlan('monthly')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-lg text-gray-900">One Time Plan</h3>
-                      {/* <p className="text-sm text-gray-600">Billed monthly</p> */}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">
-                        ₹{planData.monthly.price}
-                      </div>
-                      {/* <div className="text-sm text-gray-500">p</div>. */}
-                    </div>
-                  </div>
-                  {selectedPlan === 'monthly' && (
-                    <div className="absolute top-4 left-4 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* <div
-                  className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${selectedPlan === 'yearly' ? 'border-green-500 bg-green-50 shadow-md' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
-                  onClick={() => setSelectedPlan('yearly')}
-                >
-                  {yearlySavings > 0 && (
-                    <div className="absolute -top-3 left-6 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      Save {yearlySavings}%
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-lg text-gray-900">Yearly Plan</h3>
-                      <p className="text-sm text-gray-600">Billed annually</p>
-                      {yearlySavings > 0 && (
-                        <p className="text-xs text-green-600 font-medium mt-1">
-                          You save ₹{(planData.monthly.price * 12 - planData.yearly.price).toFixed(0)} per year
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">
-                        ₹{planData.yearly.price}
-                      </div>
-                      <div className="text-sm text-gray-500">per year</div>
-                      <div className="text-xs text-gray-400">
-                        (₹{(planData.yearly.price / 12).toFixed(0)}/month)
-                      </div>
-                    </div>
-                  </div>
-                  {selectedPlan === 'yearly' && (
-                    <div className="absolute top-4 left-4 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                </div> */}
-              </div>
+            
+            {/* REMOVED: The monthly/yearly plan selection UI is gone. */}
+            <div className="text-center">
+                <Label className="text-lg font-semibold text-gray-800 block">
+                  Plan Price
+                </Label>
+                <p className="text-4xl font-bold text-gray-900 mt-2">
+                  ₹{currentPrice}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Includes access to all services in this subcategory for 30 days.
+                </p>
             </div>
 
             <div className="space-y-3">
@@ -280,7 +233,8 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
               <h3 className="font-semibold text-lg text-gray-900">Order Summary</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">{selectedPlan === 'monthly' ? 'Monthly' : 'Yearly'} Subscription</span>
+                  {/* SIMPLIFIED: Text is updated for the dynamic plan context */}
+                  <span className="text-gray-600">One-Time Access Plan</span>
                   <span className="font-medium">₹{currentPrice.toFixed(2)}</span>
                 </div>
                 {appliedCoupon && (

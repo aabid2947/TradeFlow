@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, X, Edit, Eye, Image as ImageIcon, Bold, Italic, Underline, List, Link2, AlignLeft, Type, Quote } from "lucide-react";
+import { Plus, Trash2, X, Edit, Eye, Image as ImageIcon, Bold, Italic, Underline, List, Link2, AlignLeft, Type, Quote, AlertTriangle } from "lucide-react";
 import { useCreateBlogMutation, useUpdateBlogMutation, useGetBlogsAdminQuery, useDeleteBlogMutation } from '@/app/api/blogApiSlice';
 import { Link } from 'react-router-dom';
 
@@ -41,7 +41,7 @@ const initialImageState = {
     featuredImage: null,
 };
 
-// --- Rich Text Editor Component ---
+// --- Rich Text Editor Component (Unchanged) ---
 const RichTextEditor = ({ value, onChange }) => {
     const editorRef = useRef(null);
     const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -123,6 +123,7 @@ const RichTextEditor = ({ value, onChange }) => {
     );
 };
 
+// --- Image Input Component (Unchanged) ---
 const ImageInput = ({ label, fieldName, preview, onChange, currentImage }) => (
     <div className="space-y-2">
         <Label htmlFor={fieldName}>{label}</Label>
@@ -135,6 +136,44 @@ const ImageInput = ({ label, fieldName, preview, onChange, currentImage }) => (
     </div>
 );
 
+// --- Error Dialog Component (Unchanged) ---
+const ErrorDialog = ({ isOpen, message, onClose }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" aria-modal="true" role="dialog">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
+                <div className="p-6">
+                    <div className="flex items-start gap-4">
+                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                            <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
+                        </div>
+                        <div className="mt-0 text-left">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                Submission Error
+                            </h3>
+                            <div className="mt-2">
+                                <p className="text-sm text-gray-600">
+                                    {message}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-gray-50 px-6 py-3 text-right">
+                    <Button
+                        type="button"
+                        onClick={onClose}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                        Close
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 export default function BlogMetaDataForm() {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingBlog, setEditingBlog] = useState(null);
@@ -142,6 +181,7 @@ export default function BlogMetaDataForm() {
     const [imageFiles, setImageFiles] = useState(initialImageState);
     const [imagePreviews, setImagePreviews] = useState(initialImageState);
     const [tagInput, setTagInput] = useState('');
+    const [errorDialog, setErrorDialog] = useState({ isOpen: false, message: '' });
 
     const { data: blogsResponse, isLoading: blogsLoading, refetch } = useGetBlogsAdminQuery();
     const [createBlog, { isLoading: createLoading }] = useCreateBlogMutation();
@@ -156,6 +196,7 @@ export default function BlogMetaDataForm() {
         setImageFiles(initialImageState);
         setImagePreviews(initialImageState);
         setTagInput('');
+        setErrorDialog({ isOpen: false, message: '' });
     };
 
     const handleChange = (field, value) => {
@@ -183,23 +224,24 @@ export default function BlogMetaDataForm() {
         handleChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
     };
     
+    // --- THIS IS THE CORRECTED FUNCTION ---
     const handleEdit = (blog) => {
         setEditingBlog(blog);
-        setFormData({
-            title: blog.title || '',
-            excerpt: blog.excerpt || '',
-            content: blog.content || '',
-            author: blog.author || 'VerifyMyKyc Team',
-            category: blog.category || '',
-            tags: blog.tags || [],
-            status:  'published',
-            metaTitle: blog.metaTitle || '',
-            metaDescription: blog.metaDescription || '',
-        });
+
+        // This pattern robustly populates the form state.
+        // It starts with the default structure, then overwrites it with all available data from the selected `blog`.
+        // This ensures all fields are populated correctly, even if some are missing from the API response.
+        const populatedState = {
+            ...initialBlogState,
+            ...blog,
+        };
+        
+        setFormData(populatedState);
         
         setImagePreviews({ featuredImage: blog.featuredImage?.url || null });
         setImageFiles(initialImageState);
         setIsFormVisible(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDelete = async (blogId) => {
@@ -212,21 +254,9 @@ export default function BlogMetaDataForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Create a mutable copy of the form data
-        const dataToSubmit = { ...formData };
-
-        // --- UPDATED LOGIC ---
-        // If we are editing and no new featured image file is selected,
-        // we must explicitly retain the existing featured image data in the payload.
-        if (editingBlog && !imageFiles.featuredImage) {
-            dataToSubmit.featuredImage = editingBlog.featuredImage;
-        }
-        // --- END OF UPDATE ---
-
         const formDataToSend = new FormData();
-        formDataToSend.append('blogData', JSON.stringify(dataToSubmit));
+        formDataToSend.append('blogData', JSON.stringify(formData));
         
-        // Only append the new file if it exists
         if (imageFiles.featuredImage) {
             formDataToSend.append('featuredImage', imageFiles.featuredImage);
         }
@@ -241,12 +271,21 @@ export default function BlogMetaDataForm() {
             refetch();
         } catch (error) {
             console.error("Failed to save blog post:", error);
-            alert(`Error: ${error.data?.message || 'An unknown error occurred'}`);
+            setErrorDialog({
+                isOpen: true,
+                message: error.data?.message || 'An unknown server error occurred. Please try again.'
+            });
         }
     };
 
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
+            <ErrorDialog 
+                isOpen={errorDialog.isOpen} 
+                message={errorDialog.message} 
+                onClose={() => setErrorDialog({ isOpen: false, message: '' })} 
+            />
+
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">Blog Manager</h1>
@@ -266,12 +305,19 @@ export default function BlogMetaDataForm() {
                         <Button variant="ghost" size="icon" onClick={resetForm}><X className="w-5 h-5" /></Button>
                     </div>
                     <CardContent>
+                        {/* The form fields will now be correctly populated with data from `formData` */}
                         <form onSubmit={handleSubmit} className="space-y-6 p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div><Label className="my-2">Title</Label><Input  value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
                                 <div><Label className="my-2" >Author</Label><Input  value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
                                 <div><Label className="my-2" >Category</Label><Select  value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                {/* <div><Label  className="my-2">Status</Label><Select  value={formData.status} onValueChange={v => handleChange('status', v)} required><SelectTrigger><SelectValue placeholder="Select status"/></SelectTrigger><SelectContent className="bg-white">{STATUS_OPTIONS.map(s=><SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent></Select></div> */}
+                                <div>
+                                    <Label  className="my-2">Status</Label>
+                                    <Select  value={formData.status} onValueChange={v => handleChange('status', v)} required>
+                                        <SelectTrigger><SelectValue placeholder="Select status"/></SelectTrigger>
+                                        <SelectContent className="bg-white">{STATUS_OPTIONS.map(s=><SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
                             <div className="relative">
@@ -315,6 +361,7 @@ export default function BlogMetaDataForm() {
                 </Card>
             )}
 
+            {/* Existing Blog Posts Table (Unchanged) */}
             <Card className="shadow-md border-slate-200">
                 <CardHeader><CardTitle className="my-4">Existing Blog Posts</CardTitle></CardHeader>
                 <CardContent>

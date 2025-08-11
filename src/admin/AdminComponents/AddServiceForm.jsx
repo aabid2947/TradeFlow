@@ -40,6 +40,7 @@ const defaultServiceState = {
     service_key: '',
     description: '',
     category:'',
+    subcategory: '', // Added subcategory
     price: 0,
     combo_price: {
         monthly: 0,
@@ -190,14 +191,17 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Monthly Combo Price" name="monthly" type="number" value={service.combo_price.monthly} onChange={handleComboPriceChange} required />
                                 <Input label="Yearly Combo Price" name="yearly" type="number" value={service.combo_price.yearly} onChange={handleComboPriceChange} required />
                                 
-                                <Select label="Category" name="category" value={service.category} onChange={handleChange} required>
-                                    <option value="" disabled>Select a category</option>
+                                <Select label="Category" name="category" value={service.category} onChange={handleChange}>
+                                    <option value="">Select a category (optional)</option>
                                     {serviceCategories.map(cat => (
                                         <option key={cat.value} value={cat.value}>{cat.label}</option>
                                     ))}
                                 </Select>
+
+                                {/* NEW: Subcategory Input */}
+                                <Input label="Subcategory" name="subcategory" value={service.subcategory} onChange={handleChange} placeholder="e.g., Advanced Checks" />
                                 
-                                {/* NEW: Image File Input */}
+                                {/* Image File Input */}
                                 <div>
                                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Service Image</label>
                                     <input

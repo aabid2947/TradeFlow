@@ -19,14 +19,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from 'react-hot-toast';
 
-// --- Import RTK Query Hooks ---
-import { useGetAllUsersQuery, usePromoteUserCategoryMutation, useDemoteUserCategoryMutation } from '@/app/api/authApiSlice';
+// --- MODIFIED: Updated RTK Query Hook Imports ---
+import { 
+    useGetAllUsersQuery, 
+    usePromoteUserToSubcategoryMutation, // New hook for promotion
+    useRevokeSubscriptionMutation // Re-using this for demotion
+} from '@/app/api/authApiSlice';
 import { useGetServicesQuery } from '@/app/api/serviceApiSlice';
 
 import { UserDetailsCard } from './UserDetailCard';
 
 
-// Loading Skeleton Component
+// Loading Skeleton Component (No changes)
 const UserCardSkeleton = () => (
   <Card className="animate-pulse shadow-lg bg-white/50">
     <CardContent className="p-6">
@@ -49,43 +53,50 @@ const UserCardSkeleton = () => (
 );
 
 
-// Promotion Modal Component
-const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
-    const [selectedCategories, setSelectedCategories] = useState(new Set(user.promotedCategories || []));
-    const [promoteUser, { isLoading: isPromoting }] = usePromoteUserCategoryMutation();
-    const [demoteUser, { isLoading: isDemoting }] = useDemoteUserCategoryMutation();
+// --- MODIFIED: Promotion Modal now works with Subcategories ---
+const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
+    // State is now based on user's `promotedCategories` which will store subcategories
+    const [selectedSubcategories, setSelectedSubcategories] = useState(new Set(user.promotedCategories || []));
+    
+    // Using the new/updated hooks
+    const [promoteUser, { isLoading: isPromoting }] = usePromoteUserToSubcategoryMutation();
+    const [revokeAccess, { isLoading: isRevoking }] = useRevokeSubscriptionMutation();
 
     useEffect(() => {
-        setSelectedCategories(new Set(user.promotedCategories || []));
+        setSelectedSubcategories(new Set(user.promotedCategories || []));
     }, [user]);
 
-    const handleCheckboxChange = (category) => {
-        setSelectedCategories(prev => {
+    const handleCheckboxChange = (subcategory) => {
+        setSelectedSubcategories(prev => {
             const newSet = new Set(prev);
-            if (newSet.has(category)) {
-                newSet.delete(category);
+            if (newSet.has(subcategory)) {
+                newSet.delete(subcategory);
             } else {
-                newSet.add(category);
+                newSet.add(subcategory);
             }
             return newSet;
         });
     };
 
     const handleSaveChanges = async () => {
-        const originalCategories = new Set(user.promotedCategories || []);
-        const newCategories = selectedCategories;
+        const originalSubcategories = new Set(user.promotedCategories || []);
+        const newSubcategories = selectedSubcategories;
 
-        const toAdd = [...newCategories].filter(cat => !originalCategories.has(cat));
-        const toRemove = [...originalCategories].filter(cat => !newCategories.has(cat));
+        // Determine which subcategories to add and which to remove
+        const toAdd = [...newSubcategories].filter(sub => !originalSubcategories.has(sub));
+        const toRemove = [...originalSubcategories].filter(sub => !newSubcategories.has(sub));
 
         const promises = [];
 
-        toAdd.forEach(category => {
-            promises.push(promoteUser({ userId: user._id, category }).unwrap());
+        // For each new selection, call the promotion mutation
+        toAdd.forEach(subcategory => {
+            promises.push(promoteUser({ userId: user._id, subcategory }).unwrap());
         });
 
-        toRemove.forEach(category => {
-            promises.push(demoteUser({ userId: user._id, category }).unwrap());
+        // For each deselection, call the revoke mutation
+        toRemove.forEach(subcategory => {
+            // Note: revokeSubscription expects the key to be 'category'
+            promises.push(revokeAccess({ userId: user._id, category: subcategory }).unwrap());
         });
 
         try {
@@ -100,6 +111,8 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
     
     if (!isOpen) return null;
 
+    const isLoading = isPromoting || isRevoking;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0">
             <Card className="w-full max-w-md m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
@@ -112,15 +125,15 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                        <p className="font-semibold text-gray-800">Available Service Categories:</p>
-                        {allCategories.map(category => (
-                            <div key={category} className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50">
+                        <p className="font-semibold text-gray-800">Available Service Subcategories:</p>
+                        {allSubcategories.map(subcategory => (
+                            <div key={subcategory} className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50">
                                 <Checkbox
-                                    id={`cat-${category}`}
-                                    checked={selectedCategories.has(category)}
-                                    onCheckedChange={() => handleCheckboxChange(category)}
+                                    id={`subcat-${subcategory}`}
+                                    checked={selectedSubcategories.has(subcategory)}
+                                    onCheckedChange={() => handleCheckboxChange(subcategory)}
                                 />
-                                <Label htmlFor={`cat-${category}`} className="flex-1 cursor-pointer">{category.replace(/_/g, " ")}</Label>
+                                <Label htmlFor={`subcat-${subcategory}`} className="flex-1 cursor-pointer">{subcategory.replace(/_/g, " ")}</Label>
                             </div>
                         ))}
                     </div>
@@ -128,9 +141,9 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
                         <Button variant="outline" onClick={onClose}>Cancel</Button>
                         <Button 
                             onClick={handleSaveChanges} 
-                            disabled={isPromoting || isDemoting}
+                            disabled={isLoading}
                         >
-                            {(isPromoting || isDemoting) && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             Save Changes
                         </Button>
                     </div>
@@ -141,7 +154,7 @@ const PromotionModal = ({ user, allCategories, isOpen, onClose }) => {
 };
 
 
-// User Card Component
+// User Card Component (No changes)
 const UserCard = ({ user, onPromote, onNameClick }) => {
     const getRoleStyle = (role) => {
         switch (role?.toLowerCase()) {
@@ -184,15 +197,10 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
                 </div>
 
                 <div className="mt-4 pt-4 border-t  border-gray-100 flex gap-1">
-                    <Button variant="outline" size="sm" className="w-[95%] bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
+                    <Button variant="outline" size="sm" className="w-full bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
                         <Award className="w-4 h-4 mr-2" />
                         Promote User
                     </Button>
-                    {/* {(user.promotedCategories && user.promotedCategories.length > 0) && (
-                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 whitespace-nowrap">
-                            {user.promotedCategories.length} 
-                        </Badge>
-                    )} */}
                 </div>
             </CardContent>
         </Card>
@@ -211,11 +219,14 @@ export default function AllUser() {
     const { data: usersData, isLoading: isLoadingUsers, isError: isUsersError, refetch } = useGetAllUsersQuery();
     const { data: servicesData, isLoading: isLoadingServices } = useGetServicesQuery();
 
-    // Memoize and derive unique categories from services
-    const allCategories = useMemo(() => {
+    // --- MODIFIED: Derive unique subcategories from services ---
+    const allSubcategories = useMemo(() => {
         if (!servicesData?.data) return [];
-        const categories = servicesData.data.map(service => service.category);
-        return [...new Set(categories)];
+        // Filter for services that have a subcategory, then create a unique set
+        const subcategories = servicesData.data
+            .map(service => service.subcategory)
+            .filter(Boolean); // filter(Boolean) removes null, undefined, and empty strings
+        return [...new Set(subcategories)];
     }, [servicesData]);
 
     const filteredUsers = useMemo(() => {
@@ -245,7 +256,7 @@ export default function AllUser() {
 
     const handleCloseDetailCard = () => {
         setIsDetailCardOpen(false);
-        setTimeout(() => setDetailUser(null), 300); // Allow animation to finish before clearing data
+        setTimeout(() => setDetailUser(null), 300); // Allow animation to finish
     };
 
     const isLoading = isLoadingUsers || isLoadingServices;
@@ -259,9 +270,6 @@ export default function AllUser() {
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
                         <p className="text-gray-600">Manage and view all registered users and their promotions</p>
                         </div>
-                        {/* <div className="flex gap-3">
-                        <Button variant="outline" onClick={refetch} disabled={isLoadingUsers}><RefreshCw className={`w-4 h-4 mr-2 ${isLoadingUsers ? 'animate-spin' : ''}`} /> Refresh</Button>
-                        </div> */}
                     </div>
                 </div>
 
@@ -314,7 +322,7 @@ export default function AllUser() {
             {selectedUser && (
                 <PromotionModal 
                     user={selectedUser} 
-                    allCategories={allCategories}
+                    allSubcategories={allSubcategories} // Pass subcategories to the modal
                     isOpen={isModalOpen} 
                     onClose={handleCloseModal} 
                 />

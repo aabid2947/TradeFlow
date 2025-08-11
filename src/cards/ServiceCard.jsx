@@ -25,9 +25,13 @@ export default function ServiceCard({
   const handleCardClick = () => {
     // Only navigate if the user is not an admin.
     if (!isAdmin) {
-      navigate(`/user/service/${encodeURIComponent(service.category)}`);
+      // If the service has a subcategory, navigate to the page that lists all services in that subcategory.
+      // This assumes the route's parameter will now be the subcategory.
+      if (service.subcategory) {
+        navigate(`/user/service/${encodeURIComponent(service.subcategory)}`);
+      }
+      // If there is no subcategory, clicking the card does nothing, as the detail page is for subcategories.
     }
-    // If the user is an admin, clicking the card does nothing.
   };
 
   const handleActionButtonClick = (e) => {
@@ -39,9 +43,10 @@ export default function ServiceCard({
     }
   };
 
-  // Conditionally set the className for the cursor style
+  // Conditionally set the className for the cursor style.
+  // The card is only clickable if not in admin and the service has a subcategory.
   const cardClassName = `overflow-hidden border border-[#1A89C1] p-1 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300 ease-in-out group-hover:-translate-y-2 ${
-    !isAdmin ? 'cursor-pointer' : 'cursor-default'
+    !isAdmin && service.subcategory ? 'cursor-pointer' : 'cursor-default'
   }`;
 
   return (
