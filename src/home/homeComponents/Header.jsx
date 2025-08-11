@@ -72,55 +72,55 @@ export default function Header() {
   // Process services data to group by category
   useEffect(() => {
     if (servicesData && Array.isArray(servicesData.data)) {
-      let groupedServices = servicesData.data.reduce((acc, service) => {
-        const category = service.category || "Other";
-        if (!acc[category]) {
-          acc[category] = [];
-        }
-        acc[category].push(service);
-        return acc;
-      }, {});
-
-      // Step 1: Rename categories if they exist
-      if (groupedServices["PAN"]) {
-        groupedServices["PAN verification"] = groupedServices["PAN"];
-        delete groupedServices["PAN"];
-      }
-      if (groupedServices["CIN"]) {
-        groupedServices["CIN verification"] = groupedServices["CIN"];
-        delete groupedServices["CIN"];
-      }
-
-      // Step 2: Move them to the end
-      const reordered = {};
-      Object.keys(groupedServices).forEach(key => {
-        if (key !== "PAN verification" && key !== "CIN verification") {
-          reordered[key] = groupedServices[key];
-        }
-      });
-      if (groupedServices["PAN verification"]) {
-        reordered["PAN verification"] = groupedServices["PAN verification"];
-      }
-      if (groupedServices["CIN verification"]) {
-        reordered["CIN verification"] = groupedServices["CIN verification"];
-      }
-
-      groupedServices = reordered;
-
-      // console.log(groupedServices);
-
-      setProcessedProducts(groupedServices)
-
-      // Create the new dynamic navigation items array
-      const dynamicProductItem = {
-        name: "Products",
-        hasDropdown: true,
-      }
-      // Ensure "Products" is only added once
-      if (!navigationItems.find((item) => item.name === "Products")) {
-        setNavigationItems([dynamicProductItem, ...staticNavItems])
-      }
+  let groupedServices = servicesData.data.reduce((acc, service) => {
+    const category = (service.category || "Other").trim(); // trim extra spaces
+    if (!acc[category]) {
+      acc[category] = [];
     }
+    acc[category].push(service);
+    return acc;
+  }, {});
+
+  // Step 1: Rename categories only if they exist
+  if (groupedServices["PAN"]) {
+    groupedServices["PAN verification"] = groupedServices["PAN"];
+    delete groupedServices["PAN"];
+  }
+  if (groupedServices["CIN"]) {
+    groupedServices["CIN verification"] = groupedServices["CIN"];
+    delete groupedServices["CIN"];
+  }
+
+  // Step 2: Reorder with safety check
+  const reordered = {};
+  Object.keys(groupedServices).forEach((key) => {
+    if (key !== "PAN verification" && key !== "CIN verification") {
+      reordered[key] = groupedServices[key];
+    }
+  });
+  if (groupedServices["PAN verification"]) {
+    reordered["PAN verification"] = groupedServices["PAN verification"];
+  }
+  if (groupedServices["CIN verification"]) {
+    reordered["CIN verification"] = groupedServices["CIN verification"];
+  }
+
+  groupedServices = reordered;
+
+  setProcessedProducts(groupedServices);
+
+  // Create the new dynamic navigation items array
+  const dynamicProductItem = {
+    name: "Products",
+    hasDropdown: true,
+  };
+
+  // Ensure "Products" is only added once
+  if (!navigationItems.find((item) => item.name === "Products")) {
+    setNavigationItems([dynamicProductItem, ...staticNavItems]);
+  }
+}
+
   }, [servicesData, navigationItems])
 
   useEffect(() => {
