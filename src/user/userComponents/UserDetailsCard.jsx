@@ -8,6 +8,10 @@ import { apiSlice } from "@/app/api/apiSlice";
 import { useDispatch } from "react-redux";
 // import { useGetProfileQuery } from "@/app/api/authApiSlice";
 import favicon from "@/assets/favicon.png"
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+
 // Helper function to format keys into titles
 const toTitleCase = (str) => {
   if (!str) return "";
@@ -137,314 +141,145 @@ const SimpleDataTable = ({ data, title }) => {
 };
 
 // PDF Generation Function (updated to remove input parameters)
+// Paste this updated function into your UserDetailsCard.jsx file
+
+// UPDATED PDF GENERATION FUNCTION
+// Paste this updated function into your UserDetailsCard.jsx file
+
+// UPDATED PDF GENERATION FUNCTION
 const generatePDF = (result, serviceName) => {
+  const reportElement = document.createElement('div');
+  
+  // The HTML and CSS for the report content remain the same
   const details = findDetailsObject(result.data);
-  const currentDate = new Date().toLocaleString();
-  const verificationId = `VRF-${Date.now()}`;
-  
-  // Create a new window for PDF content
-  const printWindow = window.open('', '_blank');
-  
-  const pdfContent = `
-    <!DOCTYPE html>
+  const currentDate = new Date().toLocaleDateString('en-GB');
+  const flattenDetailsForDisplay = (obj, prefix = '') => {
+    if (!obj || typeof obj !== 'object') return [];
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      const newKey = prefix ? `${prefix} → ${toTitleCase(key)}` : toTitleCase(key);
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        acc.push(...flattenDetailsForDisplay(value, newKey));
+      } else {
+        acc.push({ key: newKey, value });
+      }
+      return acc;
+    }, []);
+  };
+  const allDetails = details ? flattenDetailsForDisplay(details) : [];
+
+  reportElement.innerHTML = `
     <html>
     <head>
         <meta charset="utf-8">
-        <title>Verification Certificate</title>
+        <title>${serviceName} Verification Report</title>
         <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-                font-family: 'Arial', sans-serif; 
-                line-height: 1.6; 
-                color: #333;
-                background: #f8f9fa;
-                padding: 20px;
-            }
-            .certificate {
-                max-width: 800px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 10px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                overflow: hidden;
-            }
-            .header {
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: white;
-                padding: 30px;
-                text-align: center;
-                position: relative;
-            }
-            .logo {
-                width: 60px;
-                height: 60px;
-                background: white;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                margin-bottom: 15px;
-                font-size: 24px;
-                color: #10b981;
-                font-weight: bold;
-            }
-            .header h1 {
-                font-size: 28px;
-                margin-bottom: 5px;
-                font-weight: 700;
-            }
-            .header p {
-                font-size: 16px;
-                opacity: 0.9;
-            }
-            .verification-badge {
-                position: absolute;
-                top: 20px;
-                right: 20px;
-                background: rgba(255,255,255,0.2);
-                padding: 10px 15px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: 600;
-            }
-            .content {
-                padding: 40px;
-            }
-            .status-section {
-                text-align: center;
-                margin-bottom: 40px;
-                padding: 20px;
-                background: #f0fdf4;
-                border-radius: 10px;
-                border: 2px solid #10b981;
-            }
-            .status-icon {
-                width: 80px;
-                height: 80px;
-                background: #10b981;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                margin-bottom: 15px;
-                color: white;
-                font-size: 40px;
-            }
-            .status-text {
-                font-size: 24px;
-                font-weight: 700;
-                color: #10b981;
-                margin-bottom: 10px;
-            }
-            .verification-id {
-                font-size: 14px;
-                color: #6b7280;
-                font-family: 'Courier New', monospace;
-                background: #f3f4f6;
-                padding: 5px 10px;
-                border-radius: 5px;
-                display: inline-block;
-            }
-            .info-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-                margin-bottom: 30px;
-            }
-            .info-section {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 8px;
-                border-left: 4px solid #10b981;
-            }
-            .info-section h3 {
-                color: #10b981;
-                font-size: 16px;
-                margin-bottom: 15px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .info-item {
-                margin-bottom: 12px;
-                font-size: 14px;
-            }
-            .info-label {
-                font-weight: 600;
-                color: #374151;
-                display: inline-block;
-                width: 120px;
-            }
-            .info-value {
-                color: #6b7280;
-            }
-            .data-section {
-                background: #fff;
-                border: 1px solid #e5e7eb;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 20px;
-            }
-            .data-section h3 {
-                color: #10b981;
-                margin-bottom: 15px;
-                font-size: 16px;
-                font-weight: 600;
-            }
-            .data-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 13px;
-            }
-            .data-table th, .data-table td {
-                padding: 10px;
-                text-align: left;
-                border-bottom: 1px solid #e5e7eb;
-            }
-            .data-table th {
-                background: #f9fafb;
-                font-weight: 600;
-                color: #374151;
-            }
-            .footer {
-                text-align: center;
-                padding: 20px;
-                background: #f8f9fa;
-                border-top: 1px solid #e5e7eb;
-                font-size: 12px;
-                color: #6b7280;
-            }
-            .footer p {
-                margin-bottom: 5px;
-            }
-            .security-features {
-                display: flex;
-                justify-content: space-around;
-                margin-top: 20px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-            }
-            .security-item {
-                text-align: center;
-                font-size: 11px;
-                color: #6b7280;
-            }
-            @media print {
-                body { background: white; padding: 0; }
-                .certificate { box-shadow: none; }
-            }
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+            body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
+            .report-container { width: 550px; padding: 30px; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+            .logo { width: 50px; height: 50px; }
+            .company-info { text-align: right; font-size: 11px; color: #555; }
+            .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
+            .title-section { padding: 25px 0; text-align: center; }
+            .title-section h1 { font-size: 22px; color: #1a202c; margin: 0 0 8px 0; font-weight: 700; }
+            .title-section p { font-size: 14px; color: #4a5568; margin: 0; }
+            .current-date { text-align: right; margin-bottom: 20px; font-size: 11px; color: #718096; }
+            .data-table { width: 100%; border-collapse: collapse; }
+            .data-table tr { border-bottom: 1px solid #edf2f7; }
+            .data-table tr:last-child { border-bottom: none; }
+            .data-table td { padding: 12px 0; vertical-align: top; }
+            .data-table td:first-child { font-weight: 500; width: 45%; color: #4a5568; }
+            .data-table td:last-child { color: #1a202c; font-weight: 500; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #718096; }
+            .footer h4 { font-size: 11px; font-weight: 700; color: #2d3748; margin-bottom: 10px; }
+            .footer p { margin-bottom: 8px; text-align: justify; line-height: 1.6; }
+            .confidential { text-align: center; font-weight: bold; color: #c53030; margin-top: 20px; font-size: 10px; letter-spacing: 0.5px; }
         </style>
     </head>
     <body>
-        <div class="certificate">
+        <div class="report-container">
             <div class="header">
-                <div class="verification-badge">VERIFIED</div>
-                <div class="logo">VF</div>
-                <h1>VERIFICATION CERTIFICATE</h1>
-                <p>Official Document Authentication System</p>
+                <img src="${favicon}" alt="Company Logo" class="logo"/>
+                <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
             </div>
-            
-            <div class="content">
-                <div class="status-section">
-                    <div class="status-icon">✓</div>
-                    <div class="status-text">VERIFICATION SUCCESSFUL</div>
-                    <div class="verification-id">ID: ${verificationId}</div>
-                </div>
-                
-                <div class="info-grid">
-                    <div class="info-section">
-                        <h3><span>📋</span> Service Information</h3>
-                        <div class="info-item">
-                            <span class="info-label">Service:</span>
-                            <span class="info-value">${serviceName || 'Document Verification'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Date & Time:</span>
-                            <span class="info-value">${currentDate}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="info-value" style="color: #10b981; font-weight: 600;">VERIFIED</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Processing Time:</span>
-                            <span class="info-value">2.34 seconds</span>
-                        </div>
-                    </div>
-                    
-                    <div class="info-section">
-                        <h3><span>🔒</span> Security Details</h3>
-                        <div class="info-item">
-                            <span class="info-label">Encryption:</span>
-                            <span class="info-value">SHA-256</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Digital Signature:</span>
-                            <span class="info-value">Valid</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Certificate Chain:</span>
-                            <span class="info-value">Trusted</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Validity:</span>
-                            <span class="info-value">90 days</span>
-                        </div>
-                    </div>
-                </div>
-                
-                ${details ? `
-                <div class="data-section">
-                    <h3>Verification Results</h3>
-                    <table class="data-table">
-                        ${Object.entries(details).map(([key, value]) => `
-                            <tr>
-                                <td><strong>${toTitleCase(key)}</strong></td>
-                                <td>${typeof value === 'object' ? JSON.stringify(value) : value}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </div>
-                ` : ''}
+            <div class="title-section"><h1>Verification Report</h1><p>${serviceName} Status</p></div>
+            <div class="current-date"><strong>Date of Report:</strong> ${currentDate}</div>
+            <div class="data-section">
+                <table class="data-table"><tbody>
+                    ${allDetails.length > 0 ? allDetails.map(({ key, value }) => `<tr><td>${key}</td><td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>'}
+                </tbody></table>
             </div>
-            
             <div class="footer">
-                <p><strong>VerifyFast - Trusted Verification Services</strong></p>
-                <p>This certificate is digitally signed and cryptographically secured</p>
-                <p>Certificate ID: ${verificationId} | Generated: ${currentDate}</p>
-                
-                <div class="security-features">
-                    <div class="security-item">
-                        <div>🔐</div>
-                        <div>SSL Encrypted</div>
-                    </div>
-                    <div class="security-item">
-                        <div>📋</div>
-                        <div>Digitally Signed</div>
-                    </div>
-                    <div class="security-item">
-                        <div>⏰</div>
-                        <div>Time Stamped</div>
-                    </div>
-                    <div class="security-item">
-                        <div>🛡️</div>
-                        <div>Blockchain Verified</div>
-                    </div>
-                </div>
+                <h4>LEGAL DISCLAIMER</h4>
+                <p>All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
+                <p>The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
+                <p>Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.</p>
+                <p>Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
+                <p>Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.</p>
+                <div class="confidential">- VERIFY MY KYC CONFIDENTIAL -</div>
             </div>
         </div>
-    </body>
-    </html>
+    </body></html>
   `;
+
+  // Append to body to render it off-screen
+  document.body.appendChild(reportElement);
   
-  printWindow.document.write(pdfContent);
-  printWindow.document.close();
-  
-  // Auto print after content loads
-  setTimeout(() => {
-    printWindow.print();
-  }, 500);
+  const elementToCapture = reportElement.querySelector('.report-container');
+
+  if (elementToCapture) {
+      html2canvas(elementToCapture, { 
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        // These options are key to capturing the entire element, not just the visible part
+        height: elementToCapture.scrollHeight,
+        windowHeight: elementToCapture.scrollHeight
+      }).then(canvas => {
+          try {
+              const imgData = canvas.toDataURL('image/png');
+              const pdf = new jsPDF('p', 'mm', 'a4');
+              
+              const pdfWidth = pdf.internal.pageSize.getWidth();
+              const pdfHeight = pdf.internal.pageSize.getHeight();
+              
+              const canvasWidth = canvas.width;
+              const canvasHeight = canvas.height;
+              
+              const ratio = canvasWidth / canvasHeight;
+              const imgHeight = pdfWidth / ratio;
+              
+              let heightLeft = imgHeight;
+              let position = 0;
+              let page = 1;
+
+              // Add the first page
+              pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+              heightLeft -= pdfHeight;
+
+              // Add more pages if the content is longer than one page
+              while (heightLeft > 0) {
+                  position = -pdfHeight * page;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                  heightLeft -= pdfHeight;
+                  page++;
+              }
+              
+              pdf.save(`Verification_Report_${serviceName.replace(/\s+/g, '_')}.pdf`);
+          } catch (e) {
+              console.error("Error creating PDF:", e);
+          } finally {
+              document.body.removeChild(reportElement);
+          }
+      }).catch(err => {
+          console.error("html2canvas failed:", err);
+          if (document.body.contains(reportElement)) {
+              document.body.removeChild(reportElement);
+          }
+      });
+  } else {
+      console.error("Could not find element to capture for PDF generation.");
+  }
 };
 
 // Enhanced function to find the main data object within the API response
@@ -533,13 +368,10 @@ export function UserDetailsCard({
   service
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
-  const [activeTab, setActiveTab] = useState('tabular');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // const { refetch: refetchUserProfile } = useGetProfileQuery();
 
   const dispatch = useDispatch();
   
-  // Get refetch functions for invalidation
   const { refetch: refetchProfile } = useGetProfileQuery();
   const { refetch: refetchServices } = useGetServicesQuery();
 
@@ -556,24 +388,18 @@ export function UserDetailsCard({
   
   const handleRefreshAndPurchase = async () => {
     setIsRefreshing(true);
-
-    
-    console.log(9)
     try {
-      // 1. Invalidate user and service tags
       dispatch(apiSlice.util.invalidateTags([
         { type: 'User', id: 'PROFILE' },
         { type: 'Service', id: 'LIST' },
         { type: 'Subscription' }
       ]));
 
-      // 2. Trigger refetch of user profile and services
       await Promise.all([
         refetchProfile(),
         refetchServices()
       ]);
 
-      // 3. Show the purchase card
       if (onShowPurchaseCard) {
         onShowPurchaseCard();
       }
@@ -584,99 +410,18 @@ export function UserDetailsCard({
     }
   };
 
-  // Handle API error state with enhanced subscription error handling
   if (error) {
+    // This error block is kept as a fallback but will not be rendered from ServiceExecutionPage
+    // as per the new logic.
     const isSubError = isSubscriptionError(error);
     
     return (
       <CustomCard className={`border-red-200 ${isSubError ? 'bg-orange-50' : 'bg-red-50'}`}>
         <CustomCardHeader className={`${isSubError ? 'bg-orange-100 border-orange-200' : 'bg-red-100 border-red-200'}`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isSubError ? 'bg-orange-200' : 'bg-red-200'
-            }`}>
-              {isSubError ? (
-                <CreditCard className="w-5 h-5 text-orange-600" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-600" />
-              )}
-            </div>
-            <div>
-              <h3 className={`text-lg font-semibold ${
-                isSubError ? 'text-orange-800' : 'text-red-800'
-              }`}>
-                {isSubError ? 'Subscription Required' : 'Verification Failed'}
-              </h3>
-              <p className={`text-sm ${
-                isSubError ? 'text-orange-600' : 'text-red-600'
-              }`}>
-                {isSubError ? 'Premium subscription needed to access this service' : 'No matching records found'}
-              </p>
-            </div>
-          </div>
+            {/* ... Error content ... */}
         </CustomCardHeader>
         <CustomCardContent>
-          <div className="space-y-4">
-            <p className={`text-sm ${isSubError ? 'text-orange-700' : 'text-red-700'}`}>
-              {error.message || "An unknown error occurred."}
-            </p>
-            
-            <div className={`p-3 rounded-lg border ${
-              isSubError ? 'bg-orange-100 border-orange-200' : 'bg-red-100 border-red-200'
-            }`}>
-              <p className={`text-xs ${isSubError ? 'text-orange-600' : 'text-red-600'}`}>
-                <strong>Error Code:</strong> {error.code || 'UNKNOWN'} | 
-                <strong> Time:</strong> {new Date().toLocaleString()}
-              </p>
-            </div>
-
-            {/* Show action buttons for subscription errors */}
-            {isSubError && (
-              <div className="space-y-3 pt-2">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 mb-2">Get Premium Access</h4>
-                  <p className="text-sm text-blue-700 mb-3">
-                    Upgrade to a premium plan to access this service and many more verification tools.
-                  </p>
-                  
-                  <div className="flex gap-2">
-                    <CustomButton
-                      onClick={handleRefreshAndPurchase}
-                      disabled={isRefreshing}
-                      className="bg-blue-600 hover:bg-blue-700 flex-1"
-                    >
-                      {isRefreshing ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                          Refreshing...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Purchase Plan
-                        </>
-                      )}
-                    </CustomButton>
-                    
-                    <CustomButton
-                      onClick={async () => {
-                        setIsRefreshing(true);
-                        try {
-                          await Promise.all([refetchProfile(), refetchServices()]);
-                        } finally {
-                          setIsRefreshing(false);
-                        }
-                      }}
-                      disabled={isRefreshing}
-                      className="bg-gray-600 hover:bg-gray-700"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    </CustomButton>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* ... Error content ... */}
         </CustomCardContent>
       </CustomCard>
     );
@@ -713,86 +458,31 @@ export function UserDetailsCard({
   const verificationId = `VRF-${Date.now()}`;
   const currentTime = new Date().toLocaleString();
   const hasOutputFields = result.data?.outputFields && result.data.outputFields.length > 0;
-
-  // Determine the service type for display
   const serviceType = serviceName || service?.name || 'Verification Service';
 
   return (
     <CustomCard className="border-green-200 bg-green-50">
-      {/* Simplified Success Banner */}
       <div className="bg-gradient-to-r from-blue-500 to-emerald-600 text-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center"> */}
-<img className="w-12 h-12 " src={favicon} alt="" />
-            {/* </div> */}
+            <img className="w-12 h-12 " src={favicon} alt="" />
             <div>
-              <h3 className="text-lg font-bold"> Successful</h3>
+              <h3 className="text-lg font-bold">Verified Successfully</h3>
               <p className="text-green-100 text-sm">{serviceType}</p>
             </div>
           </div>
-          {/* <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-            <span className="text-xs font-semibold">VERIFIED</span>
-          </div> */}
         </div>
       </div>
 
       <CustomCardContent className="space-y-6">
-        {/* Status Information */}
-        {/* <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="font-semibold text-green-800">
-                {displayMessage || 'Details verified successfully'}
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-green-600 font-mono">ID: {verificationId.slice(-8)}</div>
-              <div className="text-xs text-green-600">{currentTime.split(',')[1]}</div>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Tab Navigation */}
-        {/* <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('tabular')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'tabular'
-                ? 'border-b-2 border-green-500 text-green-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <FileText className="w-4 h-4 inline mr-1" />
-            Details
-          </button>
-          <button
-            onClick={() => setActiveTab('json')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'json'
-                ? 'border-b-2 border-green-500 text-green-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Award className="w-4 h-4 inline mr-1" />
-            Raw Data
-          </button>
-        </div> */}
-
-        {/* Content Section */}
         <div className="space-y-4">
-          {activeTab === 'tabular' ? (
-            <div className="space-y-4">
-              {/* Show verification results if we have detailed data */}
+          <div className="space-y-4">
               {details && (
                 <SimpleDataTable 
                   data={details} 
                   title="Verified Information" 
                 />
               )}
-              
-              {/* If no detailed data but we have output fields or success message, show info */}
               {!details && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-3">
@@ -804,7 +494,6 @@ export function UserDetailsCard({
                       </p>
                     </div>
                   </div>
-                  
                   {hasOutputFields && (
                     <div className="mt-3 p-3 bg-white rounded border">
                       <h5 className="font-medium text-gray-700 mb-2">Available Output Fields:</h5>
@@ -816,7 +505,6 @@ export function UserDetailsCard({
                       </div>
                     </div>
                   )}
-                  
                   {!hasOutputFields && (
                     <div className="mt-3 text-sm text-green-600">
                       ✓ Account details verified against official records
@@ -825,16 +513,7 @@ export function UserDetailsCard({
                 </div>
               )}
             </div>
-          ) : (
-            <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-              <pre className="text-green-400 text-xs font-mono whitespace-pre-wrap">
-                {JSON.stringify(details || result.data, null, 2)}
-              </pre>
-            </div>
-          )}
         </div>
-
-        {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white border border-green-200 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -846,7 +525,6 @@ export function UserDetailsCard({
               <div>Status: <span className="text-green-600 font-medium">Verified</span></div>
             </div>
           </div>
-
           <div className="bg-white border border-green-200 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2 text-center">
               <Clock className="w-4 h-4 text-green-600 text-center" />
@@ -858,8 +536,6 @@ export function UserDetailsCard({
             </div>
           </div>
         </div>
-
-        {/* Download Section */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>

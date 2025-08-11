@@ -94,7 +94,7 @@ export default function SubscriptionPurchaseCard({ planData, userInfo, onClose }
   const handlePurchase = async () => {
     try {
       // The component now ONLY calls the dynamic order creation endpoint.
-      console.log(planData)
+    
       const orderResponse = await createDynamicOrder({
         subcategory: planData.name, // The plan's name is the subcategory
       }).unwrap();

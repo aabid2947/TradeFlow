@@ -7,78 +7,159 @@ import {
   TrendingUp, Shield, User, MapPin, Phone, CreditCard, AlertTriangle,
   Info, Download
 } from "lucide-react";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import favicon from "@/assets/favicon.png";
 
 // --- PDF Generation Logic ---
-// This logic remains unchanged as it's not related to the UI rendering.
+// This logic has been updated to match UserDetailsCard.jsx for a consistent, professional look.
+
+// Helper function to format keys into titles (from UserDetailsCard.jsx)
 const toTitleCase = (str) => {
-    if (!str) return '';
-    return str.replace(/_/g, " ").replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+  if (!str) return "";
+  // This version handles camelCase and snake_case to produce better titles
+  return str
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
+    .trim();
 };
+
 const generatePDF = (result) => {
+  const reportElement = document.createElement('div');
+  const serviceName = result.service?.name || 'Verification';
   const isSuccess = result.status === 'success';
-  const currentDate = new Date(result.createdAt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'medium' });
-  const verificationId = result._id;
-  const printWindow = window.open('', '_blank');
+  const currentDate = new Date(result.createdAt).toLocaleDateString('en-GB');
 
-
-  const renderDataRows = (data) => {
-    if (!data || typeof data !== 'object') return '<tr><td colspan="2" style="padding: 8px;">No detailed data available.</td></tr>';
-
+  // Helper to render table rows from an object
+  const renderTableRows = (data) => {
+    if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+      return '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>';
+    }
     return Object.entries(data).map(([key, value]) => `
       <tr>
-        <td style="font-weight: 600; padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; width: 30%;">${toTitleCase(key)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; word-break: break-all;">${typeof value === 'object' ? `<pre style="white-space: pre-wrap; margin: 0; font-family: inherit;">${JSON.stringify(value, null, 2)}</pre>` : (value === true ? 'Yes' : value === false ? 'No' : value)}</td>
-      </tr>`).join('');
+        <td>${toTitleCase(key)}</td>
+        <td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td>
+      </tr>
+    `).join('');
   };
 
-  const pdfContent = `
-    <!DOCTYPE html>
+  const inputRows = renderTableRows(result.inputPayload);
+  const resultRows = isSuccess 
+    ? renderTableRows(result.resultData)
+    : `<tr><td>Error Message</td><td>${result.errorMessage || 'An unknown error occurred.'}</td></tr>`;
+  
+  const statusTitle = isSuccess ? `${serviceName} Status: Verified` : `${serviceName} Status: Failed`;
+  
+  // The HTML and CSS structure is now based on UserDetailsCard.jsx
+  reportElement.innerHTML = `
     <html>
     <head>
-      <title>Verification Certificate - ${verificationId}</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .certificate { max-width: 800px; margin: 20px auto; background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); overflow: hidden; }
-        .header { background: ${isSuccess ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)'}; color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; }
-        .header p { margin: 4px 0 0; opacity: 0.9; }
-        .content { padding: 30px; }
-        .status-section { text-align: center; margin-bottom: 30px; padding: 20px; border-radius: 10px; border: 1px solid ${isSuccess ? '#a7f3d0' : '#fecaca'}; background: ${isSuccess ? '#f0fdf4' : '#fef2f2'}; }
-        .status-text { font-size: 24px; font-weight: 700; color: ${isSuccess ? '#047857' : '#b91c1c'}; }
-        .status-id { font-family: monospace; color: #6b7280; margin-top: 5px; }
-        .data-section { margin-bottom: 25px; }
-        .data-section h3 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #f3f4f6; padding-bottom: 8px; color: #111827; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-      </style>
+        <meta charset="utf-8">
+        <title>${serviceName} Verification Report</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+            body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
+            .report-container { width: 550px; padding: 30px; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+            .logo { width: 50px; height: 50px; }
+            .company-info { text-align: right; font-size: 11px; color: #555; }
+            .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
+            .title-section { padding: 25px 0; text-align: center; }
+            .title-section h1 { font-size: 22px; color: #1a202c; margin: 0 0 8px 0; font-weight: 700; }
+            .title-section p { font-size: 14px; color: ${isSuccess ? '#059669' : '#DC2626'}; margin: 0; }
+            .current-date { text-align: right; margin-bottom: 20px; font-size: 11px; color: #718096; }
+            .data-section { margin-bottom: 20px; }
+            .data-section h3 { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb;}
+            .data-table { width: 100%; border-collapse: collapse; }
+            .data-table tr { border-bottom: 1px solid #edf2f7; }
+            .data-table tr:last-child { border-bottom: none; }
+            .data-table td { padding: 10px 4px; vertical-align: top; font-size: 12px; }
+            .data-table td:first-child { font-weight: 500; width: 40%; color: #4a5568; }
+            .data-table td:last-child { color: #1a202c; font-weight: 400; word-break: break-word; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #718096; }
+            .footer h4 { font-size: 11px; font-weight: 700; color: #2d3748; margin-bottom: 10px; }
+            .footer p { margin-bottom: 8px; text-align: justify; line-height: 1.6; }
+            .confidential { text-align: center; font-weight: bold; color: #c53030; margin-top: 20px; font-size: 10px; letter-spacing: 0.5px; }
+        </style>
     </head>
     <body>
-      <div class="certificate">
-        <div class="header"><h1>Verification Certificate</h1><p>Official System Record</p></div>
-        <div class="content">
-          <div class="status-section">
-            <div class="status-text">VERIFICATION ${isSuccess ? 'SUCCESSFUL' : 'FAILED'}</div>
-            <p class="status-id">ID: ${verificationId}</p>
-          </div>
-          <div class="data-section">
-            <h3>Service Information</h3>
-            <table class="data-table"><tbody>${renderDataRows({ Service: result.service.name, 'Date Issued': currentDate })}</tbody></table>
-          </div>
-          <div class="data-section">
-            <h3>Input Parameters</h3>
-            <table class="data-table"><tbody>${renderDataRows(result.inputPayload)}</tbody></table>
-          </div>
-          <div class="data-section">
-            <h3>Verification Results</h3>
-            <table class="data-table"><tbody>${isSuccess ? renderDataRows(result.resultData) : `<tr><td style="font-weight: 600;">Error Message</td><td>${result.errorMessage || 'N/A'}</td></tr>`}</tbody></table>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>`;
+        <div class="report-container">
+            <div class="header">
+                <img src="${favicon.src}" alt="Company Logo" class="logo"/>
+                <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
+            </div>
+            <div class="title-section"><h1>Verification Report</h1><p>${statusTitle}</p></div>
+            <div class="current-date"><strong>Date of Report:</strong> ${currentDate}</div>
+            
+            <div class="data-section">
+                <h3>Input Parameters</h3>
+                <table class="data-table"><tbody>${inputRows}</tbody></table>
+            </div>
+            
+            <div class="data-section">
+                <h3>Verification Results</h3>
+                <table class="data-table"><tbody>${resultRows}</tbody></table>
+            </div>
 
-  printWindow.document.write(pdfContent);
-  printWindow.document.close();
-  setTimeout(() => { printWindow.print(); }, 500);
+            <div class="footer">
+                <h4>LEGAL DISCLAIMER</h4>
+                <p>All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
+                <p>The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
+                <p>Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
+                <div class="confidential">- VERIFY MY KYC CONFIDENTIAL -</div>
+            </div>
+        </div>
+    </body></html>
+  `;
+
+  // Append to body to render it off-screen
+  document.body.appendChild(reportElement);
+  
+  const elementToCapture = reportElement.querySelector('.report-container');
+
+  if (elementToCapture) {
+      html2canvas(elementToCapture, { 
+        scale: 2,
+        useCORS: true,
+        height: elementToCapture.scrollHeight,
+        windowHeight: elementToCapture.scrollHeight
+      }).then(canvas => {
+          try {
+              const imgData = canvas.toDataURL('image/png');
+              const pdf = new jsPDF('p', 'mm', 'a4');
+              const pdfWidth = pdf.internal.pageSize.getWidth();
+              const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+              let heightLeft = imgHeight;
+              let position = 0;
+              let page = 1;
+
+              pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+              heightLeft -= pdf.internal.pageSize.getHeight();
+
+              while (heightLeft > 0) {
+                  position = -pdf.internal.pageSize.getHeight() * page;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                  heightLeft -= pdf.internal.pageSize.getHeight();
+                  page++;
+              }
+              
+              pdf.save(`Verification_Report_${result._id}.pdf`);
+          } catch (e) {
+              console.error("Error creating PDF:", e);
+          } finally {
+              document.body.removeChild(reportElement);
+          }
+      }).catch(err => {
+          console.error("html2canvas failed:", err);
+          if (document.body.contains(reportElement)) {
+              document.body.removeChild(reportElement);
+          }
+      });
+  } else {
+      console.error("Could not find element to capture for PDF generation.");
+  }
 };
 
 
@@ -258,9 +339,9 @@ const ResultCard = ({ result, index }) => {
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-            <Button variant="outline" size="sm" onClick={() => generatePDF(result)}>
+            {/* <Button variant="outline" size="sm" onClick={() => generatePDF(result)}>
                 <Download className="w-3.5 h-3.5 mr-1.5"/> Download
-            </Button>
+            </Button> */}
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="group/btn">
               <span className="mr-1">Details</span>
               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -276,13 +357,13 @@ const ResultCard = ({ result, index }) => {
                 {formatInputData(result.inputPayload, result.service?.name).map((item, idx) => <InfoCard key={idx} {...item} />)}
               </div>
             </div>
-
+{/* 
             <div>
               <h4 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2"><div className={`w-2.5 h-2.5 rounded-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`}></div>Verification Results</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {formatResultData(result.resultData, result.service?.name, isSuccess).map((item, idx) => <InfoCard key={idx} {...item} />)}
               </div>
-            </div>
+            </div> */}
 
             {!isSuccess && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

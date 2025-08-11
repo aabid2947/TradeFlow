@@ -52,9 +52,9 @@ const footerData = {
       { name: "Legal & Compliance Checks", href: "/product/688587b94c6ace5e2f79801e", icon: FileCheck },
     ],
     domesticServices: [
-      { name: "Tenant Verification", href: "#", icon: Home },
-      { name: "Maid Verification", href: "#", icon: UserCheck },
-      { name: "Cook / Chef Verification", href: "#", icon: ChefHat },
+      { name: "Tenant Verification", href: "/blog/online-tenant-police-verification", icon: Home },
+      { name: "Maid Verification", href: "/blog/maid-police-verification", icon: UserCheck },
+      { name: "Cook / Chef Verification", href: "/blog/cook-and-chef-verification", icon: ChefHat },
       { name: "Nanny / Babysitter Identity Check", href: "#", icon: Baby },
       { name: "Housekeeping Staff Verification", href: "#", icon: Wrench },
     ],
@@ -274,7 +274,7 @@ export default function Footer() {
           </div>
 
           {/* Services Sections */}
-          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 justify-center mx-auto gap-8">
+          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 justify-start lg:justify-center mx-auto gap-8">
             {/* Verification Services */}
             <div>
               <h3 className="font-semibold mb-4 text-white">Verification Services</h3>

@@ -73,7 +73,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
     <div className="p-4 bg-gray-50/80 border-t border-gray-200 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         {/* Purchase Details */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 mx-4">
           <Bookmark className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
           <div>
             <h4 className="font-medium text-gray-900 mb-1">Purchase Details</h4>

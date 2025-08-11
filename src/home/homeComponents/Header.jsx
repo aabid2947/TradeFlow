@@ -71,17 +71,24 @@ export default function Header() {
 
   // Process services data to group by category
   useEffect(() => {
-    if (servicesData && Array.isArray(servicesData.data)) {
+ if (servicesData && Array.isArray(servicesData.data)) {
+  // Use reduce to group services, but only if they have a category.
   let groupedServices = servicesData.data.reduce((acc, service) => {
-    const category = (service.category || "Other").trim(); // trim extra spaces
-    if (!acc[category]) {
-      acc[category] = [];
+    // --- CHANGE START ---
+    // Only process the service if it has a category property that is a non-empty string.
+    if (service.category && typeof service.category === 'string' && service.category.trim()) {
+      const category = service.category.trim(); // trim extra spaces
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(service);
     }
-    acc[category].push(service);
+    // If there's no category, the service is skipped.
+    // --- CHANGE END ---
     return acc;
   }, {});
 
-  // Step 1: Rename categories only if they exist
+  // Step 1: Rename categories only if they exist (This logic remains the same)
   if (groupedServices["PAN"]) {
     groupedServices["PAN verification"] = groupedServices["PAN"];
     delete groupedServices["PAN"];
@@ -91,7 +98,7 @@ export default function Header() {
     delete groupedServices["CIN"];
   }
 
-  // Step 2: Reorder with safety check
+  // Step 2: Reorder with safety check (This logic remains the same)
   const reordered = {};
   Object.keys(groupedServices).forEach((key) => {
     if (key !== "PAN verification" && key !== "CIN verification") {
@@ -304,7 +311,7 @@ export default function Header() {
                   <Button
 
                     variant="ghost"
-                    className="flex items-center  text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 py-2 bg-white shadow-sm transition duration-200"
+                    className="flex items-center  text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 bg-white shadow-sm transition duration-200"
                   >
                     <User className="w-5 h-5 text-gray-600" />
                     Account

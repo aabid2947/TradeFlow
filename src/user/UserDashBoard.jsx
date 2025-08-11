@@ -44,8 +44,7 @@ export default function UserDashBoard() {
   const navigate = useNavigate();
   
   const userInfo = useSelector(selectCurrentUser);
-  console.log(userInfo)
-
+  
   // Fetch all data required for the dashboard and its children
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
   const { data: pricingPlansResponse, isLoading: isLoadingPricing, isError: isErrorPricing, error: pricingError } = useGetPricingPlansQuery();

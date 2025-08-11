@@ -3,11 +3,15 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Loader2, FileText, CheckCircle, AlertCircle, X } from "lucide-react";
-import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
+// import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSlice";
 import { UserDetailsCard } from "./userComponents/UserDetailsCard";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import SidebarComponent from "./userComponents/SidebarComponent";
+import { apiSlice } from "@/app/api/apiSlice";
+import { useGetProfileQuery } from "@/app/api/authApiSlice";
+import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
+import { useDispatch } from "react-redux";
 
 // Custom Notification Component
 const CustomNotification = ({ notification, onClose }) => {
@@ -223,50 +227,25 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     );
 };
 
-// **FIXED** Helper function to correctly check if verification was successful
+// **FIXED & UPDATED** Helper function to correctly check if verification was successful
 const isVerificationSuccessful = (result) => {
-    // A result is not successful if it's falsy or has no data property.
-    if (!result || !result.data) {
-        return false;
-    }
-
-    // The actual API response is nested in the `data` property.
+    if (!result || !result.data) return false;
     const apiData = result.data;
 
-    // Define known error codes from the backend API (Gridline).
     const errorCodes = ['1004', '1001', '1002', '1003', '1005', '1006', '404', '400'];
+    if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
+    if (apiData.status === 'INVALID') return false;
 
-    // If the response contains a known error code, it's not successful.
-    if (apiData.code && errorCodes.includes(String(apiData.code))) {
-        return false;
+    // Positive success indicators
+    if (result.success === true) return true;
+    if (apiData.message) {
+        const message = apiData.message.toLowerCase();
+        if (message.includes('verified successfully')) return true;
+        if (message.includes('record found')) return true; // Fix for "1 record found"
     }
+    if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) return true;
+    if (String(apiData.code) === '1000') return true;
 
-    // If the response status is explicitly 'INVALID', it's not successful.
-    if (apiData.status === 'INVALID') {
-        return false;
-    }
-
-    // A top-level `success: true` flag in the wrapper is a strong success indicator.
-    if (result.success === true) {
-        return true;
-    }
-
-    // A message containing "verified successfully" is also a reliable success indicator.
-    if (apiData.message && apiData.message.toLowerCase().includes('verified successfully')) {
-        return true;
-    }
-
-    // Other explicit success statuses from the API.
-    if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) {
-        return true;
-    }
-
-    // A success code like '1000' is a positive indicator.
-    if (String(apiData.code) === '1000') {
-      return true;
-    }
-
-    // Default to false if no clear success indicators are found.
     return false;
 };
 
@@ -274,12 +253,17 @@ const isVerificationSuccessful = (result) => {
 export default function ServiceExecutionPage() {
     const { serviceKey } = useParams();
     const navigate = useNavigate();
+    const dispatch= useDispatch()
+    
     
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
     const [verificationResult, setVerificationResult] = useState(null);
     const [verificationError, setVerificationError] = useState(null);
     const [inputData, setInputData] = useState(null);
     const [notification, setNotification] = useState(null);
+
+    const { refetch: refetchProfile } = useGetProfileQuery();
+      const { refetch: refetchServices } = useGetServicesQuery();
 
     const { data: servicesResponse } = useGetServicesQuery();
     const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
@@ -292,12 +276,9 @@ export default function ServiceExecutionPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Auto-hide notification after 5 seconds
     useEffect(() => {
         if (notification) {
-            const timer = setTimeout(() => {
-                setNotification(null);
-            }, 5000);
+            const timer = setTimeout(() => setNotification(null), 5000);
             return () => clearTimeout(timer);
         }
     }, [notification]);
@@ -310,45 +291,78 @@ export default function ServiceExecutionPage() {
         setNotification(null);
     };
     
-    // **FIXED** Handler to correctly process success and error states
+    // **UPDATED** Handler to correctly process success and error states
     const handleExecuteVerification = async (payload) => {
         setInputData(payload);
         setVerificationResult(null);
         setVerificationError(null);
         
+        const processError = (errorData) => {
+            let apiMessage = errorData?.message || "An unexpected error occurred. Please try again.";
+            let userMessage = apiMessage;
+
+            const lowerCaseApiMessage = apiMessage.toLowerCase();
+            if (lowerCaseApiMessage.includes('upstream source/government source internal server error') || lowerCaseApiMessage.includes('internal server error')) {
+                userMessage = "The government server is temporarily unavailable. Please try again after some time.";
+            }
+
+            showNotification(userMessage, 'error');
+            setVerificationError(errorData || { message: userMessage });
+        };
+
         try {
             const result = await executeService({ serviceKey: service.service_key, payload }).unwrap();
-            console.log('API Response:', result); // For debugging
             
-            // Use the improved function to check for success
+            // console.log(result.data?.message)
             if (isVerificationSuccessful(result)) {
-                // On success, set the result to trigger the UserDetailsCard success view.
+                showNotification(result.data?.message || 'Verification Successful!', 'success');
                 setVerificationResult(result);
             } else {
-                // On failure, construct the error object.
-                const data = result.data || {};
-                
-                // Use the exact message from the API if it exists, otherwise provide a fallback.
-                const errorMessage = data.message || "Verification failed. The details could not be found or are invalid.";
-                
-                // Show the error notification with the exact API message.
-                showNotification(errorMessage, 'error');
-
-                // Set the error state to render the error view in UserDetailsCard.
-                setVerificationError({ 
-                    message: errorMessage, 
-                    code: String(data.code || 'UNKNOWN'),
-                    details: data 
-                });
+                if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
+                      dispatch(apiSlice.util.invalidateTags([
+                            { type: 'User', id: 'PROFILE' },
+                            { type: 'Service', id: 'LIST' },
+                            { type: 'Subscription' }
+                          ]));
+                    
+                          await Promise.all([
+                            refetchProfile(),
+                            refetchServices()
+                          ]);
+                          
+                }
+                if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
+                      dispatch(apiSlice.util.invalidateTags([
+                            { type: 'User', id: 'PROFILE' },
+                            { type: 'Service', id: 'LIST' },
+                            { type: 'Subscription' }
+                          ]));
+                    
+                          await Promise.all([
+                            refetchProfile(),
+                            refetchServices()
+                          ]);
+                          
+                }
+                processError(result.data);
             }
             
         } catch (err) {
-            console.error('Service execution error:', err); // For debugging
-            
-            // Handle critical network errors or exceptions from `unwrap()`.
-            const errorMessage = err.data?.message || "An unexpected error occurred. Please try again.";
-            showNotification(errorMessage, 'error');
-            setVerificationError(err.data || { message: "Service execution failed." });
+            console.log(err.data)
+            if(err.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
+                      dispatch(apiSlice.util.invalidateTags([
+                            { type: 'User', id: 'PROFILE' },
+                            { type: 'Service', id: 'LIST' },
+                            { type: 'Subscription' }
+                          ]));
+                    
+                          await Promise.all([
+                            refetchProfile(),
+                            refetchServices()
+                          ]);
+                          
+                }
+            processError(err.data);
         }
     };
     
@@ -388,7 +402,6 @@ export default function ServiceExecutionPage() {
 
     return (
         <div className="relative min-h-screen bg-gray-50">
-            {/* Custom Notification */}
             <CustomNotification 
                 notification={notification} 
                 onClose={hideNotification} 
@@ -405,30 +418,17 @@ export default function ServiceExecutionPage() {
                 <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
                     <div className="max-w-6xl mx-auto">
-                        {/* Breadcrumb Navigation */}
                         <div className="mb-6">
                             <nav className="flex items-center text-sm text-gray-500 space-x-1">
-                                <button 
-                                    onClick={() => handleNavigate('dashboard')}
-                                    className="hover:text-gray-700 transition-colors"
-                                >
-                                    Dashboard
-                                </button>
+                                <button onClick={() => handleNavigate('dashboard')} className="hover:text-gray-700 transition-colors">Dashboard</button>
                                 <ChevronRight className="h-4 w-4" />
-                                <button 
-                                    onClick={handleGoBackToCategory}
-                                    className="hover:text-gray-700 transition-colors"
-                                >
-                                    {toTitleCase(service.category)}
-                                </button>
+                                <button onClick={handleGoBackToCategory} className="hover:text-gray-700 transition-colors">{toTitleCase(service.category)}</button>
                                 <ChevronRight className="h-4 w-4" />
                                 <span className="text-gray-800 font-medium">{service.name}</span>
                             </nav>
                         </div>
 
-                        {/* Main Content Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Form Section */}
                             <div className="space-y-6">
                                 <DynamicServiceForm 
                                     service={service} 
@@ -437,22 +437,22 @@ export default function ServiceExecutionPage() {
                                 />
                             </div>
                             
-                            {/* Results Section */}
                             <div className="space-y-6">
-                                {/* Show results when there's verification data or error */}
-                                {(verificationResult || verificationError) && (
+                                {/* **UPDATED RENDER LOGIC** */}
+                                {/* Show results card ONLY on success */}
+                                {verificationResult && !verificationError && (
                                     <UserDetailsCard 
                                         service={service}
                                         result={verificationResult} 
-                                        error={verificationError} 
+                                        error={null} // Pass null for error
                                         inputData={inputData}
                                         serviceName={service?.name}
                                         isSubscribed={true}
                                     />
                                 )}
                                 
-                                {/* Show default service info when no verification has been performed */}
-                                {!verificationResult && !verificationError && (
+                                {/* Show default service info card initially OR on error */}
+                                {!verificationResult && (
                                     <CustomCard>
                                         <CustomCardHeader>
                                             <h3 className="text-lg font-semibold text-gray-800">Service Information</h3>
@@ -463,7 +463,6 @@ export default function ServiceExecutionPage() {
                                                     <h4 className="font-medium text-gray-700 mb-2">About this service:</h4>
                                                     <p className="text-gray-600 text-sm">{service.description}</p>
                                                 </div>
-                                                
                                                 <div>
                                                     <h4 className="font-medium text-gray-700 mb-2">Required Information:</h4>
                                                     <ul className="space-y-1">
@@ -475,7 +474,6 @@ export default function ServiceExecutionPage() {
                                                         ))}
                                                     </ul>
                                                 </div>
-                                                
                                                 <div className="bg-blue-50 p-3 rounded-lg">
                                                     <p className="text-blue-800 text-sm">
                                                         <strong>💡 Tip:</strong> Fill out the form on the left to verify your details instantly.

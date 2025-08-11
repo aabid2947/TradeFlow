@@ -58,35 +58,27 @@ export default function ServicePage() {
     return null;
   }, [filteredServices]);
 
-  // --- 1. CORRECTED SUBSCRIPTION CHECK ---
   const isSubscribed = useMemo(() => {
     if (!userInfo?.activeSubscriptions) return false;
     
-    // Get a set of all active subscription names for the user.
     const userActivePlanNames = new Set(
       userInfo.activeSubscriptions
         .filter(sub => new Date(sub.expiresAt) > new Date())
         .map(sub => sub.category)
     );
 
-    // Define the name of the main category plan (e.g., "Identity Verification Plan")
     const parentPlanName = parentCategory ? `${parentCategory} Plan` : '';
     
-    // A user is considered subscribed if they have EITHER the main category plan OR the specific subcategory plan.
     return userActivePlanNames.has(parentPlanName) || userActivePlanNames.has(subcategory);
   }, [userInfo, parentCategory, subcategory]);
   
-  // --- 2. CORRECTED PLAN TO PURCHASE LOGIC ---
   const planToPurchase = useMemo(() => {
-    // If the user is already subscribed, or there's no subcategory, there's nothing to purchase.
     if (isSubscribed || !subcategory) return null;
     
-    // If not subscribed, the ONLY plan to offer is the dynamic one for this specific subcategory.
-    // This creates the exact object the SubscriptionPurchaseCard needs for the dynamic flow.
     return {
-      name: subcategory, // The plan "name" is the subcategory.
+      name: subcategory,
       monthly: {
-        price: 299, // The fixed price for dynamic plans.
+        price: 299,
       },
     };
   }, [isSubscribed, subcategory]);
@@ -99,11 +91,15 @@ export default function ServicePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  // --- FIX: The dependency array is changed to prevent re-opening the modal ---
   useEffect(() => {
-    if (filteredServices.length > 0 && !activeServiceId) {
+    // This effect auto-selects the first service when the category loads.
+    // By only depending on `filteredServices`, it won't run again when the user
+    // closes the modal (which sets activeServiceId to null), thus fixing the bug.
+    if (filteredServices.length > 0) {
       setActiveServiceId(filteredServices[0].service_key);
     }
-  }, [filteredServices, activeServiceId]);
+  }, [filteredServices]);
 
   useEffect(() => {
     setVerificationResult(null);
@@ -157,8 +153,6 @@ export default function ServicePage() {
       }
   };
   
-  // --- 3. THIS FUNCTION NOW WORKS CORRECTLY ---
-  // It relies on the corrected `planToPurchase` hook above.
   const handleSubscribeClick = () => {
       if (!planToPurchase) {
           toast.error("This plan is not available for purchase or you are already subscribed.");
@@ -168,7 +162,6 @@ export default function ServicePage() {
   };
 
   const renderRightPanel = () => {
-    // This rendering logic is now correct because `planToPurchase` provides the right data.
     if (showSubscriptionCard && planToPurchase) {
       return (
         <div className="md:col-span-2">
@@ -212,13 +205,13 @@ export default function ServicePage() {
         <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
           <div className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500">
-            <div className="flex items-center justify-start mb-6 space-x-4">
+            <div className="flex items-center justify-start mb-6 md:space-x-4">
                 <Button variant="outline" onClick={handleGoBack} className="flex items-center gap-2">
                     <ArrowLeft className="w-4 h-4" />
-                    Back to Services
+                    Back 
                 </Button>
-                <h1 className="text-xl md:text-2xl font-bold text-right">
-                    {subcategory ? `${subcategory.replace(/_/g, " ")} Services` : 'Verification Services'}
+                <h1 className=" text-xl md:text-2xl font-bold mx-2 md:text-right">
+                    {subcategory}
                 </h1>
             </div>
 
@@ -234,7 +227,7 @@ export default function ServicePage() {
         </main>
       </div>
 
-      {/* This modal logic also works correctly now */}
+      {/* Mobile Modal */}
       {activeServiceId && !sidebarOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>

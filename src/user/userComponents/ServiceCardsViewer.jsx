@@ -9,6 +9,7 @@ import { useExecuteSubscribedServiceMutation } from "@/app/api/verificationApiSl
 import { useGetProfileQuery } from "@/app/api/authApiSlice";
 import { X, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function ServiceCardsViewer({ services = [], pricingPlans = [], isLoading, userInfo }) {
   const [activeService, setActiveService] = useState(null);
@@ -16,7 +17,7 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
   const [verificationResult, setVerificationResult] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
   const [inputData, setInputData] = useState(null);
-
+  const navigate = useNavigate()
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
 
@@ -76,8 +77,10 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
     const isSubscribed = accessibleServiceIds.has(service._id);
 
     if (isSubscribed) {
-      setActiveService(service);
-      setPurchasePlan(null);
+
+      navigate(`/user/service/${service.subcategory}`)
+      // setActiveService(service);
+      // setPurchasePlan(null);
     } else {
       if (service.subcategory) {
         const dynamicPlanForPurchase = {
