@@ -40,6 +40,10 @@ export default function TopBar() {
             </>
           ) : (
             <>
+             <button onClick={() => navigate("/how-to-get-verify")} className="flex items-center gap-2 hover:text-gray-200 transition-colors duration-200">
+                <ShieldCheck className="w-4 h-4" />
+                <span>How to get verified</span>
+              </button>
               <button onClick={() => navigate("/login")} className="flex items-center gap-2 hover:text-gray-200 transition-colors duration-200">
                 <Lock className="w-4 h-4" />
                 <span>Login</span>

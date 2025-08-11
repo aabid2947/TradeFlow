@@ -206,12 +206,13 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                         </div>
                         
                         {/* Submit Button */}
-                        <div className="pt-4">
+                        <div className="pt-4 text-center">
                             <CustomButton
                                 type="submit"
                                 disabled={isVerifying || !isFormFilled}
+                                  className="flex justify-center items-center text-center"
                             >
-                                {isVerifying && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                                {isVerifying && <Loader2 className="w-4 h-4  text-center animate-spin mr-2" />}
                                 {isVerifying ? "Processing..." : "Submit Verification"}
                             </CustomButton>
                         </div>

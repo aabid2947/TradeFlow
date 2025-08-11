@@ -7,7 +7,7 @@ import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { apiSlice } from "@/app/api/apiSlice";
 import { useDispatch } from "react-redux";
 // import { useGetProfileQuery } from "@/app/api/authApiSlice";
-
+import favicon from "@/assets/favicon.png"
 // Helper function to format keys into titles
 const toTitleCase = (str) => {
   if (!str) return "";
@@ -720,20 +720,20 @@ export function UserDetailsCard({
   return (
     <CustomCard className="border-green-200 bg-green-50">
       {/* Simplified Success Banner */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-500 to-emerald-600 text-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
+            {/* <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center"> */}
+<img className="w-12 h-12 " src={favicon} alt="" />
+            {/* </div> */}
             <div>
-              <h3 className="text-lg font-bold">Verification Successful</h3>
+              <h3 className="text-lg font-bold"> Successful</h3>
               <p className="text-green-100 text-sm">{serviceType}</p>
             </div>
           </div>
-          <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
+          {/* <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
             <span className="text-xs font-semibold">VERIFIED</span>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -848,8 +848,8 @@ export function UserDetailsCard({
           </div>
 
           <div className="bg-white border border-green-200 rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-green-600" />
+            <div className="flex items-center gap-2 mb-2 text-center">
+              <Clock className="w-4 h-4 text-green-600 text-center" />
               <span className="text-sm font-medium text-gray-700">Processing</span>
             </div>
             <div className="text-xs text-gray-600">

@@ -95,7 +95,7 @@ const COLORS = ['#3b82f6', '#f97316', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
  * @param {boolean} props.isLoading - The loading state from the API query.
  */
 export default function Analytics({ services = [], isLoading = false }) {
-  const [timeInterval, setTimeInterval] = useState('alltime'); // Changed default to 'alltime'
+  const [timeInterval, setTimeInterval] = useState('alltime');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [comparisonMode, setComparisonMode] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -113,7 +113,8 @@ export default function Analytics({ services = [], isLoading = false }) {
   // Get unique categories
   const categories = useMemo(() => {
     const cats = [...new Set(services.map(s => s.category))];
-    return cats;
+    // Filter out empty strings, null, undefined values
+    return cats.filter(cat => cat && typeof cat === 'string' && cat.trim() !== '');
   }, [services]);
 
   // Filter services by category
@@ -273,7 +274,7 @@ export default function Analytics({ services = [], isLoading = false }) {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Top Stats Cards - Keep as is */}
+      {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statsData.map((stat, index) => (
           <Card key={index} className={`${stat.color} border-0 shadow-sm`}>
@@ -331,7 +332,7 @@ export default function Analytics({ services = [], isLoading = false }) {
                 <Select value={timeInterval} onValueChange={handleTimeIntervalChange}>
                   <SelectTrigger className="w-40">
                     <Calendar className="w-4 h-4 mr-2" />
-                    <SelectValue />
+                    <SelectValue placeholder="Select time range" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
                     <SelectItem value="alltime">All Time</SelectItem>
@@ -371,12 +372,12 @@ export default function Analytics({ services = [], isLoading = false }) {
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-40">
                   <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(cat => (
-                    <SelectItem key={cat} value={cat} className="bg-white">{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
