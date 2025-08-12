@@ -5,9 +5,10 @@ import ErrorPage from "../pages/ErrorPage";
 import ProtectedRoute from './ProtectedRoutes';
 import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
+import { Toaster } from 'react-hot-toast'; 
 // import usePageTracking from '../hooks/usePageTracking';
 // import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
-
+import NotificationPermissionHandler from '../utils/NotificationPermissoinHandler';
 const AppRoutes = () => {
   // usePageTracking();
   
@@ -17,7 +18,9 @@ const AppRoutes = () => {
 
   return (
     <>
+        <Toaster position="top-center" reverseOrder={false} />
       {/* <FirebaseAuthListener />  */}
+      <NotificationPermissionHandler/>
       
       <Routes>
         <Route element={<RedirectIfLoggedIn />}>

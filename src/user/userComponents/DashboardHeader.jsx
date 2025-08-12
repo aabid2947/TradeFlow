@@ -67,7 +67,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center overflow-hidden -mx-5 md:-mx-4" onClick={() => navigate("/")}>
+          <div className="flex items-center overflow-hidden -mx-2 md:-mx-4" onClick={() => navigate("/")}>
             <img src={VerifyMyKyc  || sidebarLogo} alt="Logo" className="h-10 w-auto" />
           </div>
           <div className="flex flex-col">

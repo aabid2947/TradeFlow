@@ -42,8 +42,8 @@ export default function UserDashBoard() {
   const [categoryFilter, setCategoryFilter] = useState("All Services");
   const location = useLocation();
   const navigate = useNavigate();
-  
   const userInfo = useSelector(selectCurrentUser);
+  console.log(userInfo)
   
   // Fetch all data required for the dashboard and its children
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();

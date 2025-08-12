@@ -76,13 +76,22 @@ const ProductPage = ({ serviceId }) => {
     const discountedPrice = calculateDiscountedPrice(service?.price, service?.discount);
     const hasDiscount = service?.discount && discountedPrice < service?.price;
     const reviews = reviewsResponse?.data || [];
-    
-    const hasUsedService = userInfo?.usedServices?.some(s => s.service === currentServiceId) || false;
+
+    // --- UPDATED LOGIC FOR REVIEW ELIGIBILITY ---
+    // A user can review if:
+    // 1. They have used the *current* specific service.
+    // OR
+    // 2. They have used *any* service within the same subcategory as the current service.
+    const hasUsedService = userInfo?.usedServices?.some(s =>
+        s.service === currentServiceId || (service?.subcategory && s.subcategory === service.subcategory)
+    ) || false;
+
     const userReview = userInfo ? reviews.find(r => r.user?._id === userInfo._id) : null;
-    
+
     // This effect handles redirection AFTER a new purchase is made via the modal.
     const prevHasUsedService = React.useRef(hasUsedService);
     React.useEffect(() => {
+        // This checks if the user's usage status has just changed to true
         if (!prevHasUsedService.current && hasUsedService && isPurchaseModalOpen) {
             toast.success("Purchase successful! Redirecting...");
             // Correctly navigate to the subcategory page that was purchased.
@@ -111,6 +120,7 @@ const ProductPage = ({ serviceId }) => {
         processingTime: service?.processingTime || "2-5 minutes",
         successRate: service?.successRate || "99.9%",
         category: service?.category || "Document",
+        subcategory: service?.subcategory, // Ensure subcategory is available
         inputFields: service?.inputFields || [],
         usedBy: service?.usedBy || [],
         discount: service?.discount || null,
@@ -149,8 +159,7 @@ const ProductPage = ({ serviceId }) => {
             navigate('/login');
         }
     };
-    
-    // --- MODIFIED: Handler now checks for existing subscription before showing purchase card ---
+
     const handlePurchaseClick = () => {
         if (userInfo) {
             const subcategory = service?.subcategory;
@@ -170,7 +179,7 @@ const ProductPage = ({ serviceId }) => {
                 navigate(`/user/service/${subcategory}`);
             } else {
                 // Otherwise, open the purchase modal
-                prevHasUsedService.current = hasUsedService;
+                prevHasUsedService.current = hasUsedService; // Set the flag before opening modal
                 setPurchaseModalOpen(true);
             }
         } else {
@@ -178,6 +187,7 @@ const ProductPage = ({ serviceId }) => {
             navigate("/login");
         }
     };
+
 
     const handleDeleteReview = async (reviewId) => {
         if (window.confirm("Are you sure you want to delete your review? This action cannot be undone.")) {
@@ -193,7 +203,7 @@ const ProductPage = ({ serviceId }) => {
     // Render Functions
     const renderStars = (rating) => (
         Array.from({ length: 5 }, (_, index) => (
-            <Star key={index} className={`w-4 h-4 ${index < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+            <Star key={index} className={`w-4 h-4 ${index < Math.round(rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
         ))
     );
 
@@ -380,12 +390,78 @@ const ProductPage = ({ serviceId }) => {
                                 </div>
                             )}
 
-                            {/* Reviews tab remains unchanged */}
                             {selectedTab === "reviews" && (
                                 <div className="space-y-8">
-                                    {/* ... Review section JSX (no changes) ... */}
+                                    <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
+
+                                    {/* Case 1: User is logged in, has used the service (or a service in the same subcategory), and has NOT reviewed yet */}
+                                    {userInfo && hasUsedService && !userReview && (
+                                        <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center shadow-sm">
+                                            <h4 className="font-bold text-xl text-gray-800 mb-2">Share Your Experience</h4>
+                                            <p className="text-gray-600 mb-4">Your feedback helps other customers make informed decisions.</p>
+                                            <button
+                                                onClick={() => handleOpenReviewModal(null)}
+                                                className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-transform hover:scale-105"
+                                            >
+                                                Leave a Review
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Case 2: User has NOT used the service or any service in the subcategory */}
+                                    {!hasUsedService && (
+                                        <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center shadow-sm">
+                                            <h4 className="font-bold text-xl text-gray-800 mb-2">Want to leave a review?</h4>
+                                            <p className="text-gray-600 mb-4">You must use a service in this category before you can share your feedback.</p>
+                                            <button
+                                                onClick={handleNavigateAction}
+                                                className="bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-black transition-colors"
+                                            >
+                                                {userInfo ? 'Go to Your Dashboard' : 'Login to Get Started'}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Case 3: User has already left a review. Their review appears below with edit/delete options. */}
+
+                                    {isLoadingReviews ? (
+                                        <div className="flex justify-center items-center py-10">
+                                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                        </div>
+                                    ) : reviews.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {reviews.map((review) => (
+                                                <div key={review._id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">{review.user?.name?.charAt(0) || 'U'}</div>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <h4 className="font-bold text-gray-900">{review.user?.name || 'Anonymous'}</h4>
+                                                                <span className="text-gray-500 text-sm">{new Date(review.createdAt).toLocaleDateString()}</span>
+
+                                                                {userInfo && review.user?._id === userInfo._id && (
+                                                                    <div className="ml-auto flex items-center gap-4">
+                                                                        <button onClick={() => handleOpenReviewModal(review)} title="Edit Review" className="text-gray-500 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                                                                        <button onClick={() => handleDeleteReview(review._id)} disabled={isDeletingReview} title="Delete Review" className="text-gray-500 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 mb-3">{renderStars(review.rating)}</div>
+                                                            <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <p className="text-gray-600 font-semibold text-lg">This service has no reviews yet.</p>
+                                            <p className="text-gray-500 mt-1">Be the first one to share your experience!</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
+
                         </div>
                     </motion.div>
                 </div>
@@ -399,7 +475,7 @@ const ProductPage = ({ serviceId }) => {
                     serviceId={currentServiceId}
                 />
             )}
-            
+
             {isPurchaseModalOpen && userInfo && (
                 <SubscriptionPurchaseCard
                     planData={planDataForPurchase}
