@@ -175,11 +175,11 @@ export const authApiSlice = apiSlice.injectEndpoints({
          { type: 'Transaction', id: 'LIST' },
       ],
     }),
-      promoteUserToSubcategory: builder.mutation({
-      query: ({ userId, subcategory }) => ({
+     promoteUserToSubcategory: builder.mutation({
+      query: ({ userId, subcategory, multiplier }) => ({
         url: `${USERS_URL}/admin/promote-subcategory`,
         method: 'POST',
-        body: { userId, subcategory },
+        body: { userId, subcategory, multiplier },
       }),
       invalidatesTags: (result, error, { userId }) => [{ type: 'User', id: userId }, { type: 'User', id: 'LIST' }],
     }),

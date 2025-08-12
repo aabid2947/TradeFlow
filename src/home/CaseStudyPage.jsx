@@ -25,8 +25,8 @@ const caseStudies = [
     image: "https://www.commercialdesignindia.com/cloud/2025/05/19/9DfwaoRC-E_PS1_7166_FS1-1200x675.jpg", // Indian fintech/digital banking theme
     testimonial:
       "VerifyMyKYC transformed our onboarding process. We went from hours to minutes while dramatically improving security.",
-    author: "Sarah Johnson",
-    position: "CTO, PaySecure",
+    author: "Sarah",
+    position: "CTO",
     metrics: {
       fraudReduction: "95%",
       timeReduction: "80%",
@@ -47,10 +47,10 @@ const caseStudies = [
       "Improved customer satisfaction by 45%",
       "Processed 500K+ verifications monthly",
     ],
-    image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=800&q=80", // Indian e-commerce theme
+    image: "https://plus.unsplash.com/premium_photo-1683141172508-b67ca5f17194?fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDIyfHx8ZW58MHx8fHx8&ixlib=rb-4.0.3&q=60&w=3000", // Indian e-commerce theme
     testimonial: "The global compliance features made our international expansion seamless and cost-effective.",
-    author: "Michael Chen",
-    position: "Head of Operations, ShopGlobal",
+    author: "Mohit Gupta",
+    position: "Head of Operations",
     metrics: {
       countries: "18",
       costReduction: "60%",
@@ -74,7 +74,7 @@ const caseStudies = [
     image: "https://cdn.techinasia.com/wp-content/uploads/2025/04/1745549426_1737991117555-750x563.jpg", // Indian banking compliance theme
     testimonial:
       "We achieved perfect compliance without sacrificing user experience. The automated reporting saved us countless hours.",
-    author: "Emma Rodriguez",
+    author: "Rahul Das",
     position: "Compliance Director, NeoBank",
     metrics: {
       compliance: "100%",

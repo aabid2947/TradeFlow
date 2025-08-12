@@ -6,6 +6,7 @@ import ProtectedRoute from './ProtectedRoutes';
 import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
 import { Toaster } from 'react-hot-toast'; 
+
 // import usePageTracking from '../hooks/usePageTracking';
 // import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
 import NotificationPermissionHandler from '../utils/NotificationPermissoinHandler';

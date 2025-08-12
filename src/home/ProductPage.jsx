@@ -184,7 +184,7 @@ const ProductPage = ({ serviceId }) => {
             }
         } else {
             toast.error("Please log in to purchase this service.");
-            navigate("/login");
+            navigate(`/login?status=${ service?.subcategory}`);
         }
     };
 

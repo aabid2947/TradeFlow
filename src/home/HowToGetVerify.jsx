@@ -272,11 +272,11 @@ export default function HowToVerifyPage() {
                   Start your instant KYC verification process now. It takes less than a minute!
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <button  onClick={navigate("/user")} className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg">
+                  <button onClick={()=>navigate("/user")}  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg">
                     <Play className="w-5 h-5 mr-2" />
                     Start Verification Now
                   </button>
-                  <div className="inline-flex items-center px-8 py-4 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-200 shadow-md hover:shadow-lg cursor-pointer">
+                  <div onClick={()=>navigate("/contact-us")} className="inline-flex items-center px-8 py-4 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-200 shadow-md hover:shadow-lg cursor-pointer">
                     <Mail className="w-5 h-5 mr-2" />
                     Need Help? Contact Us
                   </div>

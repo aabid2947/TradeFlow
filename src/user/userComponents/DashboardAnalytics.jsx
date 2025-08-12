@@ -173,7 +173,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
 
       <Card className="mb-6 shadow-sm border-[#1A89C1] ">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900">API Statistics</CardTitle>
+          <CardTitle className="text-lg mt-2 font-semibold text-gray-900">Verification Statistics</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80 w-full">

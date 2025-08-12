@@ -319,7 +319,7 @@ export default function BlogMetaDataForm() {
                                     </Select>
                                 </div>
                             </div>
-                            <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
+                            <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea  className="border border-gray-800 rounded-md focus:ring-white focus:outline-none" value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
                             <div className="relative">
                                 <Label className="my-2">Content</Label>
                                 <RichTextEditor value={formData.content} onChange={value => handleChange('content', value)} />
@@ -343,7 +343,7 @@ export default function BlogMetaDataForm() {
                                 <div className="space-y-4">
                                     <h3 className="font-semibold text-lg">SEO</h3>
                                     <div><Label className="my-2">Meta Title</Label><Input value={formData.metaTitle} onChange={e => handleChange('metaTitle', e.target.value)} /></div>
-                                    <div><Label className="my-2">Meta Description</Label><Textarea value={formData.metaDescription} onChange={e => handleChange('metaDescription', e.target.value)} /></div>
+                                    <div><Label className="my-2">Meta Description</Label><Textarea  className="border border-gray-800 rounded-md focus:ring-0 focus:ring-white focus:outline-none" value={formData.metaDescription} onChange={e => handleChange('metaDescription', e.target.value)} /></div>
                                 </div>
                                 <div className="space-y-4">
                                      <h3 className="font-semibold text-lg">Images</h3>

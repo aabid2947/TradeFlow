@@ -61,13 +61,15 @@ const serviceCategories = [
   { value: 'Biometric & AI-Based Verification', label: 'Biometric & AI-Based Verification' },
   { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup' },
   { value: 'Criminal Verification', label: 'Criminal Verification' },
-  { value: 'Land Record Check', label: 'Land Record Check' }
+  { value: 'Land Record Check', label: 'Land Record Check' },
+  {value:'Empoyer Verification', label: 'Empoyer Verification'}
 ];
 
 
 export default function AddServiceForm({ onSubmit, onClose, isLoading, error, initialData = null }) {
     const [service, setService] = useState(defaultServiceState);
     const [imageFile, setImageFile] = useState(null); // State for the image file
+    const [showCustomCategory, setShowCustomCategory] = useState(false);
     const isUpdateMode = !!initialData;
 
     useEffect(() => {
@@ -81,16 +83,31 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                 }
             };
             setService(data);
-            setImageFile(null); // Reset image file when opening the form
+            // Show custom field if category is not in the predefined list
+            const isCustom = data.category && !serviceCategories.some(c => c.value === data.category);
+            setShowCustomCategory(isCustom);
         } else {
             setService(defaultServiceState);
-            setImageFile(null);
+            setShowCustomCategory(false);
         }
+        setImageFile(null); // Reset image on form open
     }, [initialData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setService(prev => ({ ...prev, [name]: value }));
+    };
+    
+    // --- MODIFIED: Handler for category selection ---
+    const handleCategoryChange = (e) => {
+        const { value } = e.target;
+        if (value === 'add_new') {
+            setShowCustomCategory(true);
+            setService(prev => ({ ...prev, category: '' }));
+        } else {
+            setShowCustomCategory(false);
+            setService(prev => ({ ...prev, category: value }));
+        }
     };
 
     const handleImageChange = (e) => {
@@ -131,7 +148,6 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Pass both service data and the image file to the parent handler
         onSubmit(service, imageFile);
     };
 
@@ -191,17 +207,33 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Monthly Combo Price" name="monthly" type="number" value={service.combo_price.monthly} onChange={handleComboPriceChange} required />
                                 <Input label="Yearly Combo Price" name="yearly" type="number" value={service.combo_price.yearly} onChange={handleComboPriceChange} required />
                                 
-                                <Select label="Category" name="category" value={service.category} onChange={handleChange}>
+                                {/* --- MODIFIED: Category selection logic --- */}
+                                <Select 
+                                    label="Category" 
+                                    name="category" 
+                                    value={showCustomCategory ? 'add_new' : service.category} 
+                                    onChange={handleCategoryChange}
+                                >
                                     <option value="">Select a category (optional)</option>
                                     {serviceCategories.map(cat => (
                                         <option key={cat.value} value={cat.value}>{cat.label}</option>
                                     ))}
+                                    <option value="add_new">--- Add New Category ---</option>
                                 </Select>
 
-                                {/* NEW: Subcategory Input */}
+                                {showCustomCategory && (
+                                    <Input 
+                                        label="New Category Name" 
+                                        name="category" 
+                                        value={service.category} 
+                                        onChange={handleChange} 
+                                        placeholder="Enter new category name"
+                                        required
+                                    />
+                                )}
+
                                 <Input label="Subcategory" name="subcategory" value={service.subcategory} onChange={handleChange} placeholder="e.g., Advanced Checks" />
                                 
-                                {/* Image File Input */}
                                 <div>
                                     <label htmlFor="image" className="block text-sm font-medium text-gray-700">Service Image</label>
                                     <input

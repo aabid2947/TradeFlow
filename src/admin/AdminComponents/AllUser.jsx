@@ -1,15 +1,16 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Search, 
-  Users, 
-  Shield, 
-  UserPlus,
-  Filter,
-  RefreshCw,
-  Award,
-  MoreVertical,
-  X,
-  Loader2
+import {
+    Search,
+    Users,
+    Shield,
+    UserPlus,
+    Filter,
+    RefreshCw,
+    Award,
+    MoreVertical,
+    X,
+    Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +21,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from 'react-hot-toast';
 
 // --- MODIFIED: Updated RTK Query Hook Imports ---
-import { 
-    useGetAllUsersQuery, 
-    usePromoteUserToSubcategoryMutation, // New hook for promotion
+import {
+    useGetAllUsersQuery,
+    usePromoteUserToSubcategoryMutation, // Hook for promotion
     useRevokeSubscriptionMutation // Re-using this for demotion
 } from '@/app/api/authApiSlice';
 import { useGetServicesQuery } from '@/app/api/serviceApiSlice';
@@ -32,39 +33,42 @@ import { UserDetailsCard } from './UserDetailCard';
 
 // Loading Skeleton Component (No changes)
 const UserCardSkeleton = () => (
-  <Card className="animate-pulse shadow-lg bg-white/50">
-    <CardContent className="p-6">
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
-        <div className="flex-1 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-        </div>
-      </div>
-      <div className="space-y-3 mt-4">
-        <div className="h-3 bg-gray-300 rounded"></div>
-        <div className="h-3 bg-gray-300 rounded w-5/6"></div>
-      </div>
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <div className="h-10 bg-gray-300 rounded-lg"></div>
-      </div>
-    </CardContent>
-  </Card>
+    <Card className="animate-pulse shadow-lg bg-white/50">
+        <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+            </div>
+            <div className="space-y-3 mt-4">
+                <div className="h-3 bg-gray-300 rounded"></div>
+                <div className="h-3 bg-gray-300 rounded w-5/6"></div>
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="h-10 bg-gray-300 rounded-lg"></div>
+            </div>
+        </CardContent>
+    </Card>
 );
 
 
-// --- MODIFIED: Promotion Modal now works with Subcategories ---
+// --- MODIFIED: Promotion Modal now includes a multiplier input ---
 const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
-    // State is now based on user's `promotedCategories` which will store subcategories
     const [selectedSubcategories, setSelectedSubcategories] = useState(new Set(user.promotedCategories || []));
-    
-    // Using the new/updated hooks
+    const [multipliers, setMultipliers] = useState({}); // State for multipliers
+
     const [promoteUser, { isLoading: isPromoting }] = usePromoteUserToSubcategoryMutation();
     const [revokeAccess, { isLoading: isRevoking }] = useRevokeSubscriptionMutation();
 
     useEffect(() => {
-        setSelectedSubcategories(new Set(user.promotedCategories || []));
-    }, [user]);
+        // Reset state when modal opens or user changes
+        if (isOpen) {
+            setSelectedSubcategories(new Set(user.promotedCategories || []));
+            setMultipliers({});
+        }
+    }, [user, isOpen]);
 
     const handleCheckboxChange = (subcategory) => {
         setSelectedSubcategories(prev => {
@@ -78,24 +82,28 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
         });
     };
 
+    const handleMultiplierChange = (subcategory, value) => {
+        setMultipliers(prev => ({
+            ...prev,
+            [subcategory]: parseInt(value, 10) || 1
+        }));
+    };
+
     const handleSaveChanges = async () => {
         const originalSubcategories = new Set(user.promotedCategories || []);
         const newSubcategories = selectedSubcategories;
 
-        // Determine which subcategories to add and which to remove
         const toAdd = [...newSubcategories].filter(sub => !originalSubcategories.has(sub));
         const toRemove = [...originalSubcategories].filter(sub => !newSubcategories.has(sub));
 
         const promises = [];
 
-        // For each new selection, call the promotion mutation
         toAdd.forEach(subcategory => {
-            promises.push(promoteUser({ userId: user._id, subcategory }).unwrap());
+            const multiplier = multipliers[subcategory] || 1; // Default to 1 if not entered
+            promises.push(promoteUser({ userId: user._id, subcategory, multiplier }).unwrap());
         });
 
-        // For each deselection, call the revoke mutation
         toRemove.forEach(subcategory => {
-            // Note: revokeSubscription expects the key to be 'category'
             promises.push(revokeAccess({ userId: user._id, category: subcategory }).unwrap());
         });
 
@@ -108,42 +116,62 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
             console.error("Promotion update error:", error);
         }
     };
-    
+
     if (!isOpen) return null;
 
     const isLoading = isPromoting || isRevoking;
+
+    // --- FIX: Define toAdd in the component's render scope ---
+    const originalSubcategories = new Set(user.promotedCategories || []);
+    const toAdd = [...selectedSubcategories].filter(sub => !originalSubcategories.has(sub));
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0">
             <Card className="w-full max-w-md m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle className="text-xl">Manage Promotions</CardTitle>
-                        <p className="text-gray-600">For user: <span className="font-semibold">{user.name}</span></p>
+                    <div className="w-full flex flex-row items-center justify-between">
+                        <div className='mr-10 md:mr-35'>
+
+                            <CardTitle className="text-xl">Manage Promotions</CardTitle>
+                            <p className="text-gray-600">For user: <span className="font-semibold">{user.name}</span></p>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5"/></Button>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                         <p className="font-semibold text-gray-800">Available Service Subcategories:</p>
                         {allSubcategories.map(subcategory => (
-                            <div key={subcategory} className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50">
-                                <Checkbox
-                                    id={`subcat-${subcategory}`}
-                                    checked={selectedSubcategories.has(subcategory)}
-                                    onCheckedChange={() => handleCheckboxChange(subcategory)}
-                                />
-                                <Label htmlFor={`subcat-${subcategory}`} className="flex-1 cursor-pointer">{subcategory.replace(/_/g, " ")}</Label>
+                            <div key={subcategory} className="flex items-center justify-between space-x-3 p-2 rounded-md hover:bg-gray-50">
+                                <div className="flex items-center space-x-3">
+                                    <Checkbox
+                                        id={`subcat-${subcategory}`}
+                                        checked={selectedSubcategories.has(subcategory)}
+                                        onCheckedChange={() => handleCheckboxChange(subcategory)}
+                                    />
+                                    <Label htmlFor={`subcat-${subcategory}`} className="flex-1 cursor-pointer">{subcategory.replace(/_/g, " ")}</Label>
+                                </div>
+                                {selectedSubcategories.has(subcategory) && (
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        className="w-24 h-9"
+                                        placeholder="Count"
+                                        value={multipliers[subcategory] || '1'}
+                                        onChange={(e) => handleMultiplierChange(subcategory, e.target.value)}
+                                        disabled={!toAdd.includes(subcategory)} // FIX: Now `toAdd` is in scope
+                                    />
+                                )}
                             </div>
                         ))}
                     </div>
                     <div className="mt-6 flex justify-end gap-3">
                         <Button variant="outline" onClick={onClose}>Cancel</Button>
-                        <Button 
-                            onClick={handleSaveChanges} 
+                        <Button
+                            onClick={handleSaveChanges}
                             disabled={isLoading}
                         >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Save Changes
                         </Button>
                     </div>
@@ -158,13 +186,13 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
 const UserCard = ({ user, onPromote, onNameClick }) => {
     const getRoleStyle = (role) => {
         switch (role?.toLowerCase()) {
-          case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
-          default: return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
+            default: return 'bg-gray-100 text-gray-800 border-gray-200';
         }
     };
 
     const getAvatarBgColor = (name) => {
-        const colors = [ 'from-blue-500 to-blue-600', 'from-green-500 to-green-600', 'from-purple-500 to-purple-600', 'from-red-500 to-red-600' ];
+        const colors = ['from-blue-500 to-blue-600', 'from-green-500 to-green-600', 'from-purple-500 to-purple-600', 'from-red-500 to-red-600'];
         if (!name) return colors[0];
         const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         return colors[hash % colors.length];
@@ -181,7 +209,7 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
                         {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 
+                        <h3
                             className="font-semibold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors cursor-pointer"
                             onClick={() => onNameClick(user)}
                         >
@@ -207,7 +235,7 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
     );
 };
 
-// Main Component
+// Main Component (No changes)
 export default function AllUser() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -242,7 +270,7 @@ export default function AllUser() {
         setSelectedUser(user);
         setIsModalOpen(true);
     };
-    
+
     const handleUserDetailClick = (user) => {
         setDetailUser(user);
         setIsDetailCardOpen(true);
@@ -267,8 +295,8 @@ export default function AllUser() {
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-                        <p className="text-gray-600">Manage and view all registered users and their promotions</p>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
+                            <p className="text-gray-600">Manage and view all registered users and their promotions</p>
                         </div>
                     </div>
                 </div>
@@ -283,51 +311,51 @@ export default function AllUser() {
                 </Card>
 
                 <Card className="bg-white/80 p-2 md:p-4 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
-                <CardHeader className="border-b border-gray-100 bg-white/50">
-                    <CardTitle className="text-xl font-semibold text-gray-900">
-                        All Users ({filteredUsers.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                    {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {Array.from({ length: 6 }).map((_, i) => <UserCardSkeleton key={i} />)}
-                    </div>
-                    ) : isUsersError ? (
-                    <div className="text-center py-12 text-red-600">
-                        <p className="text-lg font-medium">Failed to load users.</p>
-                    </div>
-                    ) : filteredUsers.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                        <p className="text-gray-600">{searchTerm ? 'Try adjusting your search terms.' : 'No users have been registered yet.'}</p>
-                    </div>
-                    ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredUsers.map((user) => (
-                            <UserCard 
-                                key={user._id} 
-                                user={user} 
-                                onPromote={handlePromoteClick} 
-                                onNameClick={handleUserDetailClick}
-                            />
-                        ))}
-                    </div>
-                    )}
-                </CardContent>
+                    <CardHeader className="border-b border-gray-100 bg-white/50">
+                        <CardTitle className="text-xl font-semibold text-gray-900">
+                            All Users ({filteredUsers.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        {isLoading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {Array.from({ length: 6 }).map((_, i) => <UserCardSkeleton key={i} />)}
+                            </div>
+                        ) : isUsersError ? (
+                            <div className="text-center py-12 text-red-600">
+                                <p className="text-lg font-medium">Failed to load users.</p>
+                            </div>
+                        ) : filteredUsers.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                                <p className="text-gray-600">{searchTerm ? 'Try adjusting your search terms.' : 'No users have been registered yet.'}</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredUsers.map((user) => (
+                                    <UserCard
+                                        key={user._id}
+                                        user={user}
+                                        onPromote={handlePromoteClick}
+                                        onNameClick={handleUserDetailClick}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
                 </Card>
             </div>
-            
+
             {selectedUser && (
-                <PromotionModal 
-                    user={selectedUser} 
+                <PromotionModal
+                    user={selectedUser}
                     allSubcategories={allSubcategories} // Pass subcategories to the modal
-                    isOpen={isModalOpen} 
-                    onClose={handleCloseModal} 
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
                 />
             )}
-            
+
             <UserDetailsCard
                 user={detailUser}
                 isOpen={isDetailCardOpen}
@@ -335,4 +363,4 @@ export default function AllUser() {
             />
         </div>
     );
-};
+}

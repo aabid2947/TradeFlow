@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { selectCurrentToken, selectCurrentUserRole } from '@/features/auth/authSlice';
 import PrivacyPolicy from '../home/PrivacyPolicyPage';
 import ErrorPage from "@/pages/ErrorPage";
@@ -106,16 +106,34 @@ export const publicRoutes = [
 ];
 
 /**
- * Redirects logged-in users to their respective dashboards.
+ * --- MODIFIED: This component now handles all post-login redirection logic ---
+ * It redirects logged-in users away from auth pages to their respective dashboards,
+ * prioritizing any specific redirection requests (like the 'status' param).
  */
 export const RedirectIfLoggedIn = () => {
   const token = useSelector(selectCurrentToken);
   const role = useSelector(selectCurrentUserRole);
+  const location = useLocation();
 
   if (token) {
+    // Priority 1: Check for a 'status' query param for redirection to a specific service.
+    const queryParams = new URLSearchParams(location.search);
+    const statusParam = queryParams.get('status');
+    if (statusParam) {
+      return <Navigate to={`/user/service/${statusParam}`} replace />;
+    }
+
+    // Priority 2: Check if the user was coming from a different protected page.
+    const from = location.state?.from?.pathname;
+    if (from && from !== location.pathname) {
+      return <Navigate to={from} replace />;
+    }
+    
+    // Priority 3: Default redirection based on the user's role.
     const redirectTo = role === 'admin' ? '/admin' : '/user';
     return <Navigate to={redirectTo} replace />;
   }
 
+  // If not logged in, render the child component (e.g., the login page).
   return <Outlet />;
 };

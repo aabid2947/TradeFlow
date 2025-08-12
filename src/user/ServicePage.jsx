@@ -9,7 +9,7 @@ import SubscriptionPurchaseCard from "./userComponents/SubscriptionPurchaseCard"
 import SidebarComponent from "./userComponents/SidebarComponent";
 import DashboardHeader from "./userComponents/DashboardHeader";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, Clock, CheckCircle } from "lucide-react";
 
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { selectCurrentUser } from "@/features/auth/authSlice";
@@ -58,19 +58,37 @@ export default function ServicePage() {
     return null;
   }, [filteredServices]);
 
-  const isSubscribed = useMemo(() => {
-    if (!userInfo?.activeSubscriptions) return false;
+  // Enhanced subscription logic with usage tracking
+  const subscriptionInfo = useMemo(() => {
+    if (!userInfo?.activeSubscriptions) {
+      return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
+    }
     
-    const userActivePlanNames = new Set(
-      userInfo.activeSubscriptions
-        .filter(sub => new Date(sub.expiresAt) > new Date())
-        .map(sub => sub.category)
-    );
+    // Find active subscription for current subcategory or parent category
+    const activeSubscription = userInfo.activeSubscriptions.find(sub => {
+      const isActive = new Date(sub.expiresAt) > new Date();
+      const matchesSubcategory = sub.category === subcategory;
+      const matchesParentCategory = parentCategory && sub.category === `${parentCategory} Plan`;
+      
+      return isActive && (matchesSubcategory || matchesParentCategory);
+    });
 
-    const parentPlanName = parentCategory ? `${parentCategory} Plan` : '';
-    
-    return userActivePlanNames.has(parentPlanName) || userActivePlanNames.has(subcategory);
+    if (activeSubscription) {
+      const usageRemaining = Math.max(0, activeSubscription.usageLimit - activeSubscription.usageCount);
+      return {
+        isSubscribed: true,
+        usageRemaining,
+        totalUsage: activeSubscription.usageCount,
+        usageLimit: activeSubscription.usageLimit,
+        expiresAt: activeSubscription.expiresAt,
+        subscription: activeSubscription
+      };
+    }
+
+    return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
   }, [userInfo, parentCategory, subcategory]);
+
+  const { isSubscribed, usageRemaining, totalUsage, usageLimit, expiresAt } = subscriptionInfo;
   
   const planToPurchase = useMemo(() => {
     if (isSubscribed || !subcategory) return null;
@@ -85,17 +103,54 @@ export default function ServicePage() {
 
   const activeService = useMemo(() => allServices.find(s => s.service_key === activeServiceId), [allServices, activeServiceId]);
 
+  // Usage status component
+  const UsageStatusBadge = () => {
+    if (!isSubscribed) return null;
+
+    const usagePercentage = (totalUsage / usageLimit) * 100;
+    const isLowUsage = usageRemaining <= Math.ceil(usageLimit * 0.2); // Warning when 20% or less remaining
+    const isNoUsage = usageRemaining === 0;
+
+    return (
+      <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium ${
+        isNoUsage 
+          ? 'bg-red-100 text-red-800 border border-red-200' 
+          : isLowUsage 
+            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
+            : 'bg-green-100 text-green-800 border border-green-200'
+      }`}>
+        {isNoUsage ? (
+          <X className="w-4 h-4" />
+        ) : isLowUsage ? (
+          <Clock className="w-4 h-4" />
+        ) : (
+          <CheckCircle className="w-4 h-4" />
+        )}
+        <span>
+          {usageRemaining} of {usageLimit} uses remaining
+        </span>
+      </div>
+    );
+  };
+
+  // Expiry date formatter
+  const formatExpiryDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
   useEffect(() => {
     const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // --- FIX: The dependency array is changed to prevent re-opening the modal ---
   useEffect(() => {
-    // This effect auto-selects the first service when the category loads.
-    // By only depending on `filteredServices`, it won't run again when the user
-    // closes the modal (which sets activeServiceId to null), thus fixing the bug.
     if (filteredServices.length > 0) {
       setActiveServiceId(filteredServices[0].service_key);
     }
@@ -139,6 +194,13 @@ export default function ServicePage() {
 
   const handleExecuteVerification = async (payload) => {
       if (!activeService) return;
+      
+      // Check if user has remaining usage
+      if (isSubscribed && usageRemaining <= 0) {
+        toast.error("You have no remaining usage for this service. Please upgrade your plan.");
+        return;
+      }
+      
       setInputData(payload);
       setVerificationResult(null);
       setVerificationError(null);
@@ -146,7 +208,7 @@ export default function ServicePage() {
         const result = await executeService({ serviceKey: activeService.service_key, payload }).unwrap();
         setVerificationResult(result);
         toast.success(result.message || "Verification successful!");
-        await refetchUserProfile();
+        await refetchUserProfile(); // This will update the usage count
       } catch (err) {
         setVerificationError(err.data || { message: "Service execution failed." });
         toast.error(err.data?.message || "Could not execute service.");
@@ -182,7 +244,8 @@ export default function ServicePage() {
             onVerify={handleExecuteVerification} 
             isVerifying={isVerifying} 
             isSubscribed={isSubscribed} 
-            onSubscribeClick={handleSubscribeClick} 
+            onSubscribeClick={handleSubscribeClick}
+            usageRemaining={usageRemaining} // Pass usage info to UserInfoCard
           />
         </div>
         <div className="md:col-span-1">
@@ -205,19 +268,69 @@ export default function ServicePage() {
         <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
           <div className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500">
-            <div className="flex items-center justify-start mb-6 md:space-x-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+              <div className="flex items-center gap-4">
                 <Button variant="outline" onClick={handleGoBack} className="flex items-center gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Back 
+                  <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <h1 className=" text-xl md:text-2xl font-bold mx-2 md:text-right">
-                    {subcategory}
+                <h1 className="text-xl md:text-2xl font-bold">
+                  {subcategory}
                 </h1>
+              </div>
+              
+              {/* Usage Status Display */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <UsageStatusBadge />
+                {isSubscribed && expiresAt && (
+                  <div className="text-sm text-gray-600">
+                    Expires: {formatExpiryDate(expiresAt)}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Low usage warning */}
+            {isSubscribed && usageRemaining <= Math.ceil(usageLimit * 0.2) && usageRemaining > 0 && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                  <p className="text-yellow-800 font-medium">
+                    Low Usage Alert: You have only {usageRemaining} verification{usageRemaining !== 1 ? 's' : ''} remaining.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* No usage remaining warning */}
+            {isSubscribed && usageRemaining === 0 && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <X className="w-5 h-5 text-red-600" />
+                    <p className="text-red-800 font-medium">
+                      No Usage Remaining: You've used all {usageLimit} verifications for this plan.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleSubscribeClick}
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    Upgrade Plan
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <ServicesList services={filteredServices} isLoading={isLoadingServices || isLoadingPricing} activeServiceId={activeServiceId} onServiceSelect={handleServiceSelect} />
+                <ServicesList 
+                  services={filteredServices} 
+                  isLoading={isLoadingServices || isLoadingPricing} 
+                  activeServiceId={activeServiceId} 
+                  onServiceSelect={handleServiceSelect} 
+                />
               </div>
               <div className="hidden lg:grid lg:col-span-2 grid-cols-1 md:grid-cols-2 gap-6">
                 {renderRightPanel()}
@@ -236,14 +349,29 @@ export default function ServicePage() {
               <XIcon className="h-5 w-5" />
             </Button>
             <div className="overflow-y-auto p-6 space-y-6">
-                { showSubscriptionCard && planToPurchase ? (
-                  <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
-                ) : (
-                  <>
-                    <UserInfoCard services={filteredServices} activeServiceId={activeServiceId} onVerify={handleExecuteVerification} isVerifying={isVerifying} isSubscribed={isSubscribed} onSubscribeClick={handleSubscribeClick} />
-                    {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData} />}
-                  </>
-                )}
+              {/* Usage status in mobile modal */}
+              {isSubscribed && (
+                <div className="flex justify-center">
+                  <UsageStatusBadge />
+                </div>
+              )}
+              
+              { showSubscriptionCard && planToPurchase ? (
+                <SubscriptionPurchaseCard planData={planToPurchase} userInfo={userInfo} onClose={() => setShowSubscriptionCard(false)} />
+              ) : (
+                <>
+                  <UserInfoCard 
+                    services={filteredServices} 
+                    activeServiceId={activeServiceId} 
+                    onVerify={handleExecuteVerification} 
+                    isVerifying={isVerifying} 
+                    isSubscribed={isSubscribed} 
+                    onSubscribeClick={handleSubscribeClick}
+                    usageRemaining={usageRemaining}
+                  />
+                  {(verificationResult || verificationError) && <UserDetailsCard result={verificationResult} error={verificationError} serviceName={activeService?.name} inputData={inputData} />}
+                </>
+              )}
             </div>
           </div>
         </div>

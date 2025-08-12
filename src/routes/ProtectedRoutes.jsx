@@ -17,10 +17,16 @@ const ProtectedRoute = ({ allowedRoles }) => {
   }
 
   // Once loading is false, proceed with the existing logic
-  if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+ if (!token) {
+  const searchParams = new URLSearchParams(location.search);
+  const statusParam = searchParams.get('status');
 
+  const loginPath = statusParam
+    ? `/login?status=${encodeURIComponent(statusParam)}`
+    : '/login';
+
+  return <Navigate to={loginPath} state={{ from: location }} replace />;
+}
   const isAuthorized = allowedRoles && allowedRoles.includes(role);
 
   if (!isAuthorized) {
