@@ -36,7 +36,7 @@ const staticNavItems = [
     name: "Resources",
     hasDropdown: true,
     items: [
-      { name: "Case Studies", href: "#", description: "Customer success stories" },
+      { name: "Case Studies", href: "/case-study", description: "Customer success stories" },
       { name: "Blog", href: "/blog", description: "Industry insights and updates" },
       // { name: "Support", href: "/contact-us", description: "Support and FAQs" },
     ],

@@ -17,6 +17,7 @@ import BlogPage from '../home/BlogPage';
 import TermsAndConditionsPage from '../home/Terms&ConditionPage';
 import DisclaimerPage from '../home/Disclaimer';
 import HowToVerifyPage from '../home/HowToGetVerify';
+import CaseStudyPage from '../home/CaseStudyPage'; 
 export const publicRoutes = [
   {
     path: '/',
@@ -36,6 +37,11 @@ export const publicRoutes = [
   {
     path: '/how-to-get-verify',
     element:<HowToVerifyPage/>,
+    errorElement: <ErrorPage />
+  },
+   {
+    path: '/case-study',
+    element:<CaseStudyPage/>,
     errorElement: <ErrorPage />
   },
     {
