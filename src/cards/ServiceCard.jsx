@@ -83,12 +83,12 @@ export default function ServiceCard({
                 {verificationCount} Verification
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            {/* <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-600">
                 {durationDays} days
               </span>
-            </div>
+            </div> */}
         </div>
         
         {/* MODIFIED: Reduced top padding */}

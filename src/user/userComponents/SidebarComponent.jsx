@@ -41,7 +41,7 @@ const serviceCategories = [
   { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup', icon: Database },
   // { value: 'Criminal Verification', label: 'Criminal Verification', icon: AlertTriangle },
   // { value: 'Land Record Check', label: 'Land Record Check', icon: MapPin },
-  { value: 'PAN', label: 'PAN', icon: IdCard },
+  // { value: 'PAN', label: 'PAN', icon: IdCard },
   { value: 'Empoyer Verification', label: 'Empoyer Verification', icon: Briefcase },
 
   // { value: 'CIN', label: 'CIN', icon: Briefcase  }

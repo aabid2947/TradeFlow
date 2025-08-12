@@ -232,7 +232,7 @@ const isVerificationSuccessful = (result) => {
     if (!result || !result.data) return false;
     const apiData = result.data;
 
-    const errorCodes = ['1004', '1001', '1002', '1003', '1005', '1006', '404', '400'];
+    const errorCodes = ['1004', '1001', '1003', '1005', '1006', '404', '400'];
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     if (apiData.status === 'INVALID') return false;
 
@@ -277,7 +277,7 @@ export default function ServiceExecutionPage() {
     behavior: "smooth", 
   });
   },[])
-  
+
     useEffect(() => {
         const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
         window.addEventListener('resize', handleResize);
@@ -321,10 +321,11 @@ export default function ServiceExecutionPage() {
         try {
             const result = await executeService({ serviceKey: service.service_key, payload }).unwrap();
             
-            // console.log(result.data?.message)
+            console.log(result.data)
             if (isVerificationSuccessful(result)) {
                 showNotification(result.data?.message || 'Verification Successful!', 'success');
                 setVerificationResult(result);
+                console.log()
             } else {
                 if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
                       dispatch(apiSlice.util.invalidateTags([
@@ -356,7 +357,7 @@ export default function ServiceExecutionPage() {
             }
             
         } catch (err) {
-            console.log(err.data)
+            // console.log(err.data)
             if(err.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
                       dispatch(apiSlice.util.invalidateTags([
                             { type: 'User', id: 'PROFILE' },

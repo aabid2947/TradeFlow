@@ -64,10 +64,10 @@ export default function ServiceListCard({ service, buttonType, onButtonClick }) 
               <Shield className="w-4 h-4 text-blue-500" />
               <span>{service.globalUsageCount} Verifications</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            {/* <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-gray-500" />
               <span>{service.durationDays || 'N/A'} days</span>
-            </div>
+            </div> */}
           </div>
           
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">

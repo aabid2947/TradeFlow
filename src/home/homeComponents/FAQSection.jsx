@@ -9,7 +9,7 @@ const faqData = [
     category: "Getting Started",
     question: "How does VerifyMyKyc work?",
     answer:
-      "VerifyMyKyc uses advanced AI and machine learning algorithms to verify identity documents in real-time. Simply upload your document through our secure API or web interface, and our system validates it against multiple databases and security checks within seconds. Our platform supports over 50+ document types and provides instant verification results with detailed compliance reports.",
+      "VerifyMyKyc uses advanced AI and machine learning algorithms to verify identity documents in real-time. Simply upload your document through our secure web interface, and our system validates it against multiple databases and security checks within seconds. Our platform supports over 50+ document types and provides instant verification results with detailed compliance reports.",
     popular: true,
   },
   {
@@ -25,7 +25,7 @@ const faqData = [
     category: "Enterprise",
     question: "Does VerifyMyKyc work for large teams and enterprises?",
     answer:
-      "Yes, VerifyMyKyc is designed to scale with your business needs. We offer enterprise plans with bulk verification capabilities, team management features, dedicated API endpoints, custom integrations, and 24/7 priority support. Our platform can handle millions of verifications per month with 99.9% uptime guarantee.",
+      "Yes, VerifyMyKyc is designed to scale with your business needs. We offer enterprise plans with bulk verification capabilities, team management features,custom integrations, and 24/7 priority support. Our platform can handle millions of verifications per month with 99.9% uptime guarantee.",
     popular: false,
   },
   {
@@ -47,9 +47,9 @@ const faqData = [
   {
     id: 6,
     category: "Integration",
-    question: "How easy is it to integrate VerifyMyKyc API?",
+    question: "How easy is it to use VerifyMyKyc ?",
     answer:
-      "Our REST API is designed for developers and can be integrated in minutes. We provide comprehensive documentation, SDKs for popular programming languages (Python, Node.js, PHP, Java), code examples, and sandbox environment for testing. Most integrations are completed within a few hours, and our technical support team is available to assist you.",
+      "Our REST is designed for developers and can be integrated in minutes. We provide comprehensive documentation, SDKs for popular programming languages (Python, Node.js, PHP, Java), code examples, and sandbox environment for testing. Most integrations are completed within a few hours, and our technical support team is available to assist you.",
     popular: false,
   },
   {

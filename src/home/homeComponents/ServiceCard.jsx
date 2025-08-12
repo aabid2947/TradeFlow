@@ -47,16 +47,9 @@ export default function ServiceCard({
       </div>
 
       <CardContent className="p-3 space-y-3">
-        <div className="flex items-center justify-between gap-4 ">
-          {/* <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
-            {demandLevel}
-          </Badge> */}
-          {/* <button className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors">
-            <Heart className="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors" />
-          </button> */}
-        </div>
+       
 
-        <h3 className="text-lg font-semibold text-gray-900 truncate">
+        <h3 className="text-lg text-start font-semibold text-gray-900 truncate">
           {serviceName}
         </h3>
         <div className="flex items-center gap-4 text-xs text-gray-600">

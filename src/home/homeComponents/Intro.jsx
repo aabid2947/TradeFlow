@@ -108,7 +108,7 @@ export default function CompanyIntro() {
                 }`}
                 style={{ transitionDelay: '300ms' }}
               >
-                VerifyMyKyc
+                Verify My Kyc
               
               </h2>
             </div>

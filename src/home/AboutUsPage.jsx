@@ -89,7 +89,7 @@ export default function AboutUsPage() {
     <section className="mb-20">
   <SectionHeader
     title="What We Do"
-    subtitle="We provide a comprehensive, API-driven platform that offers a wide range of verification services. With our cutting-edge technology, you can quickly and easily verify:"
+    subtitle="We provide a comprehensive,  Platform that offers a wide range of verification services. With our cutting-edge technology, you can quickly and easily verify:"
   />
   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
     {[

@@ -148,12 +148,10 @@ const SimpleDataTable = ({ data, title }) => {
 // Paste this updated function into your UserDetailsCard.jsx file
 
 // UPDATED PDF GENERATION FUNCTION
-const generatePDF = (result, serviceName) => {
-  const reportElement = document.createElement('div');
-  
-  // The HTML and CSS for the report content remain the same
+const generatePDF = (result, serviceName = 'Verification') => {
   const details = findDetailsObject(result.data);
   const currentDate = new Date().toLocaleDateString('en-GB');
+  
   const flattenDetailsForDisplay = (obj, prefix = '') => {
     if (!obj || typeof obj !== 'object') return [];
     return Object.entries(obj).reduce((acc, [key, value]) => {
@@ -166,123 +164,372 @@ const generatePDF = (result, serviceName) => {
       return acc;
     }, []);
   };
+  
   const allDetails = details ? flattenDetailsForDisplay(details) : [];
 
-  reportElement.innerHTML = `
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>${serviceName} Verification Report</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-            body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
-            .report-container { width: 550px; padding: 60px; background: #fff; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-            .logo { width: 100px; height: 50px; }
-            .company-info { text-align: right; font-size: 11px; color: #555; }
-            .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
-            .title-section { padding: 25px 0; text-align: center; }
-            .title-section h1 { font-size: 22px; color: #1a202c; margin: 0 0 8px 0; font-weight: 700; }
-            .title-section p { font-size: 14px; color: #4a5568; margin: 0; }
-            .current-date { text-align: right; margin-bottom: 20px; font-size: 11px; color: #718096; }
-            .data-table { width: 100%; border-collapse: collapse; }
-            .data-table tr { border-bottom: 1px solid #edf2f7; }
-            .data-table tr:last-child { border-bottom: none; }
-            .data-table td { padding: 12px 0; vertical-align: top; }
-            .data-table td:first-child { font-weight: 500; width: 45%; color: #4a5568; }
-            .data-table td:last-child { color: #1a202c; font-weight: 500; }
-            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #718096; }
-            .footer h4 { font-size: 11px; font-weight: 700; color: #2d3748; margin-bottom: 10px; }
-            .footer p { margin-bottom: 8px; text-align: justify; line-height: 1.6; }
-            .confidential { text-align: center; font-weight: bold; color: #c53030; margin-top: 20px; font-size: 10px; letter-spacing: 0.5px; }
-        </style>
-    </head>
-    <body>
-        <div class="report-container">
-            <div class="header">
-                <img src="${VerifyMyKyc}" alt="Company Logo" class="logo"/>
-                <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
-            </div>
-            <div class="title-section"><h1>Verification Report</h1><p>${serviceName} Status</p></div>
-            <div class="current-date"><strong>Date of Report:</strong> ${currentDate}</div>
-            <div class="data-section">
-                <table class="data-table"><tbody>
-                    ${allDetails.length > 0 ? allDetails.map(({ key, value }) => `<tr><td>${key}</td><td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>'}
-                </tbody></table>
-            </div>
-            <div class="footer">
-                <h4>LEGAL DISCLAIMER</h4>
-                <p>All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
-                <p>The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
-                <p>Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.</p>
-                <p>Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
-                <p>Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.</p>
-                <div class="confidential">- VERIFY MY KYC CONFIDENTIAL -</div>
-            </div>
+  // Method 1: Enhanced jsPDF HTML method with proper sizing
+  const generateWithJsPDFHTML = () => {
+    const reportElement = document.createElement('div');
+    
+    reportElement.innerHTML = `
+      <div class="report-container" style="
+        font-family: 'Roboto', Arial, sans-serif; 
+        font-size: 18px; 
+        color: #333; 
+        margin: 0; 
+        padding: 40px; 
+        background-color: #fff;
+        width: 800px;
+        max-width: 800px;
+        line-height: 1.6;
+        box-sizing: border-box;
+      ">
+        <!-- Header Section -->
+        <div class="header" style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: flex-start; 
+          padding-bottom: 30px; 
+          border-bottom: 3px solid #e5e7eb;
+          margin-bottom: 40px;
+        ">
+          <div class="logo-section">
+            <img style="width: 160px; height: 80px; object-fit: contain;" src="${typeof VerifyMyKyc !== 'undefined' ? VerifyMyKyc : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQwIiBoZWlnaHQ9IjcwIiB2aWV3Qm94PSIwIDAgMTQwIDcwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxNDAiIGhlaWdodD0iNzAiIGZpbGw9IiMxOTg3QkYiLz48dGV4dCB4PSI3MCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE2IiBmb250LWZhbWlseT0iQXJpYWwiPkxPR088L3RleHQ+PC9zdmc+'}" alt="Company Logo" style="width: 160px; height: 80px;"/>
+          </div>
+          <div class="company-info" style="text-align: right; font-size: 16px; color: #555;">
+            <h3 style="margin: 0 0 15px 0; color: #111; font-size: 24px; font-weight: 700;">Verify My KYC</h3>
+            <p style="margin: 0; line-height: 1.7; font-size: 16px;">
+              A-24/5, Mohan Cooperative Industrial Area,<br>
+              Badarpur, Second Floor,<br>
+              New Delhi 110044
+            </p>
+          </div>
         </div>
-    </body></html>
-  `;
 
-  // Append to body to render it off-screen
-  document.body.appendChild(reportElement);
-  
-  const elementToCapture = reportElement.querySelector('.report-container');
+        <!-- Title Section -->
+        <div class="title-section" style="padding: 30px 0; text-align: center; margin-bottom: 35px;">
+          <h1 style="font-size: 42px; color: #1a202c; margin: 0 0 15px 0; font-weight: 700;">
+            Verification Report
+          </h1>
+          <p style="font-size: 26px; color: #4a5568; margin: 0; font-weight: 500;">
+            ${serviceName} Status
+          </p>
+        </div>
 
-  if (elementToCapture) {
-      html2canvas(elementToCapture, { 
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        // These options are key to capturing the entire element, not just the visible part
-        height: elementToCapture.scrollHeight,
-        windowHeight: elementToCapture.scrollHeight
-      }).then(canvas => {
-          try {
-              const imgData = canvas.toDataURL('image/png');
-              const pdf = new jsPDF('p', 'mm', 'a4');
-              
-              const pdfWidth = pdf.internal.pageSize.getWidth();
-              const pdfHeight = pdf.internal.pageSize.getHeight();
-              
-              const canvasWidth = canvas.width;
-              const canvasHeight = canvas.height;
-              
-              const ratio = canvasWidth / canvasHeight;
-              const imgHeight = pdfWidth / ratio;
-              
-              let heightLeft = imgHeight;
-              let position = 0;
-              let page = 1;
+        <!-- Date Section -->
+        <div class="current-date" style="
+          text-align: right; 
+          margin-bottom: 40px; 
+          font-size: 18px; 
+          color: #718096; 
+          font-weight: 500;
+        ">
+          <strong>Date of Report:</strong> ${currentDate}
+        </div>
 
-              // Add the first page
-              pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-              heightLeft -= pdfHeight;
-
-              // Add more pages if the content is longer than one page
-              while (heightLeft > 0) {
-                  position = -pdfHeight * page;
-                  pdf.addPage();
-                  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                  heightLeft -= pdfHeight;
-                  page++;
+        <!-- Data Section -->
+        <div class="data-section" style="margin-bottom: 50px;">
+          <table style="
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 30px;
+            table-layout: fixed;
+          ">
+            <tbody>
+              ${allDetails.length > 0 
+                ? allDetails.map(({ key, value }, index) => `
+                  <tr style="
+                    border-bottom: 2px solid #edf2f7;
+                    page-break-inside: avoid;
+                    ${index > 0 && index % 8 === 0 ? 'page-break-before: auto;' : ''}
+                  ">
+                    <td style="
+                      padding: 25px 30px 25px 0; 
+                      vertical-align: top; 
+                      font-weight: 600; 
+                      width: 45%; 
+                      color: #4a5568;
+                      word-wrap: break-word;
+                      font-size: 18px;
+                      line-height: 1.5;
+                    ">
+                      ${key}
+                    </td>
+                    <td style="
+                      padding: 25px 0; 
+                      color: #1a202c; 
+                      font-weight: 500;
+                      word-wrap: break-word;
+                      font-size: 18px;
+                      width: 55%;
+                      line-height: 1.5;
+                    ">
+                      ${(value === null || value === undefined) ? 'N/A' : String(value)}
+                    </td>
+                  </tr>
+                `).join('') 
+                : `<tr>
+                    <td colspan="2" style="
+                      text-align: center; 
+                      padding: 50px 20px; 
+                      color: #718096;
+                      font-style: italic;
+                      font-size: 20px;
+                    ">
+                      No details available.
+                    </td>
+                   </tr>`
               }
-              
-              pdf.save(`Verification_Report_${serviceName.replace(/\s+/g, '_')}.pdf`);
-          } catch (e) {
-              console.error("Error creating PDF:", e);
-          } finally {
-              document.body.removeChild(reportElement);
-          }
-      }).catch(err => {
-          console.error("html2canvas failed:", err);
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer" style="
+          margin-top: 80px; 
+          padding-top: 40px; 
+          border-top: 3px solid #e5e7eb; 
+          font-size: 14px; 
+          color: #718096;
+          page-break-inside: avoid;
+        ">
+          <h4 style="
+            font-size: 20px; 
+            font-weight: 700; 
+            color: #2d3748; 
+            margin-bottom: 25px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">
+            Legal Disclaimer
+          </h4>
+          <div style="line-height: 1.8; margin-bottom: 20px; font-size: 15px;">
+            <p style="margin-bottom: 18px; text-align: justify;">
+              All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.
+            </p>
+            <p style="margin-bottom: 30px; text-align: justify;">
+              Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.
+            </p>
+          </div>
+          
+          <div class="confidential" style="
+            text-align: center; 
+            font-weight: bold; 
+            color: #c53030; 
+            margin-top: 40px; 
+            font-size: 16px; 
+            letter-spacing: 1px;
+            padding: 25px 0;
+            border-top: 1px solid #e5e7eb;
+          ">
+            - VERIFY MY KYC CONFIDENTIAL -
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(reportElement);
+    
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+    // Optimized settings for better content sizing
+    pdf.html(reportElement, {
+      callback: function (pdf) {
+        try {
+          const fileName = `${serviceName.replace(/\s+/g, '_')}_Verification_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+          pdf.save(fileName);
+        } catch (e) {
+          console.error("Error saving PDF:", e);
+        } finally {
           if (document.body.contains(reportElement)) {
-              document.body.removeChild(reportElement);
+            document.body.removeChild(reportElement);
           }
-      });
-  } else {
-      console.error("Could not find element to capture for PDF generation.");
+        }
+      },
+                  margin: [12, 10, 15, 10], // Added bottom margin to prevent cutting
+      autoPaging: 'text',
+      x: 0,
+      y: 0,
+      width: pdfWidth - 16, // Maximized width
+      windowWidth: 800, // Match container width for proper scaling
+      html2canvas: {
+        scale: 2, // Good scale for quality without being too small
+        useCORS: true,
+        letterRendering: true,
+        allowTaint: false,
+        width: 800,
+        height: null // Let height be automatic
+      }
+    });
+  };
+
+  // Method 2: Enhanced html2canvas with proper scaling
+  const generateWithEnhancedCanvas = () => {
+    const reportElement = document.createElement('div');
+    
+    reportElement.innerHTML = `
+      <div class="report-container" style="
+        font-family: 'Roboto', Arial, sans-serif; 
+        font-size: 18px; 
+        color: #333; 
+        margin: 0; 
+        padding: 40px; 
+        background: #fff; 
+        width: 800px;
+        max-width: 800px;
+        line-height: 1.6;
+        box-sizing: border-box;
+      ">
+        <div class="header" style="
+          display: flex; 
+          justify-content: space-between; 
+          align-items: flex-start; 
+          padding-bottom: 30px; 
+          border-bottom: 3px solid #e5e7eb; 
+          margin-bottom: 40px;
+        ">
+          <img src="${typeof VerifyMyKyc !== 'undefined' ? VerifyMyKyc : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQwIiBoZWlnaHQ9IjcwIiB2aWV3Qm94PSIwIDAgMTQwIDcwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxNDAiIGhlaWdodD0iNzAiIGZpbGw9IiMxOTg3QkYiLz48dGV4dCB4PSI3MCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE2IiBmb250LWZhbWlseT0iQXJpYWwiPkxPR088L3RleHQ+PC9zdmc+'}" alt="Company Logo" style="width: 160px; height: 80px; object-fit: contain;"/>
+          <div class="company-info" style="text-align: right; font-size: 16px; color: #555;">
+            <h3 style="margin: 0 0 15px 0; color: #111; font-size: 24px; font-weight: 700;">Verify My KYC</h3>
+            <p style="margin: 0; line-height: 1.7;">A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p>
+          </div>
+        </div>
+        
+        <div class="title-section" style="padding: 30px 0; text-align: center; margin-bottom: 35px;">
+          <h1 style="font-size: 42px; color: #1a202c; margin: 0 0 15px 0; font-weight: 700;">Verification Report</h1>
+          <p style="font-size: 26px; color: #4a5568; margin: 0; font-weight: 500;">${serviceName} Status</p>
+        </div>
+        
+        <div class="current-date" style="text-align: right; margin-bottom: 40px; font-size: 18px; color: #718096; font-weight: 500;">
+          <strong>Date of Report:</strong> ${currentDate}
+        </div>
+        
+        <div class="data-section" style="margin-bottom: 50px;">
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+            <tbody>
+              ${allDetails.length > 0 
+                ? allDetails.map(({ key, value }) => 
+                  `<tr style="border-bottom: 2px solid #edf2f7;">
+                    <td style="padding: 25px 30px 25px 0; vertical-align: top; font-weight: 600; width: 45%; color: #4a5568; word-wrap: break-word; font-size: 18px; line-height: 1.5;">${key}</td>
+                    <td style="padding: 25px 0; color: #1a202c; font-weight: 500; word-wrap: break-word; font-size: 18px; width: 55%; line-height: 1.5;">${(value === null || value === undefined) ? 'N/A' : String(value)}</td>
+                  </tr>`
+                ).join('') 
+                : `<tr><td colspan="2" style="text-align:center; padding: 50px; font-size: 20px; color: #718096; font-style: italic;">No details available.</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="footer" style="margin-top: 80px; padding-top: 40px; border-top: 3px solid #e5e7eb; font-size: 15px; color: #718096;">
+          <h4 style="font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px;">Legal Disclaimer</h4>
+          <div style="line-height: 1.8; margin-bottom: 20px;">
+            <p style="margin-bottom: 18px; text-align: justify;">All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
+            <p style="margin-bottom: 18px; text-align: justify;">The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
+            <p style="margin-bottom: 18px; text-align: justify;">Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.</p>
+            <p style="margin-bottom: 18px; text-align: justify;">Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
+            <p style="margin-bottom: 30px; text-align: justify;">Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.</p>
+          </div>
+          <div class="confidential" style="text-align: center; font-weight: bold; color: #c53030; margin-top: 40px; font-size: 16px; letter-spacing: 1px; padding: 25px 0; border-top: 1px solid #e5e7eb;">- VERIFY MY KYC CONFIDENTIAL -</div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(reportElement);
+    
+    const elementToCapture = reportElement.querySelector('.report-container');
+
+    if (elementToCapture) {
+        html2canvas(elementToCapture, { 
+          scale: 2, // Optimal scale for quality and size
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 800, // Fixed width to ensure consistent sizing
+          height: elementToCapture.scrollHeight,
+          windowWidth: 800,
+          windowHeight: elementToCapture.scrollHeight
+        }).then(canvas => {
+            try {
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                const margin = 10; // Adjusted margins to prevent cutting
+                const bottomPadding = 30; // Extra space at bottom to prevent cutting
+                const contentWidth = pdfWidth - (margin * 2);
+                const contentHeight = pdfHeight - (margin * 2) - bottomPadding;
+                
+                const canvasAspectRatio = canvas.height / canvas.width;
+                const scaledHeight = contentWidth * canvasAspectRatio;
+                
+                let heightLeft = scaledHeight;
+                let position = margin;
+                let page = 0;
+
+                while (heightLeft > 0) {
+                    if (page > 0) {
+                        pdf.addPage();
+                        position = margin;
+                    }
+                    
+                    const yOffset = page * contentHeight;
+                    
+                    pdf.addImage(
+                        imgData, 
+                        'PNG', 
+                        margin, 
+                        position - yOffset, 
+                        contentWidth, 
+                        scaledHeight
+                    );
+                    
+                    heightLeft -= contentHeight;
+                    page++;
+                }
+                
+                const fileName = `${serviceName.replace(/\s+/g, '_')}_Verification_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+                pdf.save(fileName);
+            } catch (e) {
+                console.error("Error creating PDF:", e);
+            } finally {
+                if (document.body.contains(reportElement)) {
+                    document.body.removeChild(reportElement);
+                }
+            }
+        }).catch(err => {
+            console.error("html2canvas failed:", err);
+            if (document.body.contains(reportElement)) {
+                document.body.removeChild(reportElement);
+            }
+        });
+    }
+  };
+
+  // Use the optimal method
+  try {
+    if (typeof jsPDF !== 'undefined' && jsPDF.prototype.html) {
+      generateWithJsPDFHTML();
+    } else {
+      generateWithEnhancedCanvas();
+    }
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    generateWithEnhancedCanvas();
   }
 };
-
 // Enhanced function to find the main data object within the API response
 const findDetailsObject = (data) => {
   if (typeof data !== 'object' || data === null) return null;

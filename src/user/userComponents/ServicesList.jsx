@@ -33,7 +33,7 @@ export default function ServicesList({ services, isLoading, activeServiceId, onS
               <div
                 key={service.service_key}
                 onClick={() => onServiceSelect(service.service_key)}
-                className={`flex items-center justify-between py-4 px-4 -mx-4 cursor-pointer transition-colors ${
+                className={`flex  items-center justify-between py-4 px-4 -mx-4 cursor-pointer transition-colors ${
                   isActive 
                     ? "bg-blue-50 border-r-4 border-blue-500" 
                     : "hover:bg-gray-50"

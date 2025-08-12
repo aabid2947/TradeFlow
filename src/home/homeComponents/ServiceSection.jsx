@@ -28,9 +28,9 @@ const categoryMapping = {
 const reverseMapping = {
  'Personal': ['Identity Verification', 'Profile & Database Lookup'],
  'Business': [], // Add business-specific API categories here if any
- 'Finance and Banking': ['Financial & Business Checks'],
  'Government': ['Legal & Compliance Checks', 'Health & Government Records', 'Criminal Verification', 'Land Record Check'],
  'Biometric': ['Biometric & AI-Based Verification'],
+ 'Finance and Banking': ['Financial & Business Checks'],
  'Covid check': [] // Add covid-specific API categories here if any
 };
 
@@ -101,14 +101,18 @@ export default function ServicesSection() {
  const displayCategories = [...new Set(apiCategories.map(apiCat => categoryMapping[apiCat]).filter(Boolean))];
  const categories = ["All", ...displayCategories];
 
- // ⭐️ MODIFIED: Sorts and limits all categories to 4 cards.
+ // ⭐️ MODIFIED: When "All" is selected, it now shows the top "Personal" services.
  const filteredServices = (() => {
     // Create a copy and sort all services by usage count in descending order
     const sortedServices = [...services].sort((a, b) => b.globalUsageCount - a.globalUsageCount);
 
     if (activeCategory === "All") {
-      // For "All", return the top 4 most used services overall.
-      return sortedServices.slice(0, 4);
+      // For "All", filter for "Personal" category services and return the top 4.
+      const personalApiCategories = reverseMapping['Personal'] || [];
+      const personalServices = sortedServices.filter(service => 
+        personalApiCategories.includes(service.category)
+      );
+      return personalServices.slice(0, 4);
     } else {
       // For a specific category, filter first, then return the top 4 from that category.
       const apiCategoriesToFilter = reverseMapping[activeCategory] || [];

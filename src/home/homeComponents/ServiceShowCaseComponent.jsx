@@ -30,11 +30,11 @@ const servicesData = [
     typewriterTexts: [
       "We authenticate each document against its issuing authority to prevent identity fraud.",
       "Real-time verification with 99.9% accuracy rate.",
-      "Secure API integration for seamless document validation.",
+      "Secure  integration for seamless document validation.",
     ],
     features: [
       "Verify Aadhaar, PAN, Voter ID, Driving License, and other IDs",
-      "Real-time API verification",
+      "Real-time  verification",
       "99.9% accuracy guarantee",
       "Secure data handling",
     ],

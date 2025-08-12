@@ -75,6 +75,24 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20">
+                <div className="max-w-6xl mx-auto px-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center"
+                  >
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                     Contact Us
+                    </h1>
+                    <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+                    We’re here to answer your questions and explore new opportunities together.
+                    </p>
+                
+                  </motion.div>
+                </div>
+              </div>
       <section className="relative py-20">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="text-center">
@@ -366,7 +384,7 @@ const ContactUs = () => {
             </div>
 
             {/* --- BOTTOM ROW: SOCIAL MEDIA --- */}
-            <AnimatedSection>
+            {/* <AnimatedSection>
               <div className="w-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
                 <h3 className="text-2xl font-bold mb-6">Follow Us</h3>
                 <div className="flex space-x-4">
@@ -407,14 +425,14 @@ const ContactUs = () => {
                   Stay updated with our latest features and industry insights
                 </p>
               </div>
-            </AnimatedSection>
+            </AnimatedSection> */}
 
           </div>
         </div>
       </section>
 
       {/* Help Section */}
-      <section className="py-16 bg-white">
+      {/* <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">What We Can Help With</h2>
@@ -464,10 +482,10 @@ const ContactUs = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      {/* <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <AnimatedSection>
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
@@ -492,7 +510,7 @@ const ContactUs = () => {
             </div>
           </AnimatedSection>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };

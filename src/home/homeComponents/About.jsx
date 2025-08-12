@@ -159,6 +159,24 @@ const AboutUs = () => {
           </div>
         </div>
       </section> */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center"
+            >
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+               About Us
+              </h1>
+              <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+                Empowering trust through innovation in identity verification and digital security.
+              </p>
+          
+            </motion.div>
+          </div>
+        </div>
       <CompanyIntro />
       <FounderProfile />
 

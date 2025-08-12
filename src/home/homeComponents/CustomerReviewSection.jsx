@@ -15,7 +15,7 @@ const mockReviews = [
     avatar: "https://images.unsplash.com/photo-1494790108755-2616c0763c4e?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
-      "VerifyMe has transformed our onboarding process. The API integration was seamless, and the accuracy rate is outstanding. We've reduced fraud by 85% since implementation.",
+      "VerifyMe has transformed our onboarding process. The accuracy rate is outstanding. We've reduced fraud by 85% since implementation.",
     date: "2 weeks ago",
     verified: true,
     location: "Mumbai, Maharashtra",
@@ -80,7 +80,7 @@ const mockReviews = [
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face",
     rating: 5,
     review:
-      "The API performance is exceptional with 99.9% uptime. The verification accuracy and speed have helped us scale our platform without compromising security.",
+      "The  performance is exceptional with 99.9% uptime. The verification accuracy and speed have helped us scale our platform without compromising security.",
     date: "3 weeks ago",
     verified: true,
     location: "Chennai, Tamil Nadu",

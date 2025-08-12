@@ -108,7 +108,7 @@ const generatePDF = (result) => {
             body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
             .report-container { width: 550px; padding: 40px; background: #fff; }
             .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-            .logo { width: 120px; height: 50px; }
+            .logo { width: 120px; height: 50px;object-fit:contain }
             .company-info { text-align: right; font-size: 11px; color: #555; }
             .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
             .title-section { padding: 25px 0; text-align: center; }
