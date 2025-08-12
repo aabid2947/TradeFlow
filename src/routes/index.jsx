@@ -6,55 +6,86 @@ import ErrorPage from "../pages/ErrorPage";
 import ProtectedRoute from './ProtectedRoutes';
 import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
-import { Toaster } from 'react-hot-toast'; 
+import { Toaster } from 'react-hot-toast';
 import NotificationPermissionHandler from '../utils/NotificationPermissoinHandler';
 
 const AppRoutes = () => {
   const location = useLocation();
-  
+
   const authPaths = ['/login', '/signup', '/admin-login', '/reset-password'];
   const generalPublicRoutes = publicRoutes.filter(r => !authPaths.includes(r.path));
   const authRoutes = publicRoutes.filter(r => authPaths.includes(r.path));
 
-  // --- MODIFIED: Added Tidio Chat visibility logic ---
+  // --- MODIFIED: Uses CSS injection to position the Tidio widget ---
   useEffect(() => {
     const tidioScriptId = 'tidio-chat-script';
-    
+    const styleElementId = 'tidio-position-style';
+
     // Define which paths should show the chat widget
     const showTidioOnPaths = ['/']; // Start with the homepage
     const shouldShow = showTidioOnPaths.includes(location.pathname) || location.pathname.startsWith('/user');
 
-    // Find the Tidio API object
-    const tidioApi = window.tidioChatApi;
+    const setupTidioWidget = () => {
+      const tidioApi = window.tidioChatApi;
+      if (!tidioApi) return;
 
-    if (shouldShow) {
-      // If the script doesn't exist, create and append it
-      if (!document.getElementById(tidioScriptId)) {
-        const script = document.createElement('script');
-        script.id = tidioScriptId;
-        script.src = "//code.tidio.co/xalkjzzpyytmhnzdek3pkdvbwzge6rih.js";
-        script.async = true;
-        document.body.appendChild(script);
-      } else if (tidioApi) {
-        // If the script exists and API is available, ensure it's visible
-        tidioApi.show();
+      // --- NEW: CSS Injection for Positioning ---
+      // Check if our custom style tag already exists
+      if (!document.getElementById(styleElementId)) {
+        const style = document.createElement('style');
+        style.id = styleElementId;
+        // This CSS targets the Tidio widget's iframe container.
+        // We use !important to ensure our styles override Tidio's default styles.
+        // 'bottom-10' in Tailwind is 2.5rem.
+        style.innerHTML = `
+          div#tidio-chat-iframe {
+            bottom: 2.5rem !important;
+            right: 2.5rem !important;
+          }
+        `;
+        document.head.appendChild(style);
       }
-    } else {
-      // If on a page where it should be hidden, use the API to hide it
-      if (tidioApi) {
+
+      // Use the API to show or hide the widget
+      if (shouldShow) {
+        tidioApi.show();
+      } else {
         tidioApi.hide();
       }
+    };
+
+    // If the script doesn't exist, create and append it
+    if (!document.getElementById(tidioScriptId)) {
+      const script = document.createElement('script');
+      script.id = tidioScriptId;
+      script.src = "//code.tidio.co/xalkjzzpyytmhnzdek3pkdvbwzge6rih.js";
+      script.async = true;
+      document.body.appendChild(script);
+      
+      // Listen for the Tidio API to be ready
+      document.addEventListener('tidioChat-ready', setupTidioWidget);
+    } else {
+      // If the script already exists, the API might be ready
+      setupTidioWidget();
     }
-    
-    // No cleanup function is needed, as we want the script to persist 
-    // and just be hidden or shown for a better UX.
+
+    // Cleanup function to remove the event listener and style tag
+    return () => {
+      document.removeEventListener('tidioChat-ready', setupTidioWidget);
+      const styleTag = document.getElementById(styleElementId);
+      if (styleTag) {
+        // You might want to keep the style tag if you navigate between pages
+        // where Tidio is shown. Removing it is cleaner if the component unmounts entirely.
+        // styleTag.remove(); 
+      }
+    };
   }, [location.pathname]); // Re-run this effect whenever the route changes
 
   return (
     <>
-        <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <NotificationPermissionHandler/>
-      
+
       <Routes>
         <Route element={<RedirectIfLoggedIn />}>
           {authRoutes.map((route, idx) => (

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Plus, Copy, Check, X, Percent, DollarSign, Gift, Tag, Sparkles, Timer, Trash2, Loader2, AlertTriangle, Pencil } from "lucide-react"
+import { Plus, Copy, Check, X, Percent, IndianRupee, Gift, Tag, Sparkles, Timer, Trash2, Loader2, AlertTriangle, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -117,12 +117,17 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
         <div className="absolute inset-0 bg-gradient-to-br from-[#1987BF]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <CardHeader className="pb-4 pt-6 px-6 relative z-10">
+          <div className="flex justify-end ">
+            <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-3 py-1.5 text-sm rounded-full shadow-lg shadow-blue-500/25">
+              {formatDiscount()}
+            </Badge>
+          </div>
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-[#1987BF]/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
               {offer.discountType === "percentage" ? (
                 <Percent className="w-6 h-6 text-[#1987BF]" />
               ) : (
-                <DollarSign className="w-6 h-6 text-[#1987BF]" />
+                <IndianRupee className="w-6 h-6 text-[#1987BF]" />
               )}
             </div>
             <div className="flex-1 min-w-0 pr-2">
@@ -136,11 +141,7 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
           </div>
           
           {/* Discount badge moved below title for better layout */}
-          <div className="flex justify-end mt-2">
-            <Badge className="bg-gradient-to-r from-[#1987BF] to-blue-600 text-white font-bold px-3 py-1.5 text-sm rounded-full shadow-lg shadow-blue-500/25">
-              {formatDiscount()}
-            </Badge>
-          </div>
+          
         </CardHeader>
 
         <CardContent className="space-y-5 px-6 pb-6 relative z-10">

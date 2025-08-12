@@ -14,6 +14,20 @@ import { selectCurrentUser } from '@/features/auth/authSlice';
 import sidebarLogo from "@/assets/sidebarLogo.svg"
 import VerifyMyKyc from "@/assets/VerifyMyKyc.svg"
 
+// Generate a random color for the avatar background
+const generateRandomColor = (name) => {
+  if (!name) return '#1987BF';
+  
+  const colors = [
+    '#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+    '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad',
+    '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'
+  ];
+  
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
 export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   const [welcomeText, setWelcomeText] = useState("");
   const user = useSelector(selectCurrentUser);
@@ -54,6 +68,9 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
     console.log(!sidebarOpen)
     setSidebarOpen(!sidebarOpen);
   };
+  console.log(user.avatar.trim() !== '')
+
+  const avatarBgColor = generateRandomColor(user?.name);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 md:px-6 md:py-4 shadow-sm">
@@ -87,10 +104,16 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-9 px-2 flex items-center gap-2 rounded-full hover:bg-gray-100" aria-label="User profile menu">
-        <Avatar className="h-7 w-7 border border-gray-200">
-          <AvatarImage src={user.avatar} alt={user?.name} />
-          <AvatarFallback className="bg-[#1987BF]/10 text-[#1987BF] text-xs font-medium">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+         <Avatar className="h-7 w-7 border border-gray-200">
+          {user.avatar && user.avatar.trim() !== '' && <AvatarImage src={user.avatar} alt={user?.name} />}
+          <AvatarFallback 
+            className="text-white text-xs font-medium"
+            style={{ backgroundColor: avatarBgColor }}
+          >
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </AvatarFallback>
         </Avatar>
+
         <span className="text-sm font-medium text-gray-700 hidden lg:inline">{user?.name}</span>
         <ChevronDown className="h-3 w-3 text-gray-500 hidden lg:inline" />
         <MoreVertical className="h-4 w-4 text-gray-500 lg:hidden" />

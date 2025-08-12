@@ -56,7 +56,7 @@ const FloatingElement = ({ children, delay = 0, className = "" }) => (
 
 // Button Component with Light Blue Theme
 const ModernButton = ({ children, variant = "primary", onClick, className = "" }) => {
-  const baseClasses = "group relative overflow-hidden font-semibold px-8 py-4 text-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl";
+  const baseClasses = "group relative overflow-hidden font-semibold px-8 py-4 text-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl whitespace-nowrap";
   
   const variants = {
     primary: "bg-gradient-to-r from-sky-400 to-blue-500 text-white hover:from-sky-500 hover:to-blue-600 shadow-sky-200 hover:shadow-sky-300",

@@ -2,10 +2,10 @@
 
 import {
   LayoutDashboard, Shield, User, BarChart3, PieChart, Settings, LogOut,
-  ChevronDown, Tag,  Building, Scale, FileText, Scan, Database,
-  AlertTriangle, MapPin,MoreVertical,IdCard ,Briefcase, LayoutGrid // Added LayoutGrid for "All Services"
+  ChevronDown, Tag, Building, Scale, FileText, Scan, Database,
+  AlertTriangle, MapPin, MoreVertical, IdCard, Briefcase, LayoutGrid // Added LayoutGrid for "All Services"
 } from "lucide-react"
-import { useState,useRef,useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,6 +15,20 @@ import { useDispatch } from "react-redux"
 import { logOut } from "@/features/auth/authSlice"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
+
+// Generate a random color for the avatar background
+const generateRandomColor = (name) => {
+  if (!name) return '#1987BF';
+
+  const colors = [
+    '#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+    '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad',
+    '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'
+  ];
+
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
 
 // UPDATED: Added "All Services" as the first option
 const serviceCategories = [
@@ -27,8 +41,8 @@ const serviceCategories = [
   { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup', icon: Database },
   // { value: 'Criminal Verification', label: 'Criminal Verification', icon: AlertTriangle },
   // { value: 'Land Record Check', label: 'Land Record Check', icon: MapPin },
-  { value: 'PAN', label: 'PAN', icon: IdCard  },
-  { value: 'Empoyer Verification', label: 'Empoyer Verification', icon: Briefcase  },
+  { value: 'PAN', label: 'PAN', icon: IdCard },
+  { value: 'Empoyer Verification', label: 'Empoyer Verification', icon: Briefcase },
 
   // { value: 'CIN', label: 'CIN', icon: Briefcase  }
 ];
@@ -73,10 +87,10 @@ export default function SidebarComponent({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
- 
-   const handleProfileClick = () => {
-      navigate('/user', { state: { view: 'profile' }, replace: true });
-      setShowDropdown(!showDropdown);
+
+  const handleProfileClick = () => {
+    navigate('/user', { state: { view: 'profile' }, replace: true });
+    setShowDropdown(!showDropdown);
   };
 
 
@@ -97,13 +111,15 @@ export default function SidebarComponent({
     }
   };
 
+  const avatarBgColor = generateRandomColor(user?.name);
+
   const MenuButton = ({ icon: Icon, label, isActive, onClick, className = "" }) => (
     <button
       onClick={onClick}
       className={`group relative w-full flex items-center transition-all duration-200 ease-in-out ${isOpen ? 'px-4 py-3 rounded-xl mx-2' : 'p-3 mx-auto rounded-xl w-10 h-12 justify-center'} ${isActive ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'} ${className}`}
     >
       <Icon className={`${isOpen ? 'w-5 h-5 mr-2' : 'w-5 h-5'} transition-all duration-200`} />
-      {isOpen && <span className="font-medium text-xs truncate">{label}</span>} 
+      {isOpen && <span className="font-medium text-xs truncate">{label}</span>}
       {!isOpen && <div className="absolute left-16 bg-gray-900 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">{label}</div>}
     </button>
   );
@@ -121,32 +137,30 @@ export default function SidebarComponent({
   return (
     <>
       <style>{scrollbarStyles}</style>
-      
+
       <div
         className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-30 transition-opacity duration-300 md:hidden ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={() => {}}
+        onClick={() => { }}
         aria-hidden="true"
       />
 
       <aside
-        className={`fixed left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${
-          isOpen ? "w-64" : "w-20"
-        } ${
-          isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
-        }`}
-        style={{ 
-           top: window.innerWidth >= 1024 ? '72px' : '64px',
+        className={`fixed left-0 z-30 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${isOpen ? "w-64" : "w-20"
+          } ${isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'
+          }`}
+        style={{
+          top: window.innerWidth >= 1024 ? '72px' : '64px',
           height: 'calc(100vh - 73px)'
         }}
       >
         <div className="flex-1 flex flex-col h-full">
           <div className="flex-1 overflow-y-auto overflow-x-hidden modern-scrollbar  py-4 ">
             <div className="mb-6 w-[96%] ">
-              <MenuButton 
-                icon={LayoutDashboard} 
-                label="Dashboard" 
-                isActive={activeView === "dashboard"} 
-                onClick={() => handleNavigationClick("dashboard")} 
+              <MenuButton
+                icon={LayoutDashboard}
+                label="Dashboard"
+                isActive={activeView === "dashboard"}
+                onClick={() => handleNavigationClick("dashboard")}
               />
             </div>
 
@@ -158,13 +172,11 @@ export default function SidebarComponent({
               )}
               <button
                 onClick={() => setIsServicesOpen(!isServicesOpen)}
-                className={`group relative w-full flex items-center transition-all duration-200 ease-in-out ${
-                  isOpen ? 'px-4 py-3 rounded-xl mx-2 justify-between' : 'p-3 mx-auto rounded-xl w-12 h-12 justify-center'
-                } ${
-                  activeView === "services" 
-                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' 
+                className={`group relative w-full flex items-center transition-all duration-200 ease-in-out ${isOpen ? 'px-4 py-3 rounded-xl mx-2 justify-between' : 'p-3 mx-auto rounded-xl w-12 h-12 justify-center'
+                  } ${activeView === "services"
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 <div className={`flex items-center ${isOpen ? 'gap-2' : 'gap-0'}`}>
                   <Shield className="w-5 h-5" />
@@ -187,22 +199,21 @@ export default function SidebarComponent({
                     const categoryLabel = categoryItem.label;
 
                     return isOpen ? (
-                      <SubMenuButton 
-                        key={categoryItem.value} 
-                        icon={IconComponent} 
-                        label={categoryLabel} 
-                        isActive={activeView === "services" && activeCategory === categoryLabel} 
-                        onClick={() => onCategorySelect(categoryLabel)} 
+                      <SubMenuButton
+                        key={categoryItem.value}
+                        icon={IconComponent}
+                        label={categoryLabel}
+                        isActive={activeView === "services" && activeCategory === categoryLabel}
+                        onClick={() => onCategorySelect(categoryLabel)}
                       />
                     ) : (
                       <button
                         key={categoryItem.value}
                         onClick={() => onCategorySelect(categoryLabel)}
-                        className={`group relative w-12 h-12 mx-auto mb-2 rounded-xl transition-all duration-200 ease-in-out flex items-center justify-center ${
-                          activeView === "services" && activeCategory === categoryLabel
-                            ? 'bg-blue-50 text-blue-600' 
+                        className={`group relative w-12 h-12 mx-auto mb-2 rounded-xl transition-all duration-200 ease-in-out flex items-center justify-center ${activeView === "services" && activeCategory === categoryLabel
+                            ? 'bg-blue-50 text-blue-600'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
+                          }`}
                       >
                         <IconComponent className="w-4 h-4" />
                         <div className="absolute left-16 bg-gray-900 text-white px-2 py-1 rounded-md text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
@@ -223,14 +234,14 @@ export default function SidebarComponent({
               )}
               <div className="space-y-1  w-[96%] ">
                 {navigationData.reports.map((item) => (
-                  <MenuButton 
-                    key={item.title} 
-                    icon={item.icon} 
-                    label={item.title} 
+                  <MenuButton
+                    key={item.title}
+                    icon={item.icon}
+                    label={item.title}
                     isActive={
-                      (item.title === "Purchase History" && activeView === "history") || 
+                      (item.title === "Purchase History" && activeView === "history") ||
                       (item.title === "Verification Results" && activeView === "verification_history")
-                    } 
+                    }
                     onClick={() => {
                       if (item.title === "Purchase History") {
                         handleNavigationClick("history");
@@ -238,7 +249,7 @@ export default function SidebarComponent({
                       if (item.title === "Verification Results") {
                         handleNavigationClick("verification_history");
                       }
-                    }} 
+                    }}
                   />
                 ))}
               </div>
@@ -250,13 +261,17 @@ export default function SidebarComponent({
             {isOpen && (
               <div className="relative" ref={dropdownRef}>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 relative">
-                  <Avatar className="w-10 h-10 ring-2 ring-white">
-                    <AvatarImage src={user.avatar} alt={user?.name || "User"} />
-                    <AvatarFallback className="bg-blue-500 text-white font-medium">
-                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                  <Avatar className="h-7 w-7 border border-gray-200">
+                    {user.avatar && user.avatar.trim() !== '' && <AvatarImage src={user.avatar} alt={user?.name} />}
+                    <AvatarFallback
+                      className="text-white text-xs font-medium"
+                      style={{ backgroundColor: avatarBgColor }}
+                    >
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  
+
+
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
                     <p className="text-xs text-gray-500">{user?.role || 'Administrator'}</p>
@@ -280,9 +295,9 @@ export default function SidebarComponent({
                       <User className="w-4 h-4 text-gray-500" />
                       <span className="font-medium">My Profile</span>
                     </button>
-                    
+
                     <div className="h-px bg-gray-200 mx-2 my-1"></div>
-                    
+
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 focus:outline-none focus:bg-red-50"
@@ -300,7 +315,10 @@ export default function SidebarComponent({
                 <div className="relative group">
                   <Avatar className="w-10 h-10 ring-2 ring-white cursor-pointer">
                     <AvatarImage src={userPic} alt={user?.name || "User"} />
-                    <AvatarFallback className="bg-blue-500 text-white font-medium">
+                    <AvatarFallback
+                      className="text-white font-medium"
+                      style={{ backgroundColor: avatarBgColor }}
+                    >
                       {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -308,10 +326,10 @@ export default function SidebarComponent({
                     {user?.name || 'User'}
                   </div>
                 </div>
-                
-                <Button 
-                  onClick={handleLogout} 
-                  variant="ghost" 
+
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
                   size="icon"
                   className="w-10 h-10 hover:bg-red-50 hover:text-red-600 text-gray-600 group relative"
                 >

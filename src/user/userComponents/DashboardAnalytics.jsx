@@ -3,7 +3,7 @@
 import { useMemo, useEffect, useState } from "react";
 import { TrendingUp, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, BarChart, Bar } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardSkeleton, ChartSkeleton } from "@/components/skeletons/Skeletons";
 import { useSelector } from "react-redux";
@@ -14,13 +14,13 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   const [selectedServices, setSelectedServices] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  useEffect(()=>{
-       window.scrollTo({
+  useEffect(() => {
+    window.scrollTo({
       top: 0,
-      behavior: "smooth", 
+      behavior: "smooth",
     });
-    },[])
-  
+  }, [])
+
   // Generate time series data from actual timestamps
   const generateTimeSeriesData = (services) => {
     if (services.length === 0) return [];
@@ -44,7 +44,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
     const minDate = new Date(Math.min(...allTimestamps));
     const maxDate = new Date(Math.max(...allTimestamps));
     const today = new Date();
-    
+
     // Use a reasonable date range (last 30 days or from first usage to today)
     const startDate = new Date(Math.max(
       minDate.getTime(),
@@ -67,14 +67,14 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
 
       services.forEach(service => {
         let dailyCount = 0;
-        
+
         if (service.usageTimestamps && service.usageTimestamps.length > 0) {
           dailyCount = service.usageTimestamps.filter(timestamp => {
             const timestampDate = new Date(timestamp);
             return timestampDate.toDateString() === date.toDateString();
           }).length;
         }
-        
+
         dataPoint[service.service] = dailyCount;
       });
 
@@ -95,20 +95,20 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
 
     return dates.map((date, index) => {
       const dataPoint = { date };
-      
+
       services.forEach(service => {
         // Simulate realistic usage patterns based on total usage count
         const totalUsage = service.usageCount;
         const baseUsage = Math.max(0, totalUsage / 15); // Average per day
-        
+
         // Add some randomness and trend
         const randomFactor = 0.3 + Math.random() * 0.7; // 0.3 to 1.0
         const trendFactor = (index / 14) * 0.5 + 0.75; // Slight upward trend
-        
+
         const dailyUsage = Math.round(baseUsage * randomFactor * trendFactor);
         dataPoint[service.service] = Math.max(0, dailyUsage);
       });
-      
+
       return dataPoint;
     });
   };
@@ -117,13 +117,13 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
     if (!userInfo || !userInfo.usedServices || selectedServices.length === 0) {
       return [];
     }
-    
+
     return generateTimeSeriesData(selectedServices);
   }, [userInfo, selectedServices]);
 
   // Check if any selected services have timestamp data
   const hasTimestampData = useMemo(() => {
-    return selectedServices.some(service => 
+    return selectedServices.some(service =>
       service.usageTimestamps && service.usageTimestamps.length > 0
     );
   }, [selectedServices]);
@@ -131,7 +131,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   // Available services for selection
   const availableServices = useMemo(() => {
     if (!userInfo || !userInfo.usedServices) return [];
-    
+
     // Create a completely new array with new objects to avoid read-only issues
     const servicesCopy = userInfo.usedServices.map(service => ({
       id: service.service,
@@ -141,7 +141,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
       usageTimestamps: service.usageTimestamps ? [...service.usageTimestamps] : [],
       hasTimestamps: service.usageTimestamps && service.usageTimestamps.length > 0
     }));
-    
+
     return servicesCopy.sort((a, b) => b.usageCount - a.usageCount);
   }, [userInfo]);
 
@@ -151,7 +151,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   const handleServiceToggle = (service) => {
     setSelectedServices(prev => {
       const isSelected = prev.some(s => s.service === service.service);
-      
+
       if (isSelected) {
         // Remove service
         return prev.filter(s => s.service !== service.service);
@@ -159,7 +159,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
         // Add service (max 3)
         return [...prev, service];
       }
-      
+
       return prev;
     });
   };
@@ -231,7 +231,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
       },
       ...topServiceCards
     ];
-  }, [userInfo, transactions]); 
+  }, [userInfo, transactions]);
 
 
   // Close dropdown when clicking outside
@@ -248,7 +248,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
 
     if (isLoading) {
     return (
-      <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
         {/* Loading Header */}
         <div className="mb-8">
           <Skeleton className="h-8 w-48 mb-2" />
@@ -306,9 +306,9 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statsData.map((stat, index) => (
           <Card key={index} className={`${stat.color} border-0 shadow-sm`}>
             <CardContent className="p-4">
@@ -332,7 +332,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
       {/* Service Usage Trend Chart */}
       <Card className="mb-6 shadow-sm border-[#1A89C1]">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="text-lg mt-2 font-semibold text-gray-900">Service Usage Trends</CardTitle>
               {selectedServices.length > 0 && (
@@ -341,16 +341,16 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
                 </p>
               )}
             </div>
-            
+
             {/* Service Selector */}
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex w-full sm:w-auto items-center justify-between sm:justify-start gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <span className="text-sm font-medium">
-                  {selectedServices.length === 0 
-                    ? 'Select Services' 
+                  {selectedServices.length === 0
+                    ? 'Select Services'
                     : `${selectedServices.length} service${selectedServices.length > 1 ? 's' : ''} selected`
                   }
                 </span>
@@ -369,7 +369,7 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
                     {availableServices.map((service, index) => {
                       const isSelected = selectedServices.some(s => s.service === service.service);
                       const canSelect = selectedServices.length < 3 || isSelected;
-                      
+
                       return (
                         <button
                           key={service.service}
@@ -380,25 +380,25 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
                           } ${!canSelect ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex-1">
+                            <div className="flex-1 overflow-hidden">
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium text-gray-900 truncate">
                                   {service.name}
                                 </p>
                                 {service.hasTimestamps && (
-                                  <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                                  <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full flex-shrink-0">
                                     Real data
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 truncate">
                                 {service.usageCount} total uses
                                 {service.hasTimestamps && ` • ${service.usageTimestamps.length} timestamps`}
                               </p>
                             </div>
                             {isSelected && (
-                              <div 
-                                className="w-3 h-3 rounded-full ml-2"
+                              <div
+                                className="w-3 h-3 rounded-full ml-2 flex-shrink-0"
                                 style={{ backgroundColor: lineColors[selectedServices.findIndex(s => s.service === service.service)] }}
                               />
                             )}
@@ -412,29 +412,45 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pr-1 sm:pr-4 pl-4 sm:pl-6">
           {chartData.length > 0 ? (
-            <div className="h-80 w-full">
+            <div 
+              className="h-80 w-full focus:outline-none" 
+              style={{ outline: 'none !important' }}
+              onFocus={(e) => e.target.blur()}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <LineChart 
+                  data={chartData} 
+                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                  style={{ outline: 'none' }}
+                  onFocus={(e) => e.preventDefault()}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: "#666" }} 
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 12, fill: "#666" }}
-                    label={{ value: 'Daily Usage', angle: -90, position: 'insideLeft' }}
+                    interval="preserveStartEnd"
+                    minTickGap={20}
+                    style={{ outline: 'none' }}
                   />
-                  <Legend 
-                    verticalAlign="top" 
-                    height={36} 
-                    iconType="line" 
-                    wrapperStyle={{ paddingBottom: "20px" }} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "#666" }}
+                    label={{ value: 'Daily Usage', angle: -90, position: 'insideLeft', offset: 10 }}
+                    allowDecimals={false}
+                    style={{ outline: 'none' }}
+                  />
+                  <Legend
+                    verticalAlign="top"
+                    align="center"
+                    height={36}
+                    iconType="line"
+                    wrapperStyle={{ paddingBottom: "20px", outline: 'none' }}
+                    formatter={(value) => <span className="text-gray-700 truncate block" style={{ maxWidth: '120px' }}>{value}</span>}
                   />
                   {selectedServices.map((service, index) => (
                     <Line
@@ -443,8 +459,10 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
                       dataKey={service.service}
                       stroke={lineColors[index]}
                       strokeWidth={2}
-                      dot={{ r: 4 }}
-                      name={service.name.length > 20 ? service.name.substring(0, 17) + '...' : service.name}
+                      dot={{ r: 4, style: { outline: 'none' } }}
+                      name={service.name}
+                      style={{ outline: 'none' }}
+                      tabIndex={-1}
                     />
                   ))}
                 </LineChart>
@@ -452,15 +470,15 @@ export default function DashboardAnalytics({ transactions, isLoading }) {
             </div>
           ) : (
             <div className="h-80 w-full flex items-center justify-center">
-              <div className="text-center">
+              <div className="text-center p-4">
                 <p className="text-gray-500 text-lg">
-                  {availableServices.length === 0 
-                    ? 'No service usage data available' 
+                  {availableServices.length === 0
+                    ? 'No service usage data available'
                     : 'Select 2-3 services to view trends'
                   }
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
-                  {availableServices.length === 0 
+                  {availableServices.length === 0
                     ? 'Start using services to see your usage statistics'
                     : 'Use the dropdown above to choose services for comparison'
                   }

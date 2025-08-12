@@ -1,12 +1,51 @@
 "use client"
 
-import { useMemo, useState } from "react";
+import { useMemo, useState,useEffect } from "react";
 import { TrendingUp, TrendingDown, Package, Calendar, BarChart3, Users, Filter, X, GitCompare } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell } from "recharts"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Add CSS to remove focus outlines from charts
+const chartStyles = `
+  .recharts-wrapper, 
+  .recharts-wrapper *, 
+  .recharts-surface, 
+  .recharts-layer, 
+  .recharts-active-dot,
+  .recharts-dot,
+  .recharts-legend-wrapper,
+  .recharts-legend-item,
+  .recharts-cartesian-grid,
+  .recharts-bar,
+  .recharts-line,
+  .recharts-area,
+  .recharts-pie-sector,
+  .recharts-cell {
+    outline: none !important;
+    border: none !important;
+  }
+  
+  .recharts-wrapper:focus,
+  .recharts-wrapper *:focus,
+  .recharts-surface:focus,
+  .recharts-layer:focus,
+  .recharts-active-dot:focus,
+  .recharts-dot:focus,
+  .recharts-legend-wrapper:focus,
+  .recharts-legend-item:focus,
+  .recharts-cartesian-grid:focus,
+  .recharts-bar:focus,
+  .recharts-line:focus,
+  .recharts-area:focus,
+  .recharts-pie-sector:focus,
+  .recharts-cell:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+`;
 
 // Mock data for demonstration - replace with actual API data
 const generateMockUsageData = (services, timeInterval = 'alltime') => {
@@ -216,6 +255,13 @@ export default function Analytics({ services = [], isLoading = false }) {
     ];
   }, [services]);
 
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+
   const handleServiceComparison = (serviceKey) => {
     if (selectedServices.includes(serviceKey)) {
       setSelectedServices(selectedServices.filter(s => s !== serviceKey));
@@ -274,6 +320,9 @@ export default function Analytics({ services = [], isLoading = false }) {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Add the chart styles */}
+      <style>{chartStyles}</style>
+      
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statsData.map((stat, index) => (

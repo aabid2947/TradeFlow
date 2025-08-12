@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Search,
@@ -127,10 +126,11 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0">
-            <Card className="w-full max-w-md m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
+            {/* MODIFICATION: Increased modal width from max-w-md to max-w-xl */}
+            <Card className="w-full max-w-xl m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="w-full flex flex-row items-center justify-between">
-                        <div className='mr-10 md:mr-35'>
+                        <div className='mr-10 md:mr-70'>
 
                             <CardTitle className="text-xl">Manage Promotions</CardTitle>
                             <p className="text-gray-600">For user: <span className="font-semibold">{user.name}</span></p>
@@ -139,11 +139,12 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    {/* MODIFICATION: Increased modal height from max-h-64 to max-h-96 */}
+                    <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                         <p className="font-semibold text-gray-800">Available Service Subcategories:</p>
                         {allSubcategories.map(subcategory => (
                             <div key={subcategory} className="flex items-center justify-between space-x-3 p-2 rounded-md hover:bg-gray-50">
-                                <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-3 flex-grow">
                                     <Checkbox
                                         id={`subcat-${subcategory}`}
                                         checked={selectedSubcategories.has(subcategory)}
@@ -152,10 +153,11 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
                                     <Label htmlFor={`subcat-${subcategory}`} className="flex-1 cursor-pointer">{subcategory.replace(/_/g, " ")}</Label>
                                 </div>
                                 {selectedSubcategories.has(subcategory) && (
+                                    // MODIFICATION: Changed width from w-24 to w-1/5 (20%)
                                     <Input
                                         type="number"
                                         min="1"
-                                        className="w-24 h-9"
+                                        className="w-[20%] h-9"
                                         placeholder="Count"
                                         value={multipliers[subcategory] || '1'}
                                         onChange={(e) => handleMultiplierChange(subcategory, e.target.value)}
@@ -295,7 +297,7 @@ export default function AllUser() {
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">Shared Dashboard</h1>
                             <p className="text-gray-600">Manage and view all registered users and their promotions</p>
                         </div>
                     </div>

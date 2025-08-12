@@ -11,6 +11,45 @@ import {
 } from 'lucide-react';
 import { useGetAllTransactionsQuery } from '@/app/api/transactionApiSlice.js'; // Adjust this import path as needed
 
+// Add CSS to remove focus outlines from charts
+const chartStyles = `
+  .recharts-wrapper, 
+  .recharts-wrapper *, 
+  .recharts-surface, 
+  .recharts-layer, 
+  .recharts-active-dot,
+  .recharts-dot,
+  .recharts-legend-wrapper,
+  .recharts-legend-item,
+  .recharts-cartesian-grid,
+  .recharts-bar,
+  .recharts-line,
+  .recharts-area,
+  .recharts-pie-sector,
+  .recharts-cell {
+    outline: none !important;
+    border: none !important;
+  }
+  
+  .recharts-wrapper:focus,
+  .recharts-wrapper *:focus,
+  .recharts-surface:focus,
+  .recharts-layer:focus,
+  .recharts-active-dot:focus,
+  .recharts-dot:focus,
+  .recharts-legend-wrapper:focus,
+  .recharts-legend-item:focus,
+  .recharts-cartesian-grid:focus,
+  .recharts-bar:focus,
+  .recharts-line:focus,
+  .recharts-area:focus,
+  .recharts-pie-sector:focus,
+  .recharts-cell:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+`;
+
 // A simple loader component
 const Loader = () => (
   <div className="flex justify-center items-center min-h-screen">
@@ -432,7 +471,7 @@ export default function DashboardOverview() {
 
     const categoryChartData = Object.entries(categoryData).map(([category, data]) => ({
       category: category.length > 15 ? category.substring(0, 15) + '...' : category,
-      fullCategory: category,
+      fullCategory: category || subcategory,
       revenue: data.revenue,
       transactions: data.count,
       successRate: data.count > 0 ? ((data.completed / data.count) * 100).toFixed(1) : 0
@@ -478,6 +517,8 @@ export default function DashboardOverview() {
       'custom': 'Custom Range',
   }[timeFilter];
 
+  
+
   const handleTimeFilterChange = (value) => {
     setTimeFilter(value);
     if (value === 'custom') {
@@ -494,6 +535,9 @@ export default function DashboardOverview() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+      {/* Add the chart styles */}
+      <style>{chartStyles}</style>
+      
       {/* Header */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
@@ -549,7 +593,7 @@ export default function DashboardOverview() {
               disabled={isExporting || !transactionData?.data || (timeFilter === 'custom' && (!customStartDate || !customEndDate))}
             >
               <Download className={`w-4 h-4 ${isExporting ? 'animate-bounce' : ''}`} />
-              {isExporting ? 'Exporting...' : 'Export Report'}
+              {isExporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>

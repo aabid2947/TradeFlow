@@ -50,9 +50,9 @@ export default function ServiceListCard({ service, buttonType, onButtonClick }) 
         <div className="p-4 flex flex-col flex-grow">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-gray-900">{service.name}</h3>
-            <Badge className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-2 py-1 rounded-md">
+            {/* <Badge className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-2 py-1 rounded-md">
               {service.category}
-            </Badge>
+            </Badge> */}
           </div>
           
           <p className="hidden md:block text-sm text-gray-600 mt-1 flex-grow">

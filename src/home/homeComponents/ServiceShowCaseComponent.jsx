@@ -5,9 +5,9 @@
 import React from 'react';
 import ServiceCard, { GovernmentIdVisual, CompanyCredentialVisual, BankVisual, EducationVisual } from './ServiceShowcaseCard';
 import { Shield, Building2, Landmark, GraduationCap, FileSignature, Home } from "lucide-react";
-import Aadhar from "@/assets/adhar.png"
+import Aadhar from "@/assets/Digital Identity Verification.png"
 import Buissness from "@/assets/Buissness.png"
-import GOI from "@/assets/GOI.png"
+import GOI from "@/assets/Digital eSign.png"
 import Property from "@/assets/Property.png"
 // This is the parent component that holds all the data.
 export default function ServicesShowcase() {
@@ -67,7 +67,7 @@ const servicesData = [
       "Accuracy you can trust",
       "Instant fraud alerts",
     ],
-    ctaText: 'Explore Business Products',
+    ctaText: 'Explore Products',
     VisualComponent: CompanyCredentialVisual,
   },
   {
@@ -96,7 +96,7 @@ const servicesData = [
       "Trusted accuracy",
       "Instant fraud checks",
     ],
-    ctaText: 'Explore eSign APIs',
+    ctaText: 'Explore eSign Products ',
     VisualComponent: GovernmentIdVisual,
   },
   {

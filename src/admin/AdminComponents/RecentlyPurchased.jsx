@@ -17,6 +17,7 @@ import {
   Loader,
   Tags,
   Calendar,
+  
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -90,8 +91,8 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
         <CardContent className="p-0">
           <div onClick={onToggle} className="p-4 cursor-pointer">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div onClick={handleNameClick} className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              <div    className="flex items-center gap-3">
+                <div  onClick={handleNameClick}  className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                   {buyer.name?.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
@@ -109,6 +110,15 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                 <div className="font-bold text-blue-600">{formatCurrency(buyer.amount)}</div>
                 <Badge className={`text-xs ${getStatusColor(buyer.status)}`}>{buyer.status}</Badge>
               </div>
+               <button
+    onClick={
+      handleNameClick
+    }
+    className="p-1 hover:bg-gray-100 rounded-full"
+    title="View user info"
+  >
+    <Eye className="w-5 h-5 text-gray-600" />
+  </button>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
               <span className="text-sm text-gray-500">{isExpanded ? "Hide details" : "View details"}</span>
@@ -172,7 +182,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
       <tr onClick={onToggle} className="group cursor-pointer hover:bg-blue-50/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border-b border-gray-100">
         <td className="px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+            <div   onClick={handleNameClick}   className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
               {buyer.name?.split(" ").map((n) => n[0]).join("")}
             </div>
             <div>
@@ -201,6 +211,16 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
             {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" /> : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />}
           </div>
         </td>
+        <td className="px-6 py-4 text-center">
+  <button
+    onClick={
+      handleNameClick}
+    className="p-1 hover:bg-gray-100 rounded-full"
+    title="View user info"
+  >
+    <Eye className="w-5 h-5 text-gray-600" />
+  </button>
+</td>
       </tr>
 
       {/* Expanded Row Details - Desktop */}
@@ -232,6 +252,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                     {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
                     <p className="text-sm text-gray-600 font-semibold">Final: {formatCurrency(buyer.amount)}</p>
                   </div>
+                  
                 </div>
                 <div className="flex items-start gap-3">
                   <CreditCard className="w-5 h-5 text-blue-600 mt-0.5" />

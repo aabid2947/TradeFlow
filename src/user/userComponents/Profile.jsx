@@ -178,7 +178,7 @@ export default function Profile() {
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isUploadingAvatar}
-                                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                className="absolute inset-0 bg-black/50 w-24 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                             >
                                 {isUploadingAvatar ? (
                                     <Loader2 className="w-6 h-6 text-white animate-spin"/>
