@@ -270,6 +270,14 @@ export default function ServiceExecutionPage() {
 
     const service = useMemo(() => servicesResponse?.data?.find(s => s.service_key === serviceKey), [servicesResponse, serviceKey]);
 
+
+    useEffect(()=>{
+     window.scrollTo({
+    top: 0,
+    behavior: "smooth", 
+  });
+  },[])
+  
     useEffect(() => {
         const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
         window.addEventListener('resize', handleResize);

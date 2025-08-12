@@ -150,6 +150,13 @@ export default function ServicePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+  
   useEffect(() => {
     if (filteredServices.length > 0) {
       setActiveServiceId(filteredServices[0].service_key);

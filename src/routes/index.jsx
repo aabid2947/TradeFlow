@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { protectedAdminRoutes } from './ProtectedAdminRoutes';
 import { protectedUserRoutes } from './ProtectedUserRoute';
 import ErrorPage from "../pages/ErrorPage";
@@ -6,21 +7,52 @@ import ProtectedRoute from './ProtectedRoutes';
 import { publicRoutes, RedirectIfLoggedIn } from './PublicRoutes';
 import PublicLayout from './PublicLayout';
 import { Toaster } from 'react-hot-toast'; 
-
-// import usePageTracking from '../hooks/usePageTracking';
-// import FirebaseAuthListener from '../firebase/FirebaseAuthListener'; 
 import NotificationPermissionHandler from '../utils/NotificationPermissoinHandler';
+
 const AppRoutes = () => {
-  // usePageTracking();
+  const location = useLocation();
   
   const authPaths = ['/login', '/signup', '/admin-login', '/reset-password'];
   const generalPublicRoutes = publicRoutes.filter(r => !authPaths.includes(r.path));
   const authRoutes = publicRoutes.filter(r => authPaths.includes(r.path));
 
+  // --- MODIFIED: Added Tidio Chat visibility logic ---
+  useEffect(() => {
+    const tidioScriptId = 'tidio-chat-script';
+    
+    // Define which paths should show the chat widget
+    const showTidioOnPaths = ['/']; // Start with the homepage
+    const shouldShow = showTidioOnPaths.includes(location.pathname) || location.pathname.startsWith('/user');
+
+    // Find the Tidio API object
+    const tidioApi = window.tidioChatApi;
+
+    if (shouldShow) {
+      // If the script doesn't exist, create and append it
+      if (!document.getElementById(tidioScriptId)) {
+        const script = document.createElement('script');
+        script.id = tidioScriptId;
+        script.src = "//code.tidio.co/xalkjzzpyytmhnzdek3pkdvbwzge6rih.js";
+        script.async = true;
+        document.body.appendChild(script);
+      } else if (tidioApi) {
+        // If the script exists and API is available, ensure it's visible
+        tidioApi.show();
+      }
+    } else {
+      // If on a page where it should be hidden, use the API to hide it
+      if (tidioApi) {
+        tidioApi.hide();
+      }
+    }
+    
+    // No cleanup function is needed, as we want the script to persist 
+    // and just be hidden or shown for a better UX.
+  }, [location.pathname]); // Re-run this effect whenever the route changes
+
   return (
     <>
         <Toaster position="top-center" reverseOrder={false} />
-      {/* <FirebaseAuthListener />  */}
       <NotificationPermissionHandler/>
       
       <Routes>
@@ -50,4 +82,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes
+export default AppRoutes;

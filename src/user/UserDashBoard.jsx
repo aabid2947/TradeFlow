@@ -70,6 +70,13 @@ export default function UserDashBoard() {
     }
   }, [location.state, navigate]);
 
+  useEffect(()=>{
+       window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+    },[])
+    
   useEffect(() => {
     const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
