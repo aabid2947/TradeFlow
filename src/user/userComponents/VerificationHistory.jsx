@@ -10,48 +10,94 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import favicon from "@/assets/favicon.png";
+import VerifyMyKyc from "@/assets/VerifyMyKyc.svg";
 
-// --- PDF Generation Logic ---
-// This logic has been updated to match UserDetailsCard.jsx for a consistent, professional look.
+// --- PDF Generation Logic (Synchronized with UserDetailsCard.jsx) ---
 
 // Helper function to format keys into titles (from UserDetailsCard.jsx)
 const toTitleCase = (str) => {
   if (!str) return "";
-  // This version handles camelCase and snake_case to produce better titles
-  return str
-    .replace(/_/g, " ")
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
-    .trim();
+  return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
+// Enhanced function to find the main data object within the API response (from UserDetailsCard.jsx)
+const findDetailsObject = (data) => {
+  if (typeof data !== 'object' || data === null) return null;
+  
+  // Look for specific verification data keys first (like bank_account_data, pan_data, etc.)
+  const specificDataKeys = Object.keys(data).filter(key => 
+    key.includes('_data') && typeof data[key] === 'object' && data[key] !== null
+  );
+  
+  if (specificDataKeys.length > 0) {
+    // Return the first specific data object found
+    return data[specificDataKeys[0]];
+  }
+  
+  // Then, look for a nested 'data' object that contains meaningful verification data
+  if (data.data && typeof data.data === 'object') {
+    const nestedData = data.data;
+    const verificationFields = ['name', 'account_number', 'ifsc', 'bank_name', 'account_type', 'mobile', 'email', 'dob', 'father_name', 'document_type'];
+    
+    // Check if nested data has verification fields
+    const hasVerificationData = verificationFields.some(field => nestedData[field]);
+    if (hasVerificationData) {
+      return nestedData;
+    }
+  }
+  
+  // If no nested data with verification fields, check the main data object
+  const verificationFields = ['name', 'account_number', 'ifsc', 'bank_name', 'account_type', 'mobile', 'email', 'dob', 'father_name', 'document_type'];
+  const hasMainVerificationData = verificationFields.some(field => data[field]);
+  
+  if (hasMainVerificationData) {
+    // Return filtered data without metadata
+    const filteredData = { ...data };
+    delete filteredData.message;
+    delete filteredData.code;
+    delete filteredData.success;
+    delete filteredData.timestamp;
+    delete filteredData.status_code;
+    delete filteredData.outputFields;
+    return filteredData;
+  }
+  
+  // Look for any object key that contains meaningful data
+  const detailsKey = Object.keys(data).find(key => 
+    typeof data[key] === 'object' && 
+    data[key] !== null && 
+    !['message', 'code', 'success', 'timestamp', 'status_code', 'outputFields'].includes(key.toLowerCase()) &&
+    Object.keys(data[key]).length > 0
+  );
+  
+  return detailsKey ? data[detailsKey] : null;
+};
+
+// PDF Generation Function (synchronized with UserDetailsCard.jsx)
 const generatePDF = (result) => {
   const reportElement = document.createElement('div');
   const serviceName = result.service?.name || 'Verification';
-  const isSuccess = result.status === 'success';
+  
+  // Use the same data extraction logic as UserDetailsCard.jsx
+  const details = findDetailsObject(result.resultData);
   const currentDate = new Date(result.createdAt).toLocaleDateString('en-GB');
-
-  // Helper to render table rows from an object
-  const renderTableRows = (data) => {
-    if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-      return '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>';
-    }
-    return Object.entries(data).map(([key, value]) => `
-      <tr>
-        <td>${toTitleCase(key)}</td>
-        <td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td>
-      </tr>
-    `).join('');
+  
+  const flattenDetailsForDisplay = (obj, prefix = '') => {
+    if (!obj || typeof obj !== 'object') return [];
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      const newKey = prefix ? `${prefix} → ${toTitleCase(key)}` : toTitleCase(key);
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        acc.push(...flattenDetailsForDisplay(value, newKey));
+      } else {
+        acc.push({ key: newKey, value });
+      }
+      return acc;
+    }, []);
   };
-
-  const inputRows = renderTableRows(result.inputPayload);
-  const resultRows = isSuccess 
-    ? renderTableRows(result.resultData)
-    : `<tr><td>Error Message</td><td>${result.errorMessage || 'An unknown error occurred.'}</td></tr>`;
   
-  const statusTitle = isSuccess ? `${serviceName} Status: Verified` : `${serviceName} Status: Failed`;
+  const allDetails = details ? flattenDetailsForDisplay(details) : [];
   
-  // The HTML and CSS structure is now based on UserDetailsCard.jsx
+  // The HTML and CSS structure is now identical to UserDetailsCard.jsx
   reportElement.innerHTML = `
     <html>
     <head>
@@ -60,23 +106,21 @@ const generatePDF = (result) => {
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
             body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
-            .report-container { width: 550px; padding: 30px; background: #fff; }
+            .report-container { width: 550px; padding: 60px; background: #fff; }
             .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-            .logo { width: 50px; height: 50px; }
+            .logo { width: 80px; height: 50px; }
             .company-info { text-align: right; font-size: 11px; color: #555; }
             .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
             .title-section { padding: 25px 0; text-align: center; }
             .title-section h1 { font-size: 22px; color: #1a202c; margin: 0 0 8px 0; font-weight: 700; }
-            .title-section p { font-size: 14px; color: ${isSuccess ? '#059669' : '#DC2626'}; margin: 0; }
+            .title-section p { font-size: 14px; color: #4a5568; margin: 0; }
             .current-date { text-align: right; margin-bottom: 20px; font-size: 11px; color: #718096; }
-            .data-section { margin-bottom: 20px; }
-            .data-section h3 { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb;}
             .data-table { width: 100%; border-collapse: collapse; }
             .data-table tr { border-bottom: 1px solid #edf2f7; }
             .data-table tr:last-child { border-bottom: none; }
-            .data-table td { padding: 10px 4px; vertical-align: top; font-size: 12px; }
-            .data-table td:first-child { font-weight: 500; width: 40%; color: #4a5568; }
-            .data-table td:last-child { color: #1a202c; font-weight: 400; word-break: break-word; }
+            .data-table td { padding: 12px 0; vertical-align: top; }
+            .data-table td:first-child { font-weight: 500; width: 45%; color: #4a5568; }
+            .data-table td:last-child { color: #1a202c; font-weight: 500; }
             .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #718096; }
             .footer h4 { font-size: 11px; font-weight: 700; color: #2d3748; margin-bottom: 10px; }
             .footer p { margin-bottom: 8px; text-align: justify; line-height: 1.6; }
@@ -86,27 +130,23 @@ const generatePDF = (result) => {
     <body>
         <div class="report-container">
             <div class="header">
-                <img src="${favicon.src}" alt="Company Logo" class="logo"/>
+                <img src="${VerifyMyKyc}" alt="Company Logo" class="logo"/>
                 <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
             </div>
-            <div class="title-section"><h1>Verification Report</h1><p>${statusTitle}</p></div>
+            <div class="title-section"><h1>Verification Report</h1><p>${serviceName} Status</p></div>
             <div class="current-date"><strong>Date of Report:</strong> ${currentDate}</div>
-            
             <div class="data-section">
-                <h3>Input Parameters</h3>
-                <table class="data-table"><tbody>${inputRows}</tbody></table>
+                <table class="data-table"><tbody>
+                    ${allDetails.length > 0 ? allDetails.map(({ key, value }) => `<tr><td>${key}</td><td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>'}
+                </tbody></table>
             </div>
-            
-            <div class="data-section">
-                <h3>Verification Results</h3>
-                <table class="data-table"><tbody>${resultRows}</tbody></table>
-            </div>
-
             <div class="footer">
                 <h4>LEGAL DISCLAIMER</h4>
                 <p>All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
                 <p>The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
+                <p>Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.</p>
                 <p>Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
+                <p>Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.</p>
                 <div class="confidential">- VERIFY MY KYC CONFIDENTIAL -</div>
             </div>
         </div>
@@ -120,32 +160,43 @@ const generatePDF = (result) => {
 
   if (elementToCapture) {
       html2canvas(elementToCapture, { 
-        scale: 2,
+        scale: 2, // Higher scale for better quality
         useCORS: true,
+        // These options are key to capturing the entire element, not just the visible part
         height: elementToCapture.scrollHeight,
         windowHeight: elementToCapture.scrollHeight
       }).then(canvas => {
           try {
               const imgData = canvas.toDataURL('image/png');
               const pdf = new jsPDF('p', 'mm', 'a4');
+              
               const pdfWidth = pdf.internal.pageSize.getWidth();
-              const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+              const pdfHeight = pdf.internal.pageSize.getHeight();
+              
+              const canvasWidth = canvas.width;
+              const canvasHeight = canvas.height;
+              
+              const ratio = canvasWidth / canvasHeight;
+              const imgHeight = pdfWidth / ratio;
+              
               let heightLeft = imgHeight;
               let position = 0;
               let page = 1;
 
+              // Add the first page
               pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-              heightLeft -= pdf.internal.pageSize.getHeight();
+              heightLeft -= pdfHeight;
 
+              // Add more pages if the content is longer than one page
               while (heightLeft > 0) {
-                  position = -pdf.internal.pageSize.getHeight() * page;
+                  position = -pdfHeight * page;
                   pdf.addPage();
                   pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                  heightLeft -= pdf.internal.pageSize.getHeight();
+                  heightLeft -= pdfHeight;
                   page++;
               }
               
-              pdf.save(`Verification_Report_${result._id}.pdf`);
+              pdf.save(`Verification_Report_${serviceName.replace(/\s+/g, '_')}.pdf`);
           } catch (e) {
               console.error("Error creating PDF:", e);
           } finally {
@@ -161,7 +212,6 @@ const generatePDF = (result) => {
       console.error("Could not find element to capture for PDF generation.");
   }
 };
-
 
 // --- UI Helper Components ---
 
@@ -234,11 +284,100 @@ const InfoCard = ({ icon: Icon, title, value, description, status = "neutral" })
   );
 };
 
+// Enhanced Data Display Component (synchronized with UserDetailsCard.jsx)
+const SimpleDataTable = ({ data, title }) => {
+  if (!data || typeof data !== 'object') return null;
+
+  // Function to get all meaningful entries from the data (same as UserDetailsCard.jsx)
+  const getMeaningfulEntries = (obj, prefix = '') => {
+    const entries = [];
+    
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip metadata fields
+      if (['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
+        continue;
+      }
+      
+      if (value === null || value === undefined) continue;
+      
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        // For nested objects, recursively get entries
+        const nestedEntries = getMeaningfulEntries(value, fullKey);
+        entries.push(...nestedEntries);
+      } else {
+        entries.push([fullKey, value]);
+      }
+    }
+    
+    return entries;
+  };
+
+  const entries = getMeaningfulEntries(data);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {title && (
+        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+          <Info className="w-4 h-4" />
+          {title}
+        </h4>
+      )}
+      <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+        {entries.map(([key, value], index) => (
+          <div 
+            key={key} 
+            className={`flex justify-between items-center px-4 py-3 hover:bg-gray-100 transition-colors ${
+              index !== entries.length - 1 ? 'border-b border-gray-200' : ''
+            }`}
+          >
+            <span className="text-sm font-medium text-gray-700 min-w-0 flex-1">
+              {toTitleCase(key.split('.').pop())}
+              {key.includes('.') && (
+                <span className="text-xs text-gray-500 block">
+                  {key.split('.').slice(0, -1).map(toTitleCase).join(' → ')}
+                </span>
+              )}
+            </span>
+            <span className="text-sm text-gray-900 font-medium text-right max-w-xs break-words ml-4">
+              {typeof value === 'boolean' ? (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  value 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {value ? 'Yes' : 'No'}
+                </span>
+              ) : (
+                String(value)
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // --- Reusable ResultCard Component ---
 const ResultCard = ({ result, index }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const isSuccess = result.status === 'success';
+  
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    try {
+      generatePDF(result);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+    } finally {
+      setTimeout(() => setIsDownloading(false), 1000);
+    }
+  };
 
   const getServiceIcon = (serviceName = "") => {
     if (serviceName.toLowerCase().includes('identity')) return User;
@@ -256,8 +395,8 @@ const ResultCard = ({ result, index }) => {
         { icon: Info, title: "Document Number", value: payload.documentNumber ? "••••••" + payload.documentNumber.slice(-4) : 'N/A', description: "Last 4 digits" }
       ];
     }
-    // Other service formatters remain the same...
-     if (serviceName.toLowerCase().includes('address')) {
+    
+    if (serviceName.toLowerCase().includes('address')) {
       return [
         { icon: MapPin, title: "Street Address", value: payload.address || 'N/A', description: "Primary address to verify" },
         { icon: MapPin, title: "City & State", value: `${payload.city || 'N/A'}, ${payload.state || ''}`, description: "City and state information" },
@@ -265,46 +404,19 @@ const ResultCard = ({ result, index }) => {
       ];
     }
 
-    if (serviceName.toLowerCase().includes('phone')) {
+    if (serviceName.toLowerCase().includes('phone') || serviceName.toLowerCase().includes('mobile')) {
       return [
-        { icon: Phone, title: "Phone Number", value: payload.phoneNumber || 'N/A', description: "Phone number to verify" },
+        { icon: Phone, title: "Phone Number", value: payload.phoneNumber || payload.mobile_number || 'N/A', description: "Phone number to verify" },
         { icon: Info, title: "Country", value: payload.countryCode || 'N/A', description: "Country code for the number" }
       ];
     }
     return Object.entries(payload).map(([key, value]) => ({ icon: Info, title: toTitleCase(key), value, description: "Checked parameter" }));
   };
 
-  const formatResultData = (data, serviceName, isSuccess) => {
-    if (!isSuccess) {
-      return [
-        {
-          icon: AlertTriangle,
-          title: "Verification Failed",
-          value: result.errorMessage || "Unknown Error",
-          description: data?.suggestion || "Please check your information and try again",
-          status: "error"
-        }
-      ];
-    }
-    // Other service formatters remain the same...
-     if (serviceName.toLowerCase().includes('identity')) {
-      return [
-        { icon: CheckCircle, title: "Identity Verified", value: data.verified ? "✓ Confirmed" : "✗ Not Verified", description: `Confidence: ${data.confidence || 'N/A'}%`, status: data.verified ? "success" : "error" },
-        { icon: User, title: "Name Match", value: data.nameMatch ? "✓ Matches" : "✗ No Match", description: "Matches document records", status: data.nameMatch ? "success" : "error" },
-        { icon: CreditCard, title: "Document Valid", value: data.documentValid ? "✓ Valid" : "✗ Invalid", description: "Authenticity verified", status: data.documentValid ? "success" : "error" }
-      ];
-    }
-
-    if (serviceName.toLowerCase().includes('phone')) {
-      return [
-        { icon: CheckCircle, title: "Phone Status", value: data.valid ? "✓ Valid Number" : "✗ Invalid", description: data.isActive ? "Active line" : "Inactive line", status: data.valid ? "success" : "error" },
-        { icon: Phone, title: "Carrier", value: data.carrier || 'N/A', description: `${data.lineType || ''} in ${data.region || ''}` }
-      ];
-    }
-    return Object.entries(data).map(([key, value]) => ({ icon: CheckCircle, title: toTitleCase(key), value: String(value), status: "success" }));
-  };
-
   const ServiceIcon = getServiceIcon(result.service?.name);
+
+  // Extract meaningful data using the same logic as UserDetailsCard.jsx
+  const details = findDetailsObject(result.resultData);
 
   return (
     <div
@@ -339,9 +451,20 @@ const ResultCard = ({ result, index }) => {
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-            {/* <Button variant="outline" size="sm" onClick={() => generatePDF(result)}>
-                <Download className="w-3.5 h-3.5 mr-1.5"/> Download
-            </Button> */}
+            {isSuccess && (
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isDownloading}>
+                {isDownloading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-1.5"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5 mr-1.5"/> Download
+                  </>
+                )}
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="group/btn">
               <span className="mr-1">Details</span>
               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -357,13 +480,13 @@ const ResultCard = ({ result, index }) => {
                 {formatInputData(result.inputPayload, result.service?.name).map((item, idx) => <InfoCard key={idx} {...item} />)}
               </div>
             </div>
-{/* 
-            <div>
-              <h4 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2"><div className={`w-2.5 h-2.5 rounded-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`}></div>Verification Results</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {formatResultData(result.resultData, result.service?.name, isSuccess).map((item, idx) => <InfoCard key={idx} {...item} />)}
+
+            {isSuccess && details && (
+              <div>
+                <h4 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2"><div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>Verification Results</h4>
+                <SimpleDataTable data={details} />
               </div>
-            </div> */}
+            )}
 
             {!isSuccess && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -383,7 +506,6 @@ const ResultCard = ({ result, index }) => {
   );
 };
 
-
 // --- Main Page Component ---
 export default function VerificationHistory() {
   const [page, setPage] = useState(1);
@@ -393,6 +515,7 @@ export default function VerificationHistory() {
   const { data: response, isLoading, isError, error } = useGetVerificationHistoryQuery({ page, limit: 10 });
   const results = response?.data || [];
   const pagination = response?.pagination;
+  console.log(response)
 
   useEffect(()=>{
        window.scrollTo({
@@ -400,7 +523,6 @@ export default function VerificationHistory() {
       behavior: "smooth",
     });
     },[page]) // Trigger scroll on page change
-
 
   const filteredResults = useMemo(() => {
     return (results || []).filter(result => {

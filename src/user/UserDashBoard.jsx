@@ -43,7 +43,7 @@ export default function UserDashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
   const userInfo = useSelector(selectCurrentUser);
-  console.log(userInfo)
+  // console.log(userInfo)
   
   // Fetch all data required for the dashboard and its children
   const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
@@ -76,7 +76,7 @@ export default function UserDashBoard() {
       behavior: "smooth", 
     });
     },[])
-    
+
   useEffect(() => {
     const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);

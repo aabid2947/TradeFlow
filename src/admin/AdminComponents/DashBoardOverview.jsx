@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { 
+import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { 
+import {
   TrendingUp, TrendingDown, Users, IndianRupee, CreditCard, Activity,
   Calendar, Filter, Download, Eye, Clock, MapPin, Smartphone,
   AlertTriangle, CheckCircle, XCircle, BarChart3,
@@ -82,18 +82,18 @@ const TrendChart = ({ data, dataKey, title, color = "#3B82F6" }) => (
         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-        <Tooltip 
-          contentStyle={{ 
-            backgroundColor: 'white', 
-            border: '1px solid #e2e8f0', 
+        <Tooltip
+          contentStyle={{
+            backgroundColor: 'white',
+            border: '1px solid #e2e8f0',
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-          }} 
+          }}
         />
-        <Area 
-          type="monotone" 
-          dataKey={dataKey} 
-          stroke={color} 
+        <Area
+          type="monotone"
+          dataKey={dataKey}
+          stroke={color}
           strokeWidth={2}
           fill={`url(#gradient-${dataKey})`}
         />
@@ -108,21 +108,21 @@ export default function DashboardOverview() {
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  
+
   // Fetch transaction data using the RTK Query hook
   const { data: transactionData, isLoading, isError, error } = useGetAllTransactionsQuery();
 
   // Export functionality
   const exportToCSV = (data, filename) => {
-    const csvContent = data.map(row => 
-      Object.values(row).map(val => 
+    const csvContent = data.map(row =>
+      Object.values(row).map(val =>
         typeof val === 'string' && val.includes(',') ? `"${val}"` : val
       ).join(',')
     ).join('\n');
-    
+
     const headers = Object.keys(data[0]).join(',');
     const csv = headers + '\n' + csvContent;
-    
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -143,7 +143,7 @@ export default function DashboardOverview() {
     const now = new Date();
     let startDate, endDate;
     let periodDescription = '';
-    
+
     if (timeFilter === 'custom' && customStartDate && customEndDate) {
       startDate = new Date(customStartDate);
       endDate = new Date(customEndDate);
@@ -170,7 +170,7 @@ export default function DashboardOverview() {
       endDate = now;
       periodDescription = 'All Time';
     }
-    
+
     const filteredTransactions = transactionData.data.filter(t => {
       const transactionDate = new Date(t.createdAt);
       return transactionDate >= startDate && transactionDate <= endDate;
@@ -268,15 +268,15 @@ export default function DashboardOverview() {
 
     // Export multiple sheets if needed, or create a comprehensive single file
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    
+
     // Export detailed transactions
     exportToCSV(reportData, `transactions_detailed_report_${timeFilter}_${timestamp}.csv`);
-    
+
     // Small delay to allow first download to start
     setTimeout(() => {
       exportToCSV(summaryData, `transactions_summary_${timeFilter}_${timestamp}.csv`);
     }, 500);
-    
+
     setTimeout(() => {
       exportToCSV(categoryAnalysis, `category_analysis_${timeFilter}_${timestamp}.csv`);
     }, 1000);
@@ -299,7 +299,7 @@ export default function DashboardOverview() {
     const now = new Date();
     let startDate, endDate;
     let daysToTrack = 30; // default for chart generation
-    
+
     if (timeFilter === 'custom' && customStartDate && customEndDate) {
       startDate = new Date(customStartDate);
       endDate = new Date(customEndDate);
@@ -317,7 +317,7 @@ export default function DashboardOverview() {
       daysToTrack = 7;
     } else if (timeFilter === 'all') {
       // For all time, find the earliest transaction or use default
-      const earliestTransaction = transactionData.data.length > 0 
+      const earliestTransaction = transactionData.data.length > 0
         ? new Date(Math.min(...transactionData.data.map(t => new Date(t.createdAt))))
         : new Date('2020-01-01');
       startDate = earliestTransaction;
@@ -344,7 +344,7 @@ export default function DashboardOverview() {
       }
       return sum;
     }, 0);
-    
+
     const totalTransactions = filteredTransactions.length;
     const completedTransactions = filteredTransactions.filter(t => t.status == 'completed').length;
     const successRate = totalTransactions > 0 ? (completedTransactions / totalTransactions * 100).toFixed(1) : 0;
@@ -359,12 +359,12 @@ export default function DashboardOverview() {
         hourStart.setHours(i, 0, 0, 0);
         const hourEnd = new Date(startDate);
         hourEnd.setHours(i, 59, 59, 999);
-        
+
         const hourTransactions = filteredTransactions.filter(t => {
           const tDate = new Date(t.createdAt);
           return tDate >= hourStart && tDate <= hourEnd;
         });
-        
+
         dailyData.push({
           date: `${i.toString().padStart(2, '0')}:00`,
           revenue: hourTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
@@ -380,17 +380,17 @@ export default function DashboardOverview() {
         monthStart.setMonth(monthStart.getMonth() - i);
         monthStart.setDate(1);
         monthStart.setHours(0, 0, 0, 0);
-        
+
         const monthEnd = new Date(monthStart);
         monthEnd.setMonth(monthEnd.getMonth() + 1);
         monthEnd.setDate(0);
         monthEnd.setHours(23, 59, 59, 999);
-        
+
         const monthTransactions = filteredTransactions.filter(t => {
           const tDate = new Date(t.createdAt);
           return tDate >= monthStart && tDate <= monthEnd;
         });
-        
+
         dailyData.push({
           date: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
           revenue: monthTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
@@ -407,7 +407,7 @@ export default function DashboardOverview() {
           const tDate = new Date(t.createdAt);
           return tDate.toDateString() === date.toDateString();
         });
-        
+
         dailyData.push({
           date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           revenue: dayTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount : 0), 0),
@@ -470,7 +470,7 @@ export default function DashboardOverview() {
   if (isError) {
     return <ErrorMessage message={error?.data?.message} />;
   }
-  
+
   const timeFilterText = {
       'today': 'Today',
       '7d': 'Last 7 Days',
@@ -493,18 +493,18 @@ export default function DashboardOverview() {
   };
 
   return (
-    <div className="min-h-screen  bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-8 ">
-        <div className="flex items-center justify-between  mb-4">
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-600">Comprehensive insights into your KYC verification platform</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600 hidden sm:block">Comprehensive insights into your KYC verification platform</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <select 
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4 md:mt-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+              <select
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={timeFilter}
                 onChange={(e) => handleTimeFilterChange(e.target.value)}
               >
@@ -513,24 +513,24 @@ export default function DashboardOverview() {
                 <option value="7d">Last 7 Days</option>
                 <option value="custom">Custom Range</option>
               </select>
-              
+
               {showCustomDatePicker && (
-                <div className="flex items-center gap-2 ml-2 p-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 sm:mt-0 p-2 bg-white border border-gray-300 rounded-lg shadow-sm w-full sm:w-auto">
                   <div className="flex items-center gap-2">
                     <label className="text-sm text-gray-600">From:</label>
                     <input
                       type="date"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       value={customStartDate}
                       onChange={(e) => setCustomStartDate(e.target.value)}
                       max={customEndDate || new Date().toISOString().split('T')[0]}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
                     <label className="text-sm text-gray-600">To:</label>
                     <input
                       type="date"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       value={customEndDate}
                       onChange={(e) => setCustomEndDate(e.target.value)}
                       min={customStartDate}
@@ -540,9 +540,9 @@ export default function DashboardOverview() {
                 </div>
               )}
             </div>
-            
-            <button 
-              className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+
+            <button
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mt-2 sm:mt-0 ${
                 isExporting ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               onClick={generateDetailedReport}
@@ -608,10 +608,10 @@ export default function DashboardOverview() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e2e8f0', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
@@ -688,10 +688,10 @@ export default function DashboardOverview() {
                   <td className="py-3 px-4 text-right">{category.transactions}</td>
                   <td className="py-3 px-4 text-right">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      parseFloat(category.successRate) >= 80 
-                        ? 'bg-green-100 text-green-800' 
-                        : parseFloat(category.successRate) >= 60 
-                        ? 'bg-yellow-100 text-yellow-800' 
+                      parseFloat(category.successRate) >= 80
+                        ? 'bg-green-100 text-green-800'
+                        : parseFloat(category.successRate) >= 60
+                        ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
                       {category.successRate}%

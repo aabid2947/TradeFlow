@@ -11,6 +11,7 @@ import favicon from "@/assets/favicon.png"
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import VerifyMyKyc from "@/assets/VerifyMyKyc.svg"
 
 // Helper function to format keys into titles
 const toTitleCase = (str) => {
@@ -175,9 +176,9 @@ const generatePDF = (result, serviceName) => {
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
             body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
-            .report-container { width: 550px; padding: 30px; background: #fff; }
+            .report-container { width: 550px; padding: 60px; background: #fff; }
             .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-            .logo { width: 50px; height: 50px; }
+            .logo { width: 80px; height: 50px; }
             .company-info { text-align: right; font-size: 11px; color: #555; }
             .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
             .title-section { padding: 25px 0; text-align: center; }
@@ -199,7 +200,7 @@ const generatePDF = (result, serviceName) => {
     <body>
         <div class="report-container">
             <div class="header">
-                <img src="${favicon}" alt="Company Logo" class="logo"/>
+                <img src="${VerifyMyKyc}" alt="Company Logo" class="logo"/>
                 <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
             </div>
             <div class="title-section"><h1>Verification Report</h1><p>${serviceName} Status</p></div>
