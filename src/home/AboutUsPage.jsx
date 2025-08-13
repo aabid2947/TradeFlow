@@ -85,11 +85,10 @@ export default function AboutUsPage() {
             <Target className="w-32 h-32 text-blue-600 opacity-80" />
           </motion.div>
         </section>*/}
-
-    <section className="mb-20">
+<section className="mb-20">
   <SectionHeader
     title="What We Do"
-    subtitle="We provide a comprehensive,  Platform that offers a wide range of verification services. With our cutting-edge technology, you can quickly and easily verify:"
+    subtitle="We provide a comprehensive, Platform that offers a wide range of verification services. With our cutting-edge technology, you can quickly and easily verify:"
   />
   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
     {[
@@ -120,7 +119,8 @@ export default function AboutUsPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6, delay: index * 0.1 }}
-        className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center text-center"
+        className={`bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center text-center 
+          ${index === 3 ? "lg:col-span-3 md:col-span-2 justify-self-center max-w-md mx-auto" : ""}`}
       >
         <item.icon className="w-12 h-12 text-blue-600 mb-4" />
         <h4 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h4>

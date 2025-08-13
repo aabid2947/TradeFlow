@@ -15,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { toast } from 'react-hot-toast';
 
 // --- MODIFIED: Updated RTK Query Hook Imports ---
@@ -29,6 +27,66 @@ import { useGetServicesQuery } from '@/app/api/serviceApiSlice';
 
 import { UserDetailsCard } from './UserDetailCard';
 
+// Custom Checkbox Component
+const CustomCheckbox = ({ id, checked, onChange, children }) => {
+    return (
+        <div className="flex items-center space-x-3">
+            <div className="relative">
+                <input
+                    type="checkbox"
+                    id={id}
+                    checked={checked}
+                    onChange={onChange}
+                    className="sr-only"
+                />
+                <div
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+                        checked
+                            ? 'bg-blue-600 border-blue-600'
+                            : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    onClick={onChange}
+                >
+                    {checked && (
+                        <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                            />
+                        </svg>
+                    )}
+                </div>
+            </div>
+            <label htmlFor={id} className="cursor-pointer flex-1">
+                {children}
+            </label>
+        </div>
+    );
+};
+
+// Custom Number Input Component
+const CustomNumberInput = ({ value, onChange, placeholder = "Count", disabled = false }) => {
+    return (
+        <input
+            type="number"
+            min="1"
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={`w-full px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+            }`}
+        />
+    );
+};
 
 // Loading Skeleton Component (No changes)
 const UserCardSkeleton = () => (
@@ -52,8 +110,7 @@ const UserCardSkeleton = () => (
     </Card>
 );
 
-
-// --- MODIFIED: Promotion Modal now includes a multiplier input ---
+// --- MODIFIED: Completely redesigned Promotion Modal with custom components ---
 const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
     const [selectedSubcategories, setSelectedSubcategories] = useState(new Set(user.promotedCategories || []));
     const [multipliers, setMultipliers] = useState({}); // State for multipliers
@@ -81,7 +138,8 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
         });
     };
 
-    const handleMultiplierChange = (subcategory, value) => {
+    const handleMultiplierChange = (subcategory, e) => {
+        const value = e.target.value;
         setMultipliers(prev => ({
             ...prev,
             [subcategory]: parseInt(value, 10) || 1
@@ -119,70 +177,90 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
     if (!isOpen) return null;
 
     const isLoading = isPromoting || isRevoking;
-
-    // --- FIX: Define toAdd in the component's render scope ---
     const originalSubcategories = new Set(user.promotedCategories || []);
     const toAdd = [...selectedSubcategories].filter(sub => !originalSubcategories.has(sub));
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0">
-            {/* MODIFICATION: Increased modal width from max-w-md to max-w-xl */}
-            <Card className="w-full max-w-xl m-4 bg-white p-2 md:p-4 animate-in z-60 zoom-in-95">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div className="w-full flex flex-row items-center justify-between">
-                        <div className='mr-10 md:mr-70'>
-
-                            <CardTitle className="text-xl">Manage Promotions</CardTitle>
-                            <p className="text-gray-600">For user: <span className="font-semibold">{user.name}</span></p>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-2xl m-4 bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
+                {/* Custom Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900">Manage Promotions</h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            For user: <span className="font-medium text-gray-900">{user.name}</span>
+                        </p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    {/* MODIFICATION: Increased modal height from max-h-64 to max-h-96 */}
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                        <X className="h-5 w-5 text-gray-500" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-hidden p-6">
+                    <div className="mb-4">
+                        <h3 className="font-medium text-gray-800 mb-4">Available Service Subcategories:</h3>
+                    </div>
+                    
                     <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                        <p className="font-semibold text-gray-800">Available Service Subcategories:</p>
                         {allSubcategories.map(subcategory => (
-                            <div key={subcategory} className="flex items-center justify-between space-x-3 p-2 rounded-md hover:bg-gray-50">
-                                <div className="flex items-center space-x-3 flex-grow">
-                                    <Checkbox
+                            <div 
+                                key={subcategory} 
+                                className="grid grid-cols-5 gap-3 items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-100"
+                            >
+                                {/* 80% width (4 columns) for subcategory name and checkbox */}
+                                <div className="col-span-4">
+                                    <CustomCheckbox
                                         id={`subcat-${subcategory}`}
                                         checked={selectedSubcategories.has(subcategory)}
-                                        onCheckedChange={() => handleCheckboxChange(subcategory)}
-                                    />
-                                    <Label htmlFor={`subcat-${subcategory}`} className="flex-1 cursor-pointer">{subcategory.replace(/_/g, " ")}</Label>
+                                        onChange={() => handleCheckboxChange(subcategory)}
+                                    >
+                                        <span className="text-gray-700 font-medium">
+                                            {subcategory.replace(/_/g, " ")}
+                                        </span>
+                                    </CustomCheckbox>
                                 </div>
-                                {selectedSubcategories.has(subcategory) && (
-                                    // MODIFICATION: Changed width from w-24 to w-1/5 (20%)
-                                    <Input
-                                        type="number"
-                                        min="1"
-                                        className="w-[20%] h-9"
-                                        placeholder="Count"
-                                        value={multipliers[subcategory] || '1'}
-                                        onChange={(e) => handleMultiplierChange(subcategory, e.target.value)}
-                                        disabled={!toAdd.includes(subcategory)} // FIX: Now `toAdd` is in scope
-                                    />
-                                )}
+                                
+                                {/* 20% width (1 column) for number input */}
+                                <div className="col-span-1">
+                                    {selectedSubcategories.has(subcategory) && (
+                                        <CustomNumberInput
+                                            value={multipliers[subcategory] || '1'}
+                                            onChange={(e) => handleMultiplierChange(subcategory, e)}
+                                            placeholder="Count"
+                                            disabled={!toAdd.includes(subcategory)}
+                                        />
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>
-                    <div className="mt-6 flex justify-end gap-3">
-                        <Button variant="outline" onClick={onClose}>Cancel</Button>
-                        <Button
-                            onClick={handleSaveChanges}
-                            disabled={isLoading}
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Changes
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSaveChanges}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                    >
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
-
 
 // User Card Component (No changes)
 const UserCard = ({ user, onPromote, onNameClick }) => {
@@ -226,7 +304,7 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
                     <Badge variant={user.isVerified ? 'default' : 'destructive'}>{user.isVerified ? 'Verified' : 'Not Verified'}</Badge>
                 </div>
 
-                <div className="mt-4 pt-4 border-t  border-gray-100 flex gap-1">
+                <div className="mt-4 pt-4 border-t border-gray-100 flex gap-1">
                     <Button variant="outline" size="sm" className="w-full bg-transparent hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onClick={() => onPromote(user)}>
                         <Award className="w-4 h-4 mr-2" />
                         Promote User
@@ -292,7 +370,7 @@ export default function AllUser() {
     const isLoading = isLoadingUsers || isLoadingServices;
 
     return (
-        <div className="min-h-screen bg-gray-50  p-4 md:p-6">
+        <div className="min-h-screen bg-gray-50 p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
