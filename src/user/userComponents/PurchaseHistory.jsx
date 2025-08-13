@@ -94,7 +94,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile }) => {
         </div>
 
         {/* Payment Details */}
-        <div className="flex items-start gap-3 ml-15">
+        <div className="flex items-start gap-3 md:ml-28">
           <CreditCard className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
           <div>
             <h4 className="font-medium text-gray-900 mb-1 ">Payment Details</h4>
