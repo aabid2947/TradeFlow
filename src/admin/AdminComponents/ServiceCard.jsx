@@ -47,7 +47,7 @@ export default function ServiceCard({
   };
 
   return (
-    <Card onClick={() => navigate(`/user/service/${serviceId}`)} className="overflow-hidden border gap-3 border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
+    <Card  className="overflow-hidden border gap-3 border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
       <div className="relative ">
         <div className="aspect-[4/2.5] overflow-hidden ">
           {imageSrc ? (
