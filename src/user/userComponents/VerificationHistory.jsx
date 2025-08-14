@@ -284,7 +284,7 @@ const InfoCard = ({ icon: Icon, title, value, description, status = "neutral" })
   );
 };
 
-// Enhanced Data Display Component (synchronized with UserDetailsCard.jsx)
+// **Enhanced Data Display Component with Scrollbar**
 const SimpleDataTable = ({ data, title }) => {
   if (!data || typeof data !== 'object') return null;
 
@@ -293,7 +293,6 @@ const SimpleDataTable = ({ data, title }) => {
     const entries = [];
     
     for (const [key, value] of Object.entries(obj)) {
-      // Skip metadata fields
       if (['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
         continue;
       }
@@ -303,7 +302,6 @@ const SimpleDataTable = ({ data, title }) => {
       const fullKey = prefix ? `${prefix}.${key}` : key;
       
       if (typeof value === 'object' && !Array.isArray(value)) {
-        // For nested objects, recursively get entries
         const nestedEntries = getMeaningfulEntries(value, fullKey);
         entries.push(...nestedEntries);
       } else {
@@ -317,24 +315,48 @@ const SimpleDataTable = ({ data, title }) => {
   const entries = getMeaningfulEntries(data);
 
   if (entries.length === 0) return null;
+  
+  // Custom scrollbar styling
+  const scrollbarStyles = `
+    .modern-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .modern-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+      border-radius: 3px;
+    }
+    .modern-scrollbar::-webkit-scrollbar-thumb {
+      background: #d1d5db; /* gray-300 */
+      border-radius: 3px;
+    }
+    .modern-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af; /* gray-400 */
+    }
+    .modern-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #d1d5db transparent;
+    }
+  `;
 
   return (
     <div className="space-y-3">
+      <style>{scrollbarStyles}</style>
       {title && (
         <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
           <Info className="w-4 h-4" />
           {title}
         </h4>
       )}
-      <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+      {/* UPDATE: Added overflow-y-auto, max-h-72 for scrolling, and the custom scrollbar class */}
+      <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-y-auto max-h-72 modern-scrollbar">
         {entries.map(([key, value], index) => (
           <div 
             key={key} 
-            className={`flex justify-between items-center px-4 py-3 hover:bg-gray-100 transition-colors ${
+            className={`flex justify-between items-start px-4 py-3 hover:bg-gray-100 transition-colors ${
               index !== entries.length - 1 ? 'border-b border-gray-200' : ''
             }`}
           >
-            <span className="text-sm font-medium text-gray-700 min-w-0 flex-1">
+            <span className="text-sm font-medium text-gray-700 min-w-0 flex-1 pr-4">
               {toTitleCase(key.split('.').pop())}
               {key.includes('.') && (
                 <span className="text-xs text-gray-500 block">

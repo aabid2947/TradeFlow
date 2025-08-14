@@ -170,13 +170,13 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
                     align="end"
                     className="w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2"
                   >
-                    {/* <DropdownMenuItem
+                    <DropdownMenuItem
                       onClick={() => onNavigate('profile')}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:bg-gray-50 cursor-pointer rounded-none"
                     >
                       <User className="w-4 h-4 text-gray-500" />
                       <span className="font-medium">My Profile</span>
-                    </DropdownMenuItem> */}
+                    </DropdownMenuItem>
 
                     {/* <DropdownMenuItem 
         disabled 
@@ -186,7 +186,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
         <span className="font-medium">Settings</span>
       </DropdownMenuItem> */}
 
-                    {/* <div className="h-px bg-gray-200 mx-2 my-1"></div> */}
+                    <div className="h-px bg-gray-200 mx-2 my-1"></div>
 
                     <DropdownMenuItem
                       onClick={handleLogout}
