@@ -9,15 +9,12 @@ const NotificationPermissionHandler = () => {
     }
 
     // Check the current permission status. 
-    // We only want to ask if the user has NOT already made a choice.
     if (Notification.permission === 'default') {
       const askForPermission = async () => {
-        // This line triggers the NATIVE BROWSER PROMPT from your image
         const permission = await Notification.requestPermission();
         
         if (permission === 'granted') {
           console.log('Notification permission granted.');
-          // Optional: Show a welcome notification
           new Notification('Welcome!', { body: 'Notifications are enabled.' });
         } else {
           console.log('Notification permission denied.');

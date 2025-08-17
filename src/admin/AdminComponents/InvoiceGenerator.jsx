@@ -38,7 +38,7 @@ const getStatusStyle = (status) => {
   }
 };
 
-// --- FIX: Helper to get raw SVG strings instead of React components ---
+// Helper to get raw SVG strings instead of React components 
 const getStatusIconSVG = (status, style) => {
     switch (status?.toLowerCase()) {
         case 'completed':

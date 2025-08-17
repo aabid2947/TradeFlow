@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from "react"
 import { Trash2, UserPlus, CheckCircle, XCircle, Users, Shield, Mail, Lock, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useSignupAdminMutation, useGetAllAdminQuery } from "@/app/api/authApiSlice"; // Adjust the import path as needed
+import { useSignupAdminMutation, useGetAllAdminQuery } from "@/app/api/authApiSlice";
 
-// Mock UI components (as provided)
 const Card = ({ children, className }) => (
   <div className={`bg-white rounded-lg shadow-lg ${className}`}>{children}</div>
 )
@@ -37,10 +36,10 @@ const Button = ({ children, className, variant = "default", size = "default", ..
     default: "px-4 py-2",
     icon: "p-2 w-10 h-10"
   }
-  
+
   return (
-    <button 
-      className={`${baseClass} ${variants[variant]} ${sizes[size]} ${className}`} 
+    <button
+      className={`${baseClass} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}
@@ -51,7 +50,7 @@ const Button = ({ children, className, variant = "default", size = "default", ..
 // Animated Input Component
 function AnimatedInput({ icon: Icon, error, label, ...props }) {
   const [focused, setFocused] = useState(false)
-  
+
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -67,15 +66,13 @@ function AnimatedInput({ icon: Icon, error, label, ...props }) {
           {...props}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`pl-10 transition-all duration-300 ${
-            error 
-              ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100" 
+          className={`pl-10 transition-all duration-300 ${error
+              ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
               : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-          } ${focused ? "transform scale-[1.02]" : ""}`}
+            } ${focused ? "transform scale-[1.02]" : ""}`}
         />
-        <Icon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${
-          focused ? "text-blue-500" : "text-gray-400"
-        }`} />
+        <Icon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${focused ? "text-blue-500" : "text-gray-400"
+          }`} />
       </div>
       <AnimatePresence>
         {error && (
@@ -97,7 +94,7 @@ function AnimatedInput({ icon: Icon, error, label, ...props }) {
 // Admin Card Component
 function AdminCard({ admin, onDelete, index }) {
   const [isHovered, setIsHovered] = useState(false)
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -110,7 +107,7 @@ function AdminCard({ admin, onDelete, index }) {
     >
       <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-100/30 to-transparent rounded-bl-full" />
-        
+
         <div className="flex items-center gap-4">
           <motion.div
             animate={{ scale: isHovered ? 1.1 : 1 }}
@@ -118,7 +115,7 @@ function AdminCard({ admin, onDelete, index }) {
           >
             {admin.avatar}
           </motion.div>
-          
+
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 text-lg truncate">{admin.name}</h3>
             <div className="flex items-center gap-1 text-gray-600 text-sm mt-1">
@@ -132,7 +129,7 @@ function AdminCard({ admin, onDelete, index }) {
               </span>
             </div>
           </div>
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
@@ -159,10 +156,18 @@ export default function RegisterAdmin() {
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState(null)
-  
+
   // RTK Query hooks for API interaction
   const [signupAdmin, { isLoading: isSubmitting }] = useSignupAdminMutation();
   const { data: fetchedAdmins, isLoading: isLoadingAdmins, isError, error } = useGetAllAdminQuery();
+
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [])
 
   const admins = React.useMemo(() => {
     if (!fetchedAdmins) return [];
@@ -170,11 +175,11 @@ export default function RegisterAdmin() {
     // Format data for the UI, creating avatars and mapping id
     return fetchedAdmins.data.map(admin => ({
       ...admin,
-      id: admin._id, // Assuming the API returns _id
+      id: admin._id,
       avatar: admin.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
     }));
   }, [fetchedAdmins]);
-  
+
   const validateForm = () => {
     const newErrors = {}
     if (!name.trim()) newErrors.name = "Name is required"
@@ -210,14 +215,10 @@ export default function RegisterAdmin() {
   }
 
   const handleDelete = (id) => {
-    // Note: Deleting is currently a UI-only action.
-    // A 'deleteAdminMutation' would be needed for full functionality.
     const adminToDelete = admins.find(admin => admin.id === id);
-    // setAdmins is removed as the source of truth is now the API via RTK Query.
-    // To implement delete, a mutation is required.
-    setMessage({ 
-      type: "success", 
-      text: `${adminToDelete?.name || 'Admin'} has been removed (UI only).` 
+    setMessage({
+      type: "success",
+      text: `${adminToDelete?.name || 'Admin'} has been removed (UI only).`
     });
     setTimeout(() => setMessage(null), 3000);
   }
@@ -249,11 +250,10 @@ export default function RegisterAdmin() {
               initial={{ opacity: 0, y: -50, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              className={`mb-6 p-4 rounded-xl flex items-center gap-3 shadow-lg ${
-                message.type === "success" 
-                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white" 
+              className={`mb-6 p-4 rounded-xl flex items-center gap-3 shadow-lg ${message.type === "success"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
                   : "bg-gradient-to-r from-red-500 to-rose-500 text-white"
-              }`}
+                }`}
             >
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.5 }}>
                 {message.type === "success" ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
@@ -273,7 +273,7 @@ export default function RegisterAdmin() {
                 </CardTitle>
                 <p className="text-blue-100 mt-2 relative z-10">Create a new administrator account</p>
               </CardHeader>
-              
+
               <CardContent className="space-y-6 p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <AnimatedInput icon={User} label="Full Name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter admin name" error={errors.name} />
@@ -315,7 +315,7 @@ export default function RegisterAdmin() {
                   </motion.div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="p-8">
                 <AnimatePresence mode="popLayout">
                   {isLoadingAdmins ? (

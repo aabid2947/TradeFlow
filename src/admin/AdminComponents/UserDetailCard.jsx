@@ -29,7 +29,6 @@ import {
 } from '@/app/api/authApiSlice';
 import { toast } from "react-hot-toast";
 
-// --- Reusable Modal Components (Complete) ---
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoading }) => {
     if (!isOpen) return null;
@@ -78,8 +77,6 @@ const ExtendModal = ({ isOpen, onClose, onConfirm, sub, isLoading }) => {
     );
 };
 
-// --- Main Component ---
-
 export const UserDetailsCard = ({ user, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isAnimating, setIsAnimating] = useState(false);
@@ -97,6 +94,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
       const timer = setTimeout(() => setIsAnimating(false), 300);
       return () => clearTimeout(timer);
     }
+    console.log(user)
   }, [isOpen, user]);
 
   if (!isOpen || !user) return null;

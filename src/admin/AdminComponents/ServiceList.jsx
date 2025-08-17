@@ -59,12 +59,12 @@ export default function ServiceList({
       </div>
       <div className="flex-grow">
         <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-900 truncate">
-                {serviceName}
-            </h3>
-            <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
-                {demandLevel}
-            </Badge>
+          <h3 className="text-xl font-semibold text-gray-900 truncate">
+            {serviceName}
+          </h3>
+          <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+            {demandLevel}
+          </Badge>
         </div>
 
         <div className="flex items-center gap-6 text-sm text-gray-600 my-3">
@@ -84,26 +84,26 @@ export default function ServiceList({
         </div>
       </div>
       <div className="flex flex-col items-center justify-center space-y-3 ml-6">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={handleUpdate}
-              className="w-10 h-10 text-blue-600 border-gray-300 hover:bg-blue-50"
-              aria-label="Update service"
-            >
-              <Pencil className="w-5 h-5" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              disabled={isDeleting}
-              onClick={handleDeleteService}
-              className="w-10 h-10 text-red-600 border-gray-300 hover:bg-red-50 disabled:opacity-50"
-              aria-label="Delete service"
-            >
-              {isDeleting ? "..." : <Trash2 className="w-5 h-5" />}
-            </Button>
-          </div>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={handleUpdate}
+          className="w-10 h-10 text-blue-600 border-gray-300 hover:bg-blue-50"
+          aria-label="Update service"
+        >
+          <Pencil className="w-5 h-5" />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={isDeleting}
+          onClick={handleDeleteService}
+          className="w-10 h-10 text-red-600 border-gray-300 hover:bg-red-50 disabled:opacity-50"
+          aria-label="Delete service"
+        >
+          {isDeleting ? "..." : <Trash2 className="w-5 h-5" />}
+        </Button>
+      </div>
     </div>
   );
 }

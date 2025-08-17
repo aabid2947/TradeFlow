@@ -19,7 +19,7 @@ import RegisterAdmin from "./AdminComponents/RegisterAdmin";
 import Feedback from "./AdminComponents/Feedback"
 import UsersDisplay from "./AdminComponents/AllUser";
 // import FirebaseUserActivityDashboard from "./AdminComponents/DashBoardCharts";
-import Profile from "./AdminComponents/Profile"; // <-- IMPORT THE NEW PROFILE COMPONENT
+import Profile from "./AdminComponents/Profile";
 import BlogManagement from "./AdminComponents/BlogMetaDataForm";
 
 const DashboardHome = ({ users, transactions, isLoading }) => (

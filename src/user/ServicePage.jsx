@@ -58,19 +58,44 @@ export default function ServicePage() {
     return null;
   }, [filteredServices]);
 
-  // Enhanced subscription logic with usage tracking
+  //Enhanced subscription logic to check static plans (Personal, Professional, etc.)
   const subscriptionInfo = useMemo(() => {
-    if (!userInfo?.activeSubscriptions) {
+    if (!userInfo?.activeSubscriptions || !allPricingPlans.length || !subcategory) {
       return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
     }
+
+    // Create a map of plan names to their included service IDs for quick lookup
+    const staticPlanMap = new Map(
+      allPricingPlans.map(p => [p.name, new Set(p.includedServices.map(s => s._id))])
+    );
     
-    // Find active subscription for current subcategory or parent category
+    // Get the IDs of all services in the current subcategory
+    const servicesInCurrentSubcategory = allServices
+        .filter(service => service.subcategory === subcategory)
+        .map(service => service._id);
+    
+    if (servicesInCurrentSubcategory.length === 0) {
+      return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
+    }
+
+    // Find an active subscription that grants access to this subcategory's services
     const activeSubscription = userInfo.activeSubscriptions.find(sub => {
       const isActive = new Date(sub.expiresAt) > new Date();
-      const matchesSubcategory = sub.category === subcategory;
-      const matchesParentCategory = parentCategory && sub.category === `${parentCategory} Plan`;
+      if (!isActive) return false;
+
+      //  Check for dynamic, subcategory-specific plans
+      if (sub.category === subcategory) {
+        return true;
+      }
+
+      //  Check for static plans (Personal, Professional, etc.) that include these services
+      if (staticPlanMap.has(sub.category)) {
+        const includedServiceIds = staticPlanMap.get(sub.category);
+        // Check if any service from the current subcategory is included in the plan
+        return servicesInCurrentSubcategory.some(serviceId => includedServiceIds.has(serviceId));
+      }
       
-      return isActive && (matchesSubcategory || matchesParentCategory);
+      return false;
     });
 
     if (activeSubscription) {
@@ -86,7 +111,7 @@ export default function ServicePage() {
     }
 
     return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
-  }, [userInfo, parentCategory, subcategory]);
+  }, [userInfo, allPricingPlans, allServices, subcategory]);
 
   const { isSubscribed, usageRemaining, totalUsage, usageLimit, expiresAt } = subscriptionInfo;
   

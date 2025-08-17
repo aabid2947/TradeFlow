@@ -56,9 +56,8 @@ const CountdownTimer = ({ expiryDate }) => {
 
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border ${
-        isUrgent ? "bg-red-50/80 border-red-200 text-red-700" : "bg-orange-50/80 border-orange-200 text-orange-700"
-      }`}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border ${isUrgent ? "bg-red-50/80 border-red-200 text-red-700" : "bg-orange-50/80 border-orange-200 text-orange-700"
+        }`}
     >
       <Timer className="w-3.5 h-3.5 animate-pulse" />
       <span className="text-xs font-semibold">
@@ -108,9 +107,8 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
   return (
     <div
       ref={cardRef}
-      className={`transform transition-all duration-700 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-      }`}
+      className={`transform transition-all duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+        }`}
     >
       <Card className="group relative overflow-hidden border-0 bg-white/70 backdrop-blur-xl shadow-lg shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-60" />
@@ -131,7 +129,7 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
               )}
             </div>
             <div className="flex-1 min-w-0 pr-2">
-              <CardTitle 
+              <CardTitle
                 className="text-lg font-bold text-gray-900 mb-2 leading-tight break-words hyphens-auto"
                 title={offer.title} // Tooltip for full text on hover
               >
@@ -139,19 +137,18 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
               </CardTitle>
             </div>
           </div>
-          
-          {/* Discount badge moved below title for better layout */}
-          
+
+
         </CardHeader>
 
         <CardContent className="space-y-5 px-6 pb-6 relative z-10">
-          {/* Description with proper text handling */}
-          <p 
+
+          <p
             className="text-sm text-gray-600 leading-relaxed break-words hyphens-auto -mt-2"
             title={offer.description} // Tooltip for full text
           >
-            {offer.description.length > 80 
-              ? `${offer.description.substring(0, 77)}...` 
+            {offer.description.length > 80
+              ? `${offer.description.substring(0, 77)}...`
               : offer.description
             }
           </p>
@@ -206,7 +203,7 @@ const OfferCard = ({ offer, onDelete, onEdit, index }) => {
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-3 border-2 border-dashed border-gray-300/50 group-hover:border-[#1987BF]/30 transition-colors duration-300">
               <div className="flex items-center justify-between">
-                <span 
+                <span
                   className="font-mono text-sm font-bold text-gray-900 tracking-wider break-all flex-1"
                   title={offer.code} // Tooltip for full code
                 >
@@ -261,8 +258,8 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
     }
   }, [initialData, isEditing]);
 
-  const validateForm = ()=> {
-    const newErrors= {}
+  const validateForm = () => {
+    const newErrors = {}
     if (!formData.description.trim()) newErrors.description = "Description is required"
     if (!formData.discountValue || Number.parseFloat(formData.discountValue) <= 0) {
       newErrors.discountValue = "Valid discount value is required"
@@ -280,8 +277,8 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
         description: formData.description,
         code: formData.code.toUpperCase(),
         discount: {
-            type: formData.discountType,
-            value: Number.parseFloat(formData.discountValue)
+          type: formData.discountType,
+          value: Number.parseFloat(formData.discountValue)
         },
         expiryDate: new Date(formData.expiryDate).toISOString(),
         isActive: true,
@@ -336,13 +333,12 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="e.g., Get 20% off all verification services"
-              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
-                errors.description ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
-              }`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${errors.description ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+                }`}
             />
             {errors.description && <p className="text-red-500 text-sm mt-2 font-medium">{errors.description}</p>}
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">Discount Type *</label>
             <Select
@@ -370,9 +366,8 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
               value={formData.discountValue}
               onChange={(e) => setFormData((prev) => ({ ...prev, discountValue: e.target.value }))}
               placeholder={formData.discountType === "percentage" ? "20" : "100"}
-              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
-                errors.discountValue ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
-              }`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${errors.discountValue ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+                }`}
             />
             {errors.discountValue && <p className="text-red-500 text-sm mt-2 font-medium">{errors.discountValue}</p>}
           </div>
@@ -384,9 +379,8 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
                 value={formData.code}
                 onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
                 placeholder="SUMMER20"
-                className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base font-mono ${
-                  errors.code ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
-                }`}
+                className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base font-mono ${errors.code ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+                  }`}
               />
               <Button
                 onClick={generateCode}
@@ -406,9 +400,8 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
               type="datetime-local"
               value={formData.expiryDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, expiryDate: e.target.value }))}
-              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${
-                errors.expiryDate ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
-              }`}
+              className={`bg-white/80 backdrop-blur-sm border-gray-200 rounded-xl h-12 text-base ${errors.expiryDate ? "border-red-400 focus:border-red-500" : "focus:border-[#1987BF]"
+                }`}
             />
             {errors.expiryDate && <p className="text-red-500 text-sm mt-2 font-medium">{errors.expiryDate}</p>}
           </div>
@@ -443,9 +436,9 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
             className="flex-1 bg-gradient-to-r from-[#1987BF] to-blue-600 hover:from-[#1987BF]/90 hover:to-blue-600/90 text-white font-semibold h-12 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
           >
             {isLoading ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             ) : (
-                <Gift className="w-5 h-5 mr-2" />
+              <Gift className="w-5 h-5 mr-2" />
             )}
             {isLoading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Offer' : 'Create Offer')}
           </Button>
@@ -463,53 +456,61 @@ const OfferFormCard = ({ onSave, onCancel, isLoading, initialData = null }) => {
 }
 
 const LoadingSkeleton = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white/50 backdrop-blur-xl p-8 rounded-2xl animate-pulse">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gray-200 rounded-2xl"></div>
-                    <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                </div>
-                <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
-                <div className="h-10 bg-gray-200 rounded-xl w-full"></div>
-            </div>
-        ))}
-    </div>
+  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="bg-white/50 backdrop-blur-xl p-8 rounded-2xl animate-pulse">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 bg-gray-200 rounded-2xl"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+        <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
+        <div className="h-10 bg-gray-200 rounded-xl w-full"></div>
+      </div>
+    ))}
+  </div>
 );
 
 
 export default function CouponsOffers() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
-  
+
   // RTK Query Hooks
   const { data: offersData, isLoading, isError, error } = useGetAllCouponsQuery();
   const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
   const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponMutation();
   const [deleteCoupon] = useDeleteCouponMutation();
 
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [])
+
   const handleCreateOffer = async (newOfferData) => {
     try {
-        await createCoupon(newOfferData).unwrap();
-        toast.success("Offer created successfully!");
-        setShowCreateForm(false);
+      await createCoupon(newOfferData).unwrap();
+      toast.success("Offer created successfully!");
+      setShowCreateForm(false);
     } catch (err) {
-        toast.error(err?.data?.message || "Failed to create offer.");
-        console.error("Failed to create coupon:", err);
+      toast.error(err?.data?.message || "Failed to create offer.");
+      console.error("Failed to create coupon:", err);
     }
   }
-  
+
   const handleUpdateOffer = async (updatedOfferData) => {
     try {
-        await updateCoupon(updatedOfferData).unwrap();
-        toast.success("Offer updated successfully!");
-        setEditingOffer(null);
+      await updateCoupon(updatedOfferData).unwrap();
+      toast.success("Offer updated successfully!");
+      setEditingOffer(null);
     } catch (err) {
-        toast.error(err?.data?.message || "Failed to update offer.");
-        console.error("Failed to update coupon:", err);
+      toast.error(err?.data?.message || "Failed to update offer.");
+      console.error("Failed to update coupon:", err);
     }
   };
 
@@ -524,15 +525,15 @@ export default function CouponsOffers() {
       }
     }
   }
-  
+
   const handleStartEdit = (offer) => {
-      setEditingOffer(offer);
-      setShowCreateForm(false); 
+    setEditingOffer(offer);
+    setShowCreateForm(false);
   }
 
   const handleCancelEdit = () => {
-      setEditingOffer(null);
-      setShowCreateForm(false);
+    setEditingOffer(null);
+    setShowCreateForm(false);
   }
 
   // Map API data to the format expected by the component
@@ -549,7 +550,7 @@ export default function CouponsOffers() {
     maxUsage: offer.maxUses,
     minOrderValue: offer.minAmount || 0,
   })) || [];
-  
+
   const activeOffers = mappedOffers.filter((offer) => offer.isActive)
 
   return (
@@ -576,29 +577,29 @@ export default function CouponsOffers() {
           {/* Create or Update Offer Form */}
           {(showCreateForm || editingOffer) && (
             <div className="mb-12">
-              <OfferFormCard 
-                onSave={editingOffer ? handleUpdateOffer : handleCreateOffer} 
-                onCancel={handleCancelEdit} 
+              <OfferFormCard
+                onSave={editingOffer ? handleUpdateOffer : handleCreateOffer}
+                onCancel={handleCancelEdit}
                 isLoading={isCreating || isUpdating}
                 initialData={editingOffer}
               />
             </div>
           )}
-          
+
           {isError && (
-              <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
-                  <div className="flex items-center gap-4">
-                      <AlertTriangle className="w-8 h-8 text-red-500"/>
-                      <div>
-                          <p className="text-red-800 font-semibold text-lg">Failed to load offers</p>
-                          <p className="text-red-700">{error?.data?.message || "An unknown error occurred."}</p>
-                      </div>
-                  </div>
+            <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
+              <div className="flex items-center gap-4">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+                <div>
+                  <p className="text-red-800 font-semibold text-lg">Failed to load offers</p>
+                  <p className="text-red-700">{error?.data?.message || "An unknown error occurred."}</p>
+                </div>
               </div>
+            </div>
           )}
 
           {isLoading ? (
-              <LoadingSkeleton />
+            <LoadingSkeleton />
           ) : activeOffers.length > 0 ? (
             <div className="mb-12">
               <div className="flex items-center gap-4 mb-8">
@@ -612,12 +613,12 @@ export default function CouponsOffers() {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                 {activeOffers.map((offer, index) => (
-                  <OfferCard 
-                    key={offer.id} 
-                    offer={offer} 
+                  <OfferCard
+                    key={offer.id}
+                    offer={offer}
                     onDelete={handleDeleteOffer}
                     onEdit={handleStartEdit}
-                    index={index} 
+                    index={index}
                   />
                 ))}
               </div>

@@ -40,7 +40,7 @@ const defaultServiceState = {
     service_key: '',
     description: '',
     category:'',
-    subcategory: '', // Added subcategory
+    subcategory: '', 
     price: 0,
     combo_price: {
         monthly: 0,
@@ -98,7 +98,7 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
         setService(prev => ({ ...prev, [name]: value }));
     };
     
-    // --- MODIFIED: Handler for category selection ---
+    // Handler for category selection
     const handleCategoryChange = (e) => {
         const { value } = e.target;
         if (value === 'add_new') {
@@ -207,7 +207,7 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                                 <Input label="Monthly Combo Price" name="monthly" type="number" value={service.combo_price.monthly} onChange={handleComboPriceChange} required />
                                 <Input label="Yearly Combo Price" name="yearly" type="number" value={service.combo_price.yearly} onChange={handleComboPriceChange} required />
                                 
-                                {/* --- MODIFIED: Category selection logic --- */}
+                                {/*  Category selection logic  */}
                                 <Select 
                                     label="Category" 
                                     name="category" 

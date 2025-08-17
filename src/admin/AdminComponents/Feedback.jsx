@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { Star, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +25,6 @@ function StarRating({ rating }) {
 
 /**
  * Skeleton loader component that mimics the layout of a feedback card.
- * This is shown to the user while the review data is being fetched.
  */
 function FeedbackSkeleton() {
   return (
@@ -39,11 +39,11 @@ function FeedbackSkeleton() {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                  <div className="h-4 w-4 rounded-full bg-gray-300"></div>
-                  <div className="h-4 w-4 rounded-full bg-gray-300"></div>
-                  <div className="h-4 w-4 rounded-full bg-gray-300"></div>
-                  <div className="h-4 w-4 rounded-full bg-gray-300"></div>
-                  <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
               </div>
               <div className="h-8 w-8 rounded bg-gray-300"></div>
             </div>
@@ -63,6 +63,14 @@ function FeedbackSkeleton() {
 export default function Feedback() {
   const { data: reviewsData, isLoading, isError, error } = useGetAllReviewsQuery();
   const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
+
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [])
 
   const handleDelete = async (reviewId) => {
     if (window.confirm("Are you sure you want to permanently delete this review?")) {
@@ -95,9 +103,9 @@ export default function Feedback() {
             <FeedbackSkeleton />
           </>
         )}
-        
+
         {isError && <p className="text-red-500">Error fetching reviews: {error.toString()}</p>}
-        
+
         {!isLoading && reviews.length > 0 ? (
           reviews.map((review) => (
             <Card key={review._id} className="p-4 rounded-lg shadow-sm">
@@ -109,26 +117,26 @@ export default function Feedback() {
                   </Avatar>
                   <div className="flex-1 space-y-3">
                     <div className="flex justify-between items-start">
-                        <div>
-                            <h3 className="font-semibold text-gray-900">{review.user?.name || "Anonymous"}</h3>
-                            <p className="text-xs text-gray-500">
-                                On Service: <span className="font-medium">{review.service?.name || "Unknown"}</span>
-                                {' · '}
-                                {new Date(review.createdAt).toLocaleDateString()}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <StarRating rating={review.rating} />
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-700"
-                                onClick={() => handleDelete(review._id)}
-                                disabled={isDeleting}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{review.user?.name || "Anonymous"}</h3>
+                        <p className="text-xs text-gray-500">
+                          On Service: <span className="font-medium">{review.service?.name || "Unknown"}</span>
+                          {' · '}
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <StarRating rating={review.rating} />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-700"
+                          onClick={() => handleDelete(review._id)}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
                   </div>
@@ -137,7 +145,7 @@ export default function Feedback() {
             </Card>
           ))
         ) : (
-            !isLoading && !isError && <p className="text-center text-gray-500 py-10">No reviews found.</p>
+          !isLoading && !isError && <p className="text-center text-gray-500 py-10">No reviews found.</p>
         )}
       </div>
     </div>

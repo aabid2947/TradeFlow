@@ -29,7 +29,7 @@ export default function ServiceCard({
   const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
   const handleDeleteService = async (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if (!confirm("Are you sure you want to delete this service?")) return;
 
     try {
@@ -40,14 +40,14 @@ export default function ServiceCard({
       alert("Failed to delete service. Please try again.");
     }
   };
-  
+
   const handleUpdate = (e) => {
     e.stopPropagation();
     onUpdateClick();
   };
 
   return (
-    <Card  className="overflow-hidden border gap-3 border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
+    <Card className="overflow-hidden border gap-3 border-[#1A89C1] p-1 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-2">
       <div className="relative ">
         <div className="aspect-[4/2.5] overflow-hidden ">
           {imageSrc ? (

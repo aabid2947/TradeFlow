@@ -2,12 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Search,
     Users,
-    Shield,
-    UserPlus,
-    Filter,
-    RefreshCw,
     Award,
-    MoreVertical,
     X,
     Loader2
 } from 'lucide-react';
@@ -17,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'react-hot-toast';
 
-// --- MODIFIED: Updated RTK Query Hook Imports ---
+//  Updated RTK Query Hook Imports
 import {
     useGetAllUsersQuery,
     usePromoteUserToSubcategoryMutation, // Hook for promotion
@@ -40,11 +35,10 @@ const CustomCheckbox = ({ id, checked, onChange, children }) => {
                     className="sr-only"
                 />
                 <div
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
-                        checked
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${checked
                             ? 'bg-blue-600 border-blue-600'
                             : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                        }`}
                     onClick={onChange}
                 >
                     {checked && (
@@ -81,14 +75,13 @@ const CustomNumberInput = ({ value, onChange, placeholder = "Count", disabled = 
             onChange={onChange}
             placeholder={placeholder}
             disabled={disabled}
-            className={`w-full px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-            }`}
+            className={`w-full px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                }`}
         />
     );
 };
 
-// Loading Skeleton Component (No changes)
+// Loading Skeleton Component 
 const UserCardSkeleton = () => (
     <Card className="animate-pulse shadow-lg bg-white/50">
         <CardContent className="p-6">
@@ -110,7 +103,7 @@ const UserCardSkeleton = () => (
     </Card>
 );
 
-// --- MODIFIED: Completely redesigned Promotion Modal with custom components ---
+// Completely redesigned Promotion Modal with custom components 
 const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
     const [selectedSubcategories, setSelectedSubcategories] = useState(new Set(user.promotedCategories || []));
     const [multipliers, setMultipliers] = useState({}); // State for multipliers
@@ -204,11 +197,11 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
                     <div className="mb-4">
                         <h3 className="font-medium text-gray-800 mb-4">Available Service Subcategories:</h3>
                     </div>
-                    
+
                     <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                         {allSubcategories.map(subcategory => (
-                            <div 
-                                key={subcategory} 
+                            <div
+                                key={subcategory}
                                 className="grid grid-cols-5 gap-3 items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-100"
                             >
                                 {/* 80% width (4 columns) for subcategory name and checkbox */}
@@ -223,7 +216,7 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
                                         </span>
                                     </CustomCheckbox>
                                 </div>
-                                
+
                                 {/* 20% width (1 column) for number input */}
                                 <div className="col-span-1">
                                     {selectedSubcategories.has(subcategory) && (
@@ -262,7 +255,7 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
     );
 };
 
-// User Card Component (No changes)
+// User Card Component 
 const UserCard = ({ user, onPromote, onNameClick }) => {
     const getRoleStyle = (role) => {
         switch (role?.toLowerCase()) {
@@ -315,7 +308,7 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
     );
 };
 
-// Main Component (No changes)
+// Main Component s
 export default function AllUser() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -327,7 +320,15 @@ export default function AllUser() {
     const { data: usersData, isLoading: isLoadingUsers, isError: isUsersError, refetch } = useGetAllUsersQuery();
     const { data: servicesData, isLoading: isLoadingServices } = useGetServicesQuery();
 
-    // --- MODIFIED: Derive unique subcategories from services ---
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, [])
+
+    // Derive unique subcategories from services 
     const allSubcategories = useMemo(() => {
         if (!servicesData?.data) return [];
         // Filter for services that have a subcategory, then create a unique set
@@ -352,7 +353,7 @@ export default function AllUser() {
     };
 
     const handleUserDetailClick = (user) => {
-        setDetailUser(user);
+        setDetailUser(usersData.data.find(u => u._id === user._id));
         setIsDetailCardOpen(true);
     };
 

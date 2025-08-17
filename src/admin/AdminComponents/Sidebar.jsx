@@ -31,13 +31,13 @@ import { logOut } from "@/features/auth/authSlice"
 const navigationItems = [
   { title: "Dashboard", icon: Home, key: "dashboard" },
   { title: "Analytics", icon: BarChart2, key: "analytics" },
- // Renamed for clarity
+  // Renamed for clarity
   { title: "Orders", icon: ClipboardList, key: "orders" },
   { title: "Coupons", icon: Sparkles, key: "coupons" }, // Used Sparkles for coupons
   { title: "Services", icon: Info, key: "services" },
-  { title: "Register Admin", icon: Users, key: "register" }, // Renamed for clarity
+  { title: "Register Admin", icon: Users, key: "register" },
   { title: "Feedback", icon: MessageCircle, key: "feedback" },
-    { title: "Shared Dashboard", icon: Users, key: "shared" },
+  { title: "Shared Dashboard", icon: Users, key: "shared" },
   { title: "Blog", icon: MessageCircle, key: "blog" },
 
 ]
@@ -62,23 +62,22 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
   }
 
   const generateRandomColor = (name) => {
-  if (!name) return '#1987BF';
-  
-  const colors = [
-    '#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
-    '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad',
-    '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'
-  ];
-  
-  const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
-};
- const avatarBgColor = generateRandomColor(user?.name);
+    if (!name) return '#1987BF';
+
+    const colors = [
+      '#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+      '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad',
+      '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'
+    ];
+
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+  const avatarBgColor = generateRandomColor(user?.name);
 
 
   const handleLogout = async () => {
     try {
-      // You might not need unwrap() if you don't need to handle the promise here
       dispatch(logOut());
       navigate("/"); // Redirect to home or login page after logout
     }
@@ -137,15 +136,15 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
                   <div className="relative">
-                     <Avatar className="h-7 w-7 border border-gray-200">
-          {user.avatar && user.avatar.trim() !== '' && <AvatarImage src={user.avatar} alt={user?.name} />}
-          <AvatarFallback 
-            className="text-white text-xs font-medium"
-            style={{ backgroundColor: avatarBgColor }}
-          >
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
+                    <Avatar className="h-7 w-7 border border-gray-200">
+                      {user.avatar && user.avatar.trim() !== '' && <AvatarImage src={user.avatar} alt={user?.name} />}
+                      <AvatarFallback
+                        className="text-white text-xs font-medium"
+                        style={{ backgroundColor: avatarBgColor }}
+                      >
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -202,7 +201,6 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
           </Sidebar>
         </SidebarProvider>
       </div>
-      {/* Overlay for mobile view. This was already correctly implemented. */}
       {isOpen && (
         <div
           className={`fixed inset-0 modal-overlay bg-transparent bg-opacity-30 backdrop-blur-sm z-30 lg:hidden transition-opacity ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"

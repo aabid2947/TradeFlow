@@ -26,7 +26,7 @@ export default function ServiceCard({
     // Only navigate if the user is not an admin.
     if (!isAdmin) {
       // If the service has a subcategory, navigate to the page that lists all services in that subcategory.
-      // This assumes the route's parameter will now be the subcategory.
+    
       if (service.subcategory) {
         navigate(`/user/service/${encodeURIComponent(service.subcategory)}`);
       }
@@ -52,7 +52,7 @@ export default function ServiceCard({
   return (
     <Card onClick={handleCardClick} className={cardClassName}>
       <div className="relative">
-        {/* MODIFIED: Changed aspect ratio to make image shorter */}
+        {/* Changed aspect ratio to make image shorter */}
         <div className="aspect-[4/2.5] overflow-hidden">
           <img
             src={imageSrc}
@@ -62,7 +62,7 @@ export default function ServiceCard({
         </div>
       </div>
 
-      {/* MODIFIED: Reduced padding and vertical spacing */}
+      {/* Reduced padding and vertical spacing */}
       <CardContent className="p-2 space-y-2">
         <div className="flex items-center justify-between gap-4 ">
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
@@ -91,7 +91,7 @@ export default function ServiceCard({
             </div> */}
         </div>
         
-        {/* MODIFIED: Reduced top padding */}
+        {/* Reduced top padding */}
         <div className="flex items-center justify-between pt-1.5 border-t border-gray-100">
           <div>
             {/* {isPurchased ? (
@@ -102,7 +102,7 @@ export default function ServiceCard({
           </div>
           <Button
             size="sm"
-            // MODIFIED: Reduced button padding
+            //  Reduced button padding
             className={`${
               isPurchased
                 ? "bg-green-500 hover:bg-green-600"

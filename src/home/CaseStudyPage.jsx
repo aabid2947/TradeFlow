@@ -1,5 +1,5 @@
 "use client"
-
+import { useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -95,6 +95,13 @@ const stats = [
 
 export default function CaseStudyPage() {
     const navigate= useNavigate()
+    
+    useEffect(()=>{
+         window.scrollTo({
+        top: 0,
+        behavior: "smooth", 
+      });
+      },[])
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}

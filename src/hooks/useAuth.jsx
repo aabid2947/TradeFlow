@@ -10,7 +10,7 @@ export function useAuth() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setIsLoading(false); // CRITICAL: Set loading to false only after Firebase responds
+      setIsLoading(false); //  Set loading to false only after Firebase responds
     });
 
     // Cleanup subscription on unmount

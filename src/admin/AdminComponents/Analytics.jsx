@@ -47,7 +47,6 @@ const chartStyles = `
   }
 `;
 
-// Mock data for demonstration - replace with actual API data
 const generateMockUsageData = (services, timeInterval = 'alltime') => {
   let data = [];
 
@@ -103,7 +102,7 @@ const generateMockUsageData = (services, timeInterval = 'alltime') => {
       data.push(entry);
     }
   } else if (timeInterval === 'custom') {
-    // For custom, generate sample data (in real implementation, this would use custom date range)
+    // For custom, generate sample data 
     for (let i = 9; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -143,7 +142,6 @@ export default function Analytics({ services = [], isLoading = false }) {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
-  // Generate mock usage data based on time interval
   const usageData = useMemo(() =>
     generateMockUsageData(services, timeInterval),
     [services, timeInterval]

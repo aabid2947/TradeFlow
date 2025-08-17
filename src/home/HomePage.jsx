@@ -26,9 +26,7 @@ useEffect(()=>{
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30">
 
-      {/* Main content area, with a left margin on desktop to make space for the sidebar */}
     
-        {/* A single, unified header that handles its own responsiveness */}
 
         <TopBar />
       

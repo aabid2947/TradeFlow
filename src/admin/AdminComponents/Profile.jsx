@@ -4,7 +4,7 @@ import {
 } from "lucide-react"
 import { useSelector } from "react-redux"
 import { selectCurrentUser } from '@/features/auth/authSlice'
-// --- MODIFIED: Import new hooks for admin actions ---
+//  Import new hooks for admin actions 
 import { 
     useUpdateProfileMutation, 
     useRemindSubscriptionMutation,
@@ -23,7 +23,7 @@ const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-// --- NEW: Confirmation Modal Component ---
+//  Confirmation Modal Component 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoading }) => {
     if (!isOpen) return null;
     return (
@@ -45,7 +45,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isLoad
     );
 };
 
-// --- NEW: Extend Subscription Modal Component ---
+//  Extend Subscription Modal Component 
 const ExtendModal = ({ isOpen, onClose, onConfirm, sub, isLoading }) => {
     const [duration, setDuration] = useState({ unit: 'months', value: 1 });
     if (!isOpen) return null;
@@ -82,7 +82,7 @@ export default function Profile() {
     const user = useSelector(selectCurrentUser)
     const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation()
     const [sendReminder] = useRemindSubscriptionMutation();
-    // --- NEW: Hooks for admin actions ---
+    //   Hooks for admin actions 
     const [extendSubscription, { isLoading: isExtending }] = useExtendSubscriptionMutation();
     const [revokeSubscription, { isLoading: isRevoking }] = useRevokeSubscriptionMutation();
 
@@ -91,7 +91,7 @@ export default function Profile() {
     const [editedName, setEditedName] = useState(user?.name || "")
     const [error, setError] = useState("")
     const [activeTab, setActiveTab] = useState('overview');
-    // --- NEW: State for modals ---
+    //   State for modals 
     const [modal, setModal] = useState({ type: null, sub: null }); // type: 'extend' | 'revoke'
     
     // Auto-reminder logic (no change)
@@ -151,7 +151,7 @@ export default function Profile() {
         if (error) setError("");
     }
     
-    // --- MODIFIED: Add Admin Tools tab if user is admin ---
+    // Add Admin Tools tab if user is admin 
     let tabs = [
         { id: 'overview', label: 'Overview', icon: User },
         { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
@@ -169,7 +169,7 @@ export default function Profile() {
             ?.map(cat => ({ category: cat, plan: 'Promotional', expiresAt: 'N/A', isPromoted: true })) || [])
     ];
     
-    // --- NEW: Handlers for modal actions ---
+    //   Handlers for modal actions 
     const handleRevokeConfirm = async () => {
         if (!modal.sub) return;
         try {
@@ -232,7 +232,7 @@ export default function Profile() {
                     </div>
                     
                     <CardContent className="p-6">
-                        {/* Overview, Subscriptions, Services, Security tabs (no change in their content) */}
+                        {/* Overview, Subscriptions, Services, Security tabs */}
                         {activeTab === 'overview' && (
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                <div className="space-y-4">
@@ -283,7 +283,7 @@ export default function Profile() {
                            </div>
                         )}
 
-                        {/* --- NEW: Admin Tools Tab Content --- */}
+                        {/*   Admin Tools Tab Content  */}
                         {activeTab === 'admin' && user?.role === 'admin' && (
                             <div className="space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Manage Subscriptions</h3>

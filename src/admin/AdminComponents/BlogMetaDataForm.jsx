@@ -10,21 +10,21 @@ import { Plus, Trash2, X, Edit, Eye, Image as ImageIcon, Bold, Italic, Underline
 import { useCreateBlogMutation, useUpdateBlogMutation, useGetBlogsAdminQuery, useDeleteBlogMutation } from '@/app/api/blogApiSlice';
 import { Link } from 'react-router-dom';
 
-// --- Constants ---
+//  Constants 
 const CATEGORIES = [
-  "PAN",
-  "CIN",
-  "Financial & Business Checks",
-  "Identity Verification",
-  "Employment Verification",
-  "Biometric & AI-Based Verification",
-  "Profile & Database Lookup",
-  "Legal & Compliance Checks",
-  "Vehicle Verification"
+    "PAN",
+    "CIN",
+    "Financial & Business Checks",
+    "Identity Verification",
+    "Employment Verification",
+    "Biometric & AI-Based Verification",
+    "Profile & Database Lookup",
+    "Legal & Compliance Checks",
+    "Vehicle Verification"
 ];
 const STATUS_OPTIONS = ['draft', 'published', 'archived'];
 
-// --- Initial State Definitions ---
+//  Initial State Definitions 
 const initialBlogState = {
     title: '',
     excerpt: '',
@@ -41,7 +41,7 @@ const initialImageState = {
     featuredImage: null,
 };
 
-// --- Rich Text Editor Component (Unchanged) ---
+//  Rich Text Editor Component 
 const RichTextEditor = ({ value, onChange }) => {
     const editorRef = useRef(null);
     const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -123,7 +123,7 @@ const RichTextEditor = ({ value, onChange }) => {
     );
 };
 
-// --- Image Input Component (Unchanged) ---
+// Image Input Component 
 const ImageInput = ({ label, fieldName, preview, onChange, currentImage }) => (
     <div className="space-y-2">
         <Label htmlFor={fieldName}>{label}</Label>
@@ -136,7 +136,7 @@ const ImageInput = ({ label, fieldName, preview, onChange, currentImage }) => (
     </div>
 );
 
-// --- Error Dialog Component (Unchanged) ---
+//  Error Dialog Component 
 const ErrorDialog = ({ isOpen, message, onClose }) => {
     if (!isOpen) return null;
     return (
@@ -189,6 +189,14 @@ export default function BlogMetaDataForm() {
     const [deleteBlog] = useDeleteBlogMutation();
     const blogs = blogsResponse?.data || [];
 
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, [])
+
     const resetForm = () => {
         setIsFormVisible(false);
         setEditingBlog(null);
@@ -223,21 +231,17 @@ export default function BlogMetaDataForm() {
     const handleRemoveTag = (tagToRemove) => {
         handleChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
     };
-    
-    // --- THIS IS THE CORRECTED FUNCTION ---
+
     const handleEdit = (blog) => {
         setEditingBlog(blog);
 
-        // This pattern robustly populates the form state.
-        // It starts with the default structure, then overwrites it with all available data from the selected `blog`.
-        // This ensures all fields are populated correctly, even if some are missing from the API response.
         const populatedState = {
             ...initialBlogState,
             ...blog,
         };
-        
+
         setFormData(populatedState);
-        
+
         setImagePreviews({ featuredImage: blog.featuredImage?.url || null });
         setImageFiles(initialImageState);
         setIsFormVisible(true);
@@ -253,10 +257,10 @@ export default function BlogMetaDataForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formDataToSend = new FormData();
         formDataToSend.append('blogData', JSON.stringify(formData));
-        
+
         if (imageFiles.featuredImage) {
             formDataToSend.append('featuredImage', imageFiles.featuredImage);
         }
@@ -280,10 +284,10 @@ export default function BlogMetaDataForm() {
 
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
-            <ErrorDialog 
-                isOpen={errorDialog.isOpen} 
-                message={errorDialog.message} 
-                onClose={() => setErrorDialog({ isOpen: false, message: '' })} 
+            <ErrorDialog
+                isOpen={errorDialog.isOpen}
+                message={errorDialog.message}
+                onClose={() => setErrorDialog({ isOpen: false, message: '' })}
             />
 
             <div className="flex items-center justify-between mb-8">
@@ -308,18 +312,18 @@ export default function BlogMetaDataForm() {
                         {/* The form fields will now be correctly populated with data from `formData` */}
                         <form onSubmit={handleSubmit} className="space-y-6 p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><Label className="my-2">Title</Label><Input  value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
-                                <div><Label className="my-2" >Author</Label><Input  value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
-                                <div><Label className="my-2" >Category</Label><Select  value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category"/></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                                <div><Label className="my-2">Title</Label><Input value={formData.title} onChange={e => handleChange('title', e.target.value)} required /></div>
+                                <div><Label className="my-2" >Author</Label><Input value={formData.author} onChange={e => handleChange('author', e.target.value)} required /></div>
+                                <div><Label className="my-2" >Category</Label><Select value={formData.category} onValueChange={v => handleChange('category', v)} required><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger><SelectContent className="bg-white">{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                                 <div>
-                                    <Label  className="my-2">Status</Label>
-                                    <Select  value={formData.status} onValueChange={v => handleChange('status', v)} required>
-                                        <SelectTrigger><SelectValue placeholder="Select status"/></SelectTrigger>
-                                        <SelectContent className="bg-white">{STATUS_OPTIONS.map(s=><SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent>
+                                    <Label className="my-2">Status</Label>
+                                    <Select value={formData.status} onValueChange={v => handleChange('status', v)} required>
+                                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                                        <SelectContent className="bg-white">{STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                             </div>
-                            <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea  className="border border-gray-800 rounded-md focus:ring-white focus:outline-none" value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
+                            <div><Label className="my-2">Excerpt (Short summary for cards)</Label><Textarea className="border border-gray-800 rounded-md focus:ring-white focus:outline-none" value={formData.excerpt} onChange={e => handleChange('excerpt', e.target.value)} required /></div>
                             <div className="relative">
                                 <Label className="my-2">Content</Label>
                                 <RichTextEditor value={formData.content} onChange={value => handleChange('content', value)} />
@@ -343,11 +347,11 @@ export default function BlogMetaDataForm() {
                                 <div className="space-y-4">
                                     <h3 className="font-semibold text-lg">SEO</h3>
                                     <div><Label className="my-2">Meta Title</Label><Input value={formData.metaTitle} onChange={e => handleChange('metaTitle', e.target.value)} /></div>
-                                    <div><Label className="my-2">Meta Description</Label><Textarea  className="border border-gray-800 rounded-md focus:ring-0 focus:ring-white focus:outline-none" value={formData.metaDescription} onChange={e => handleChange('metaDescription', e.target.value)} /></div>
+                                    <div><Label className="my-2">Meta Description</Label><Textarea className="border border-gray-800 rounded-md focus:ring-0 focus:ring-white focus:outline-none" value={formData.metaDescription} onChange={e => handleChange('metaDescription', e.target.value)} /></div>
                                 </div>
                                 <div className="space-y-4">
-                                     <h3 className="font-semibold text-lg">Images</h3>
-                                     <ImageInput label="Featured Image" fieldName="featuredImage" preview={imagePreviews.featuredImage} onChange={handleImageChange} currentImage={editingBlog?.featuredImage?.url} />
+                                    <h3 className="font-semibold text-lg">Images</h3>
+                                    <ImageInput label="Featured Image" fieldName="featuredImage" preview={imagePreviews.featuredImage} onChange={handleImageChange} currentImage={editingBlog?.featuredImage?.url} />
                                 </div>
                             </div>
                             <div className="flex justify-end gap-4 pt-6">
@@ -361,7 +365,7 @@ export default function BlogMetaDataForm() {
                 </Card>
             )}
 
-            {/* Existing Blog Posts Table (Unchanged) */}
+            {/* Existing Blog Posts Table */}
             <Card className="shadow-md border-slate-200">
                 <CardHeader><CardTitle className="my-4">Existing Blog Posts</CardTitle></CardHeader>
                 <CardContent>
@@ -387,10 +391,10 @@ export default function BlogMetaDataForm() {
                                         <td className="px-6 py-4">{new Date(blog.updatedAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end items-center">
-                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(blog)} className="text-slate-500 hover:text-[#1987BF]"><Edit className="w-4 h-4"/></Button>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(blog._id)} className="text-slate-500 hover:text-red-600"><Trash2 className="w-4 h-4"/></Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(blog)} className="text-slate-500 hover:text-[#1987BF]"><Edit className="w-4 h-4" /></Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(blog._id)} className="text-slate-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></Button>
                                                 <Link to={`/blog/${blog.slug}`} target="_blank" rel="noopener noreferrer">
-                                                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-green-600"><Eye className="w-4 h-4"/></Button>
+                                                    <Button variant="ghost" size="icon" className="text-slate-500 hover:text-green-600"><Eye className="w-4 h-4" /></Button>
                                                 </Link>
                                             </div>
                                         </td>

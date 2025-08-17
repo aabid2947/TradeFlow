@@ -9,7 +9,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, BarChart3,
   Target, Zap, Globe, ShoppingCart, Star, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
-import { useGetAllTransactionsQuery } from '@/app/api/transactionApiSlice.js'; // Adjust this import path as needed
+import { useGetAllTransactionsQuery } from '@/app/api/transactionApiSlice.js'; 
 
 // Add CSS to remove focus outlines from charts
 const chartStyles = `
@@ -142,7 +142,7 @@ const TrendChart = ({ data, dataKey, title, color = "#3B82F6" }) => (
 );
 
 export default function DashboardOverview() {
-  const [timeFilter, setTimeFilter] = useState('all'); // Changed default to 'all'
+  const [timeFilter, setTimeFilter] = useState('all'); 
   const [isExporting, setIsExporting] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [customStartDate, setCustomStartDate] = useState('');
@@ -305,7 +305,7 @@ export default function DashboardOverview() {
       'Average Value (₹)': data.completed > 0 ? (data.revenue / data.completed).toFixed(2) : 0
     }));
 
-    // Export multiple sheets if needed, or create a comprehensive single file
+    // Export multiple sheets 
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
 
     // Export detailed transactions

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect} from "react"
 import ServiceCard from "./ServiceCard"
-import ServiceList from "./ServiceList" // Import the new list component
+import ServiceList from "./ServiceList"
 import PANCardImage from "@/assets/PANCardImage.svg";
 import AadharCardImage from "@/assets/AadharCardImage.svg";
 import VoterCardImage from "@/assets/VoterCardImage.svg";
@@ -13,7 +13,7 @@ import PANLinkedCardImage from "@/assets/PANLinkedCardImage.svg";
 import { useGetServicesQuery, useCreateServiceMutation, useUpdateServiceMutation } from "@/app/api/serviceApiSlice";
 import AddServiceForm from "./AddServiceForm";
 import PlusIcon from "@/icons/PlusIcon";
-import { List, Grid } from 'lucide-react'; // Import icons for view toggle
+import { List, Grid } from 'lucide-react';
 
 export default function Services() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -21,14 +21,22 @@ export default function Services() {
     const [viewMode, setViewMode] = useState('list'); // 'grid' or 'list'
 
     const fallbackImages = [
-      PANCardImage, AadharCardImage, VoterCardImage, PassportCardImage,
-      PANAadhaarLinkedCardImage, PANValidationCardImage, PANLinkedCardImage,
+        PANCardImage, AadharCardImage, VoterCardImage, PassportCardImage,
+        PANAadhaarLinkedCardImage, PANValidationCardImage, PANLinkedCardImage,
     ];
     const demandLevels = ["Most Demanding", "Average Demanding", "Less Demanding"];
 
     const { data: services, isLoading, isError, error } = useGetServicesQuery();
     const [createService, { isLoading: isCreating, error: createError }] = useCreateServiceMutation();
     const [updateService, { isLoading: isUpdating, error: updateError }] = useUpdateServiceMutation();
+
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }, [])
 
     const handleOpenUpdateModal = (service) => {
         setServiceToUpdate(service);

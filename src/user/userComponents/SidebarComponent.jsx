@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-// ** CHANGE: Import Tooltip components from shadcn/ui
+//  Import Tooltip components from shadcn/ui
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +22,7 @@ import { logOut } from "@/features/auth/authSlice"
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 
-// Generate a random color for the avatar background (no changes here)
+// Generate a random color for the avatar background 
 const generateRandomColor = (name) => {
   if (!name) return '#1987BF';
   const colors = ['#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad', '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'];
@@ -97,7 +97,7 @@ export default function SidebarComponent({
 
   const avatarBgColor = generateRandomColor(user?.name);
 
-  // ** CHANGE: This component now conditionally wraps its children in a Tooltip
+  //  This component now conditionally wraps its children in a Tooltip
   const NavItem = ({ children, label, disabled }) => {
     if (isOpen || disabled) {
       return <>{children}</>;
@@ -138,7 +138,7 @@ export default function SidebarComponent({
           )
       }
 
-      // ** CHANGE: If sidebar is closed, wrap the icon button in a Tooltip
+      //  If sidebar is closed, wrap the icon button in a Tooltip
       return (
         <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
@@ -157,7 +157,7 @@ export default function SidebarComponent({
   };
 
   return (
-    // ** CHANGE: Wrap the entire component in TooltipProvider
+    //  Wrap the entire component in TooltipProvider
     <TooltipProvider>
       <style>{scrollbarStyles}</style>
 
@@ -188,7 +188,7 @@ export default function SidebarComponent({
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Services</h3>
                 </div>
               )}
-               {/* ** CHANGE: Main 'Verifications' button wrapped for tooltip */}
+               {/* Main 'Verifications' button wrapped for tooltip */}
               <NavItem label="Verifications">
                   <button
                     onClick={() => setIsServicesOpen(!isServicesOpen)}
@@ -273,13 +273,13 @@ export default function SidebarComponent({
                 )}
               </div>
             ) : (
-              // ** CHANGE: Collapsed footer with Tooltips
+              // Collapsed footer with Tooltips
               <div className="flex flex-col items-center space-y-3">
                 <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
                     <button onClick={handleProfileClick} className="rounded-full">
                        <Avatar className="w-10 h-10 ring-2 ring-white">
-                            <AvatarImage src={userPic} alt={user?.name || "User"} />
+                            <AvatarImage src={user.avatar || userPic} alt={user?.name || "User"} />
                             <AvatarFallback className="text-white font-medium" style={{ backgroundColor: avatarBgColor }}>
                                 {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
                             </AvatarFallback>

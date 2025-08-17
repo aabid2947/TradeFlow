@@ -1,4 +1,4 @@
-// src/hooks/useRazorpay.js
+
 import { useEffect, useState } from 'react';
 
 const useRazorpay = () => {

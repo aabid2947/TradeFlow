@@ -7,7 +7,7 @@ import { Mail, Lock } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { setCredentials } from "@/features/auth/authSlice"
-import { useLoginMutation } from "@/app/api/authApiSlice" // <-- Use the standard login mutation
+import { useLoginMutation } from "@/app/api/authApiSlice"
 
 
 export default function AdminLoginPage() {

@@ -1,4 +1,4 @@
-// RecentlyPurchased.jsx
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -10,20 +10,21 @@ import {
   MapPin,
   User,
   Package,
-  IndianRupee ,
+  IndianRupee,
   Eye,
   Download,
   AlertTriangle,
   Loader,
   Tags,
   Calendar,
-  
+
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
+import {useGetAllTransactionsQuery } from "@/app/api/transactionApiSlice"
+import {useGetAllUsersQuery} from "@/app/api/authApiSlice"
 import { generateInvoicePDF } from "./InvoiceGenerator"
 import { UserDetailsCard } from "./UserDetailCard"
 const formatCurrency = (amount) => {
@@ -71,16 +72,17 @@ const getAvatarBgColor = (name) => {
   return colors[hash % colors.length]
 };
 
-// UPDATE: BuyerRow now accepts an onUserClick handler
+//  BuyerRow now accepts an onUserClick handler
 const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, onUserClick }) => {
+  const {data:usersData, isLoading: isLoadingUsers, isError: isUsersError, error: usersError} = useGetAllUsersQuery();
   const avatarBg = getAvatarBgColor(buyer.name);
   const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
-  // NEW: Handler to open user details without toggling the row
+  // Handler to open user details without toggling the row
   const handleNameClick = (e) => {
     e.stopPropagation();
     if (buyer.originalTransactionData?.user) {
-      onUserClick(buyer.originalTransactionData.user);
+      onUserClick(usersData.data.find(u => u._id === buyer.originalTransactionData.user._id));
     }
   };
 
@@ -88,15 +90,14 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
   if (isMobile) {
     return (
       <Card className="mb-4 overflow-hidden border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-        <CardContent className="p-0">
-          <div onClick={onToggle} className="p-4 cursor-pointer">
+        <CardContent className="p-2">
+          <div onClick={onToggle} className="p-2 cursor-pointer">
             <div className="flex items-center justify-between mb-3">
-              <div    className="flex items-center gap-3">
-                <div  onClick={handleNameClick}  className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+              <div className="flex items-center gap-3">
+                <div onClick={handleNameClick} className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                   {buyer.name?.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
-                  {/* UPDATE: Name is now clickable */}
                   <h3
                     className="font-semibold text-gray-900 hover:text-blue-700 hover:underline cursor-pointer"
                     onClick={handleNameClick}
@@ -110,15 +111,15 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                 <div className="font-bold text-blue-600">{formatCurrency(buyer.amount)}</div>
                 <Badge className={`text-xs ${getStatusColor(buyer.status)}`}>{buyer.status}</Badge>
               </div>
-               <button
-    onClick={
-      handleNameClick
-    }
-    className="p-1 hover:bg-gray-100 rounded-full"
-    title="View user info"
-  >
-    <Eye className="w-5 h-5 text-gray-600" />
-  </button>
+              <button
+                onClick={
+                  handleNameClick
+                }
+                className="p-1 hover:bg-gray-100 rounded-full"
+                title="View user info"
+              >
+                <Eye className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
               <span className="text-sm text-gray-500">{isExpanded ? "Hide details" : "View details"}</span>
@@ -129,33 +130,33 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
           {/* Expanded Details - Mobile */}
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
             <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-4">
-                <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Contact Information</h4>
-                    <p className="text-sm text-gray-600">{buyer.email || "N/A"}</p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <User className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Contact Information</h4>
+                  <p className="text-sm text-gray-600">{buyer.email || "N/A"}</p>
                 </div>
-                 <div className="flex items-start gap-3">
-                  <IndianRupee  className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Pricing Details</h4>
-                     <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
-                    {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
-                    {buyer.couponCode && <p className="text-sm text-gray-600">Coupon: <Badge variant="secondary">{buyer.couponCode}</Badge></p>}
-                  </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <IndianRupee className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Pricing Details</h4>
+                  <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
+                  {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
+                  {buyer.couponCode && <p className="text-sm text-gray-600">Coupon: <Badge variant="secondary">{buyer.couponCode}</Badge></p>}
                 </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Order Details</h4>
-                    <p className="text-sm text-gray-600 break-all">ID: {buyer.orderId}</p>
-                    <p className="text-sm text-gray-600">Plan: <Badge variant="outline">{toTitleCase(buyer.plan)}</Badge></p>
-                    <p className="text-sm text-gray-600">Date: {formatDate(buyer.purchaseDate)}</p>
-                    <p className="text-sm text-gray-600">Payment via: {buyer.paymentMethod || "N/A"}</p>
-                  </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-1">Order Details</h4>
+                  <p className="text-sm text-gray-600 break-all">ID: {buyer.orderId}</p>
+                  <p className="text-sm text-gray-600">Plan: <Badge variant="outline">{toTitleCase(buyer.plan)}</Badge></p>
+                  <p className="text-sm text-gray-600">Date: {formatDate(buyer.purchaseDate)}</p>
+                  <p className="text-sm text-gray-600">Payment via: {buyer.paymentMethod || "N/A"}</p>
                 </div>
-              <div className="flex gap-2 pt-2">
+              </div>
+              {/* <div className="flex gap-2 pt-2">
                 <Button
                   size="sm"
                   variant="outline"
@@ -168,7 +169,7 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                   <Download className="w-4 h-4 mr-2" />
                   Invoice
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
         </CardContent>
@@ -182,11 +183,10 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
       <tr onClick={onToggle} className="group cursor-pointer hover:bg-blue-50/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md border-b border-gray-100">
         <td className="px-6 py-4">
           <div className="flex items-center gap-3">
-            <div   onClick={handleNameClick}   className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+            <div onClick={handleNameClick} className={`w-10 h-10 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
               {buyer.name?.split(" ").map((n) => n[0]).join("")}
             </div>
             <div>
-              {/* UPDATE: Name is now clickable */}
               <div
                 className="font-semibold text-gray-900 hover:text-blue-700 hover:underline cursor-pointer"
                 onClick={handleNameClick}
@@ -212,15 +212,15 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
           </div>
         </td>
         <td className="px-6 py-4 text-center">
-  <button
-    onClick={
-      handleNameClick}
-    className="p-1 hover:bg-gray-100 rounded-full"
-    title="View user info"
-  >
-    <Eye className="w-5 h-5 text-gray-600" />
-  </button>
-</td>
+          <button
+            onClick={
+              handleNameClick}
+            className="p-1 hover:bg-gray-100 rounded-full"
+            title="View user info"
+          >
+            <Eye className="w-5 h-5 text-gray-600" />
+          </button>
+        </td>
       </tr>
 
       {/* Expanded Row Details - Desktop */}
@@ -244,15 +244,15 @@ const BuyerRow = ({ buyer, isExpanded, onToggle, isMobile, onDownloadInvoice, on
                     <p className="text-sm text-gray-600">Date: {formatDate(buyer.purchaseDate)}</p>
                   </div>
                 </div>
-                 <div className="flex items-start gap-3">
-                  <IndianRupee  className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex items-start gap-3">
+                  <IndianRupee className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Financials</h4>
                     <p className="text-sm text-gray-600">Original: {formatCurrency(buyer.originalAmount)}</p>
                     {buyer.discountApplied > 0 && <p className="text-sm text-gray-600">Discount: -{formatCurrency(buyer.discountApplied)}</p>}
                     <p className="text-sm text-gray-600 font-semibold">Final: {formatCurrency(buyer.amount)}</p>
                   </div>
-                  
+
                 </div>
                 <div className="flex items-start gap-3">
                   <CreditCard className="w-5 h-5 text-blue-600 mt-0.5" />
@@ -289,15 +289,22 @@ export default function RecentlyPurchased() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isMobile, setIsMobile] = useState(false);
-  // NEW: State for UserDetailsCard
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserCardOpen, setIsUserCardOpen] = useState(false);
 
   const { data: transactionsResponse, isLoading, isError, error } = useGetAllTransactionsQuery();
 
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [])
+
   const buyers = useMemo(() => {
     if (!transactionsResponse?.data) return [];
-    
+
     const toTitleCase = (str) => {
       if (!str) return '';
       return str.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
@@ -305,7 +312,7 @@ export default function RecentlyPurchased() {
 
     return transactionsResponse.data
       .slice()
-      .filter(transaction => transaction.status === 'completed') 
+      .filter(transaction => transaction.status === 'completed')
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .map((transaction) => ({
         id: transaction._id,
@@ -351,8 +358,8 @@ export default function RecentlyPurchased() {
     }
     setExpandedRows(newExpanded);
   };
-  
-  // NEW: Handlers to open/close the user details card
+
+  // Handlers to open/close the user details card
   const handleUserClick = (user) => {
     setSelectedUser(user);
     setIsUserCardOpen(true);
@@ -368,7 +375,7 @@ export default function RecentlyPurchased() {
   };
 
   const totalRevenue = useMemo(() => {
-      return buyers.reduce((sum, buyer) => sum + (buyer.amount || 0), 0);
+    return buyers.reduce((sum, buyer) => sum + (buyer.amount || 0), 0);
   }, [buyers]);
 
   const renderContent = () => {
@@ -401,7 +408,7 @@ export default function RecentlyPurchased() {
       );
     }
     return isMobile ? (
-      <div className="p-4">
+      <div className="p-0">
         {filteredBuyers.map((buyer) => (
           <BuyerRow
             key={buyer.id}
@@ -410,7 +417,7 @@ export default function RecentlyPurchased() {
             onToggle={() => toggleRow(buyer.id)}
             isMobile={true}
             onDownloadInvoice={handleDownloadInvoice}
-            onUserClick={handleUserClick} // <-- Pass handler
+            onUserClick={handleUserClick}
           />
         ))}
       </div>
@@ -435,7 +442,7 @@ export default function RecentlyPurchased() {
                 onToggle={() => toggleRow(buyer.id)}
                 isMobile={false}
                 onDownloadInvoice={handleDownloadInvoice}
-                onUserClick={handleUserClick} // <-- Pass handler
+                onUserClick={handleUserClick}
               />
             ))}
           </tbody>
@@ -445,10 +452,10 @@ export default function RecentlyPurchased() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50  p-4 md:p-6">
-      {/* NEW: Render UserDetailsCard */}
-      <UserDetailsCard 
-        user={selectedUser} 
+    <div className="min-h-screen bg-gray-50  p-2 md:p-6">
+
+      <UserDetailsCard
+        user={selectedUser}
         isOpen={isUserCardOpen}
         onClose={handleCloseUserCard}
       />
@@ -458,39 +465,39 @@ export default function RecentlyPurchased() {
           <p className="text-gray-600">Track your latest sales and customer information.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <IndianRupee  className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-600">Total Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                        <User className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-600">Total Buyers</p>
-                        <p className="text-2xl font-bold text-gray-900">{buyers.length}</p>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                        <Package className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-600">Avg. Order Value</p>
-                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(buyers.length > 0 ? totalRevenue / buyers.length : 0)}</p>
-                    </div>
-                </CardContent>
-            </Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <IndianRupee className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <User className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Buyers</p>
+                <p className="text-2xl font-bold text-gray-900">{buyers.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Package className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Avg. Order Value</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(buyers.length > 0 ? totalRevenue / buyers.length : 0)}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <Card className="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">
