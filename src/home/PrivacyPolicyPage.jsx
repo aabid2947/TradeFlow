@@ -684,31 +684,32 @@ useEffect(()=>{
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-12"
         >
-          <Card className="shadow-lg border border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
-            <CardContent className="p-8">
-              <div className="text-center">
-                <Mail className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Contact Us</h3>
-                <p className="text-gray-700 mb-6">
-                  If you have any questions about this Privacy Policy, You can contact us:
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <div
-                    onClick={()=>navigate("/contact-us")}
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-                  >
-                    <Globe className="w-5 h-5 mr-2" />
-                    Visit Contact Page
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-5 h-5 mr-2" />
-                    <span className="text-sm">A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044
-</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+<Card className="shadow-lg border border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
+  <CardContent className="p-8">
+    <div className="text-center">
+      <Mail className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+      <h3 className="text-2xl font-bold text-gray-900 mb-4">Contact Us</h3>
+      <p className="text-gray-700 mb-6">
+        If you have any questions about this Privacy Policy, You can contact us:
+      </p>
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-6">
+        <button
+          onClick={() => navigate("/contact-us")}
+          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg whitespace-nowrap cursor-pointer"
+        >
+          <Globe className="w-5 h-5 mr-2 flex-shrink-0" />
+          Visit Contact Page
+        </button>
+        <div className="flex items-start text-gray-600 max-w-sm">
+          <MapPin className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+          <span className="text-sm">
+            A 24/5, Mohan Cooperative Industrial Area, Badarpur, Second Floor, New Delhi 110044
+          </span>
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
         </motion.div>
       </div>
       <LandingPageFooter/>
