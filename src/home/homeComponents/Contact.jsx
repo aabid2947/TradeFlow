@@ -21,8 +21,11 @@ import {
   Zap
 
 } from 'lucide-react';
+import axios from 'axios';
 import officeBuilding from "@/assets/offceBuilding.JPG"
+import toast from 'react-hot-toast';
 
+const baseURL = import.meta.env.VITE_API_BASE_URL
 const AnimatedSection = ({ children, className = "" }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, threshold: 0.1 });
@@ -49,6 +52,7 @@ const ContactUs = () => {
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -57,19 +61,28 @@ const ContactUs = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We\'ll get back to you within 2 hours.');
-    setFormData({
-      name: '',
-      email: '',
-      company: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
+    setIsSubmitting(true);
+    const toastId = toast.loading('Sending your message...');
+
+    try {
+      // console.log(formData)
+      // const { data } = await axios.post(`${baseURL}/send-email`, formData);
+      
+      // if (data.success) {
+          toast.success('Your message has been sent successfully!', { id: toastId });
+        // Reset form after successful submission
+        setFormData({ fullName: "", email: "", subject: "", message: "" });
+      // } else {
+      //   toast.error(data.message || 'An unexpected error occurred.', { id: toastId });
+      // }
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast.error(error.response?.data?.message || 'Failed to send message. Please check your connection.', { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -211,7 +224,7 @@ const ContactUs = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       >
                         <option value="">Select a subject</option>
-                        <option value="api-integration">API Integration Support</option>
+                        {/* <option value="api-integration">API Integration Support</option> */}
                         <option value="pricing">Pricing and Plans</option>
                         <option value="custom-solution">Custom Verification Solutions</option>
                         <option value="bulk-verification">Bulk Verification Needs</option>
@@ -243,8 +256,9 @@ const ContactUs = () => {
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
                     >
                       <Send className="w-5 h-5" />
-                      <span>Send Message</span>
+                      <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
                     </motion.button>
+                    
                   </form>
                 </div>
               </AnimatedSection>

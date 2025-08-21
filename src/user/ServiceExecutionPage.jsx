@@ -321,11 +321,10 @@ export default function ServiceExecutionPage() {
         try {
             const result = await executeService({ serviceKey: service.service_key, payload }).unwrap();
             
-            console.log(result.data)
             if (isVerificationSuccessful(result)) {
                 showNotification(result.data?.message || 'Verification Successful!', 'success');
                 setVerificationResult(result);
-                console.log()
+              
             } else {
                 if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
                       dispatch(apiSlice.util.invalidateTags([

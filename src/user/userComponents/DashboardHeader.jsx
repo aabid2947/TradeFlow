@@ -65,10 +65,10 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   };
 
   const toggleSidebar = () => {
-    console.log(!sidebarOpen)
+    // console.log(!sidebarOpen)
     setSidebarOpen(!sidebarOpen);
   };
-  console.log(user.avatar.trim() !== '')
+  // console.log(user.avatar.trim() !== '')
 
   const avatarBgColor = generateRandomColor(user?.name);
 

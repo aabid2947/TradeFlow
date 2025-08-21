@@ -25,7 +25,7 @@ export default function Profile() {
     const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation()
     const [updateAvatar, { isLoading: isUploadingAvatar }] = useUpdateAvatarMutation()
     const [sendReminder] = useRemindSubscriptionMutation();
-    console.log(user)
+    // console.log(user)
     const [isEditing, setIsEditing] = useState(false)
     const [editedName, setEditedName] = useState(user?.name || "")
     const [error, setError] = useState("")

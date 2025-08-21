@@ -14,10 +14,10 @@ const NotificationPermissionHandler = () => {
         const permission = await Notification.requestPermission();
         
         if (permission === 'granted') {
-          console.log('Notification permission granted.');
+          // console.log('Notification permission granted.');
           new Notification('Welcome!', { body: 'Notifications are enabled.' });
         } else {
-          console.log('Notification permission denied.');
+          // console.log('Notification permission denied.');
         }
       };
 

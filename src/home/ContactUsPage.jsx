@@ -62,8 +62,7 @@ const ContactForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
-    // In a real application, you would send this data to a backend
+    
     alert("Message sent! (Simulated)")
     setFormData({ fullName: "", email: "", subject: "", message: "" })
   }
