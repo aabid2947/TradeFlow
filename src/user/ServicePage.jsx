@@ -38,6 +38,7 @@ export default function ServicePage() {
 
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const userInfo = useSelector(selectCurrentUser);
+  console.log(userInfo)
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery();
   const { data: pricingPlansResponse, isLoading: isLoadingPricing } = useGetPricingPlansQuery();
 
@@ -113,7 +114,14 @@ export default function ServicePage() {
     return { isSubscribed: false, usageRemaining: 0, totalUsage: 0, usageLimit: 0 };
   }, [userInfo, allPricingPlans, allServices, subcategory]);
 
-  const { isSubscribed, usageRemaining, totalUsage, usageLimit, expiresAt } = subscriptionInfo;
+  const { isSubscribed, usageRemaining, totalUsage, usageLimit, expiresAt, subscription } = subscriptionInfo;
+  
+  // Check if the current subscription is a static plan (Professional, Personal, Enterprise)
+  const isStaticPlan = useMemo(() => {
+    if (!subscription) return false;
+    const staticPlanNames = ['Professional', 'Personal', 'Enterprise'];
+    return staticPlanNames.includes(subscription.category);
+  }, [subscription]);
   
   const planToPurchase = useMemo(() => {
     if (isSubscribed || !subcategory) return null;
@@ -321,26 +329,26 @@ export default function ServicePage() {
               </div>
             </div>
 
-            {/* Low usage warning */}
-            {isSubscribed && usageRemaining <= Math.ceil(usageLimit * 0.2) && usageRemaining > 0 && (
+            {/* Low usage warning - Only for static plans */}
+            {isSubscribed && isStaticPlan && usageRemaining <= Math.ceil(usageLimit * 0.2) && usageRemaining > 0 && (
               <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-yellow-600" />
                   <p className="text-yellow-800 font-medium">
-                    Low Usage Alert: You have only {usageRemaining} verification{usageRemaining !== 1 ? 's' : ''} remaining.
+                    Low Usage Alert: You have only {usageRemaining} verification{usageRemaining !== 1 ? 's' : ''} remaining in your {subscription?.category} plan.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* No usage remaining warning */}
-            {isSubscribed && usageRemaining === 0 && (
+            {/* No usage remaining warning - Only for static plans */}
+            {isSubscribed && isStaticPlan && usageRemaining === 0 && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <X className="w-5 h-5 text-red-600" />
                     <p className="text-red-800 font-medium">
-                      No Usage Remaining: You've used all {usageLimit} verifications for this plan.
+                      No Usage Remaining: You've used all {usageLimit} verifications for your {subscription?.category} plan.
                     </p>
                   </div>
                   <Button 
@@ -377,9 +385,9 @@ export default function ServicePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleCloseModal} aria-hidden="true"></div>
           <div className="relative z-10 w-full max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 fade-in-0 duration-300">
-            <Button variant="ghost" size="icon" onClick={handleCloseModal} className="absolute top-2 right-2 z-20 rounded-full text-gray-500 hover:text-gray-800">
-              <XIcon className="h-5 w-5" />
-            </Button>
+            <button variant="ghost" size="icon" onClick={handleCloseModal} className="absolute top-3 right-1 z-200 rounded-full text-gray-500 hover:text-gray-800">
+              <XIcon className="h-10 w-10" />
+            </button>
             <div className="overflow-y-auto p-6 space-y-6">
               {/* Usage status in mobile modal */}
               {isSubscribed && (

@@ -151,9 +151,14 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     const isFormFilled = service ? 
         service.inputFields.every(field => !!formData[field.name]) && consentChecked : false;
 
+    // **UPDATED** handleInputChange now supports file inputs
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            setFormData((prev) => ({ ...prev, [name]: files[0] || null }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleConsentChange = (e) => {
@@ -179,21 +184,66 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                 
                 <CustomCardContent>
                     <div className="space-y-4">
-                        {service.inputFields.map(({ name, type, label, placeholder }) => (
-                            <div key={name} className="space-y-1">
-                                <CustomLabel htmlFor={name}>
-                                    {label || toTitleCase(name)} <span className="text-red-500">*</span>
-                                </CustomLabel>
-                                <CustomInput
-                                    id={name}
-                                    name={name}
-                                    type={type}
-                                    placeholder={placeholder || `Enter ${toTitleCase(name)}`}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-                        ))}
+                        {/* **UPDATED** Conditional rendering for text vs file inputs */}
+                        {service.inputFields.map(({ name, type, label, placeholder }) => {
+                            // **NEW** Logic for file input rendering
+                            if (type === 'file') {
+                                const file = formData[name];
+                                return (
+                                    <div key={name} className="space-y-1">
+                                        <CustomLabel htmlFor={name}>
+                                            {label || toTitleCase(name)} <span className="text-red-500">*</span>
+                                        </CustomLabel>
+                                        {!file ? (
+                                            <div className="relative">
+                                                <input
+                                                    id={name}
+                                                    name={name}
+                                                    type="file"
+                                                    onChange={handleInputChange}
+                                                    required
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <div className="flex items-center justify-center w-full px-3 py-2.5 border border-dashed border-gray-400 rounded-lg text-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-colors">
+                                                    <FileText className="inline-block w-5 h-5 mr-2" />
+                                                    <span>Click to upload file</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-between w-full px-3 py-2.5 border border-gray-300 bg-gray-50 rounded-lg">
+                                                <div className="flex items-center text-sm text-gray-700 truncate">
+                                                    <FileText className="w-5 h-5 mr-2 text-cyan-600 flex-shrink-0" />
+                                                    <span className="truncate" title={file.name}>{file.name}</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, [name]: null }))}
+                                                    className="p-1 ml-2 text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            // Existing logic for text-based inputs
+                            return (
+                                <div key={name} className="space-y-1">
+                                    <CustomLabel htmlFor={name}>
+                                        {label || toTitleCase(name)} <span className="text-red-500">*</span>
+                                    </CustomLabel>
+                                    <CustomInput
+                                        id={name}
+                                        name={name}
+                                        type={type}
+                                        placeholder={placeholder || `Enter ${toTitleCase(name)}`}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            );
+                        })}
                         
                         {/* Consent Checkbox */}
                         <div className="flex items-start space-x-3 pt-3 pb-2">
@@ -299,80 +349,85 @@ export default function ServiceExecutionPage() {
         setNotification(null);
     };
     
-    // **UPDATED** Handler to correctly process success and error states
-    const handleExecuteVerification = async (payload) => {
-        setInputData(payload);
-        setVerificationResult(null);
-        setVerificationError(null);
+    // **UPDATED** Handler to correctly build FormData for file uploads
+   const handleExecuteVerification = async (payload) => {
+    setInputData(payload);
+    setVerificationResult(null);
+    setVerificationError(null);
+
+    const hasFileUpload = service.inputFields.some(field => field.type === 'file');
+    let finalPayload;
+
+    if (hasFileUpload) {
+        finalPayload = new FormData();
         
-        const processError = (errorData) => {
-            let apiMessage = errorData?.message || "An unexpected error occurred. Please try again.";
-            let userMessage = apiMessage;
-
-            const lowerCaseApiMessage = apiMessage.toLowerCase();
-            if (lowerCaseApiMessage.includes('upstream source/government source internal server error') || lowerCaseApiMessage.includes('internal server error')) {
-                userMessage = "The government server is temporarily unavailable. Please try again after some time.";
+        // **FIXED & SIMPLIFIED LOOP**
+        // This now correctly handles any number of fields (text or file).
+        for (const key in payload) {
+            // Simply append each key-value pair from the form state.
+            // This works because the keys ('file_front', 'file_back') are already correct.
+            if (payload[key]) {
+                finalPayload.append(key, payload[key]);
             }
-
-            showNotification(userMessage, 'error');
-            setVerificationError(errorData || { message: userMessage });
-        };
-
-        try {
-            const result = await executeService({ serviceKey: service.service_key, payload }).unwrap();
-            
-            if (isVerificationSuccessful(result)) {
-                showNotification(result.data?.message || 'Verification Successful!', 'success');
-                setVerificationResult(result);
-              
-            } else {
-                if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
-                      dispatch(apiSlice.util.invalidateTags([
-                            { type: 'User', id: 'PROFILE' },
-                            { type: 'Service', id: 'LIST' },
-                            { type: 'Subscription' }
-                          ]));
-                    
-                          await Promise.all([
-                            refetchProfile(),
-                            refetchServices()
-                          ]);
-                          
-                }
-                if(result.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
-                      dispatch(apiSlice.util.invalidateTags([
-                            { type: 'User', id: 'PROFILE' },
-                            { type: 'Service', id: 'LIST' },
-                            { type: 'Subscription' }
-                          ]));
-                    
-                          await Promise.all([
-                            refetchProfile(),
-                            refetchServices()
-                          ]);
-                          
-                }
-                processError(result.data);
-            }
-            
-        } catch (err) {
-            // console.log(err.data)
-            if(err.data?.message == "You do not have a valid subscription to use this service, or you have reached your usage limit for the month."){
-                      dispatch(apiSlice.util.invalidateTags([
-                            { type: 'User', id: 'PROFILE' },
-                            { type: 'Service', id: 'LIST' },
-                            { type: 'Subscription' }
-                          ]));
-                    
-                          await Promise.all([
-                            refetchProfile(),
-                            refetchServices()
-                          ]);
-                          
-                }
-            processError(err.data);
         }
+
+    } else {
+        finalPayload = payload;
+    }
+    
+    // --- Safe Debugging Logic ---
+    console.log("--- Checking Final Payload ---");
+    if (finalPayload instanceof FormData) {
+        for (let [key, value] of finalPayload.entries()) { 
+            console.log(`FormData -> ${key}:`, value); 
+        }
+    } else {
+        console.log("JSON Payload ->", finalPayload);
+    }
+    console.log("----------------------------");
+
+    const processError = (errorData) => {
+        let apiMessage = errorData?.message || "An unexpected error occurred. Please try again.";
+        let userMessage = apiMessage;
+
+        const lowerCaseApiMessage = apiMessage.toLowerCase();
+        if (lowerCaseApiMessage.includes('upstream source/government source internal server error') || lowerCaseApiMessage.includes('internal server error')) {
+            userMessage = "The government server is temporarily unavailable. Please try again after some time.";
+        }
+
+        showNotification(userMessage, 'error');
+        setVerificationError(errorData || { message: userMessage });
     };
+
+    try {
+        const result = await executeService({ serviceKey: service.service_key, payload: finalPayload }).unwrap();
+        
+        if (isVerificationSuccessful(result)) {
+            showNotification(result.data?.message || 'Verification Successful!', 'success');
+            setVerificationResult(result);
+        } else {
+            if (result.data?.message === "You do not have a valid subscription to use this service, or you have reached your usage limit for the month.") {
+                dispatch(apiSlice.util.invalidateTags([
+                    { type: 'User', id: 'PROFILE' },
+                    { type: 'Service', id: 'LIST' },
+                    { type: 'Subscription' }
+                ]));
+                await Promise.all([refetchProfile(), refetchServices()]);
+            }
+            processError(result.data);
+        }
+    } catch (err) {
+        if (err.data?.message === "You do not have a valid subscription to use this service, or you have reached your usage limit for the month.") {
+            dispatch(apiSlice.util.invalidateTags([
+                { type: 'User', id: 'PROFILE' },
+                { type: 'Service', id: 'LIST' },
+                { type: 'Subscription' }
+            ]));
+            await Promise.all([refetchProfile(), refetchServices()]);
+        }
+        processError(err.data);
+    }
+};
     
     const handleGoBackToCategory = () => {
         navigate('/user', { 

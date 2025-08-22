@@ -11,11 +11,13 @@ import PurchaseHistory from "./userComponents/PurchaseHistory";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/features/auth/authSlice";
 import VerificationHistory from "./userComponents/VerificationHistory";
+import toast from "react-hot-toast";
 
 // Import all necessary API hooks
 import { useGetServicesQuery } from "@/app/api/serviceApiSlice";
 import { useGetPricingPlansQuery } from "@/app/api/pricingApiSlice";
 import { useGetMyTransactionsQuery } from "@/app/api/transactionApiSlice";
+import Loader from "../components/Loader";
 
 // renderContent function remains unchanged
 const renderContent = (activeView, services, pricingPlans, isLoading, userInfo, transactions) => {
@@ -43,18 +45,79 @@ export default function UserDashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
   const userInfo = useSelector(selectCurrentUser);
-  // console.log(userInfo)
+
+  // Retry logic state
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
+  const retryDelay = 1500; // ms
   
   // Fetch all data required for the dashboard and its children
-  const { data: servicesResponse, isLoading: isLoadingServices, isError: isErrorServices, error: servicesError } = useGetServicesQuery();
-  const { data: pricingPlansResponse, isLoading: isLoadingPricing, isError: isErrorPricing, error: pricingError } = useGetPricingPlansQuery();
-  const { data: transactionsResponse, isLoading: isLoadingTransactions, isError: isErrorTransactions, error: transactionsError } = useGetMyTransactionsQuery();
+  const { 
+    data: servicesResponse, 
+    isLoading: isLoadingServices, 
+    isError: isErrorServices, 
+    error: servicesError,
+    refetch: refetchServices
+  } = useGetServicesQuery();
+
+  const { 
+    data: pricingPlansResponse, 
+    isLoading: isLoadingPricing, 
+    isError: isErrorPricing, 
+    error: pricingError,
+    refetch: refetchPricing
+  } = useGetPricingPlansQuery();
+
+  const { 
+    data: transactionsResponse, 
+    isLoading: isLoadingTransactions, 
+    isError: isErrorTransactions, 
+    error: transactionsError,
+    refetch: refetchTransactions
+  } = useGetMyTransactionsQuery();
 
   const services = servicesResponse?.data || [];
   const pricingPlans = pricingPlansResponse || [];
   const transactions = transactionsResponse?.data || [];
   
   const isLoading = isLoadingServices || isLoadingPricing || isLoadingTransactions;
+
+  // Retry failed queries up to maxRetries, then show toast
+  useEffect(() => {
+    let timeout;
+    if ((isErrorServices || isErrorPricing || isErrorTransactions) && retryCount < maxRetries) {
+      timeout = setTimeout(() => {
+        if (isErrorServices) refetchServices();
+        if (isErrorPricing) refetchPricing();
+        if (isErrorTransactions) refetchTransactions();
+        setRetryCount((c) => c + 1);
+      }, retryDelay);
+    } else if ((isErrorServices || isErrorPricing || isErrorTransactions) && retryCount >= maxRetries) {
+      const error =
+        servicesError?.data?.message ||
+        pricingError?.data?.message ||
+        transactionsError?.data?.message ||
+        "Failed to load dashboard resources. Please refresh the page or try again later.";
+      toast.error(error);
+    }
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line
+  }, [
+    isErrorServices,
+    isErrorPricing,
+    isErrorTransactions,
+    retryCount,
+    servicesError,
+    pricingError,
+    transactionsError,
+  ]);
+
+  // Reset retry count on success
+  useEffect(() => {
+    if (!isErrorServices && !isErrorPricing && !isErrorTransactions) {
+      setRetryCount(0);
+    }
+  }, [isErrorServices, isErrorPricing, isErrorTransactions]);
 
   useEffect(() => {
     // This effect handles state passed on navigation (e.g., from ServicePage)
@@ -103,18 +166,6 @@ export default function UserDashBoard() {
     setCategoryFilter(category);
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
-  
-  if (isErrorServices || isErrorPricing || isErrorTransactions) {
-    const error = servicesError || pricingError || transactionsError;
-    return (
-      <div className="flex h-screen items-center justify-center bg-red-50">
-        <div className="text-center text-red-700">
-          <h2 className="text-xl font-bold">Failed to load dashboard resources</h2>
-          <p>{error?.data?.message || "Please refresh the page or try again later."}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="relative min-h-screen bg-gray-50">
@@ -129,12 +180,18 @@ export default function UserDashBoard() {
       <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
         <DashboardHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 mt-16">
-            <div
-              key={activeView + categoryFilter}
-              className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
-            >
-              {renderContent(activeView, filteredServices, pricingPlans, isLoading, userInfo, transactions)}
-            </div>
+          <div
+            key={activeView + categoryFilter}
+            className="animate-in slide-in-from-bottom-5 fade-in-0 duration-500"
+          >
+            {isLoading ? (
+              <div className="flex justify-center items-center min-h-[200px]">
+                <Loader/>
+              </div>
+            ) : (
+              renderContent(activeView, filteredServices, pricingPlans, isLoading, userInfo, transactions)
+            )}
+          </div>
         </main>
       </div>
     </div>

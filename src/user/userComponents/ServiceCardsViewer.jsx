@@ -56,6 +56,46 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
     return serviceIdSet;
   }, [userInfo, pricingPlans, services]);
 
+  // Get remaining verifications for each service
+  const getServiceVerifications = useMemo(() => {
+    if (!userInfo?.activeSubscriptions) return {};
+    
+    const serviceVerifications = {};
+    const activeUserSubs = userInfo.activeSubscriptions.filter(
+      sub => new Date(sub.expiresAt) > new Date()
+    );
+    
+    const staticPlanMap = new Map(
+      pricingPlans.map(p => [p.name, p.includedServices.map(s => s._id)])
+    );
+    
+    services.forEach(service => {
+      let remainingVerifications = 0;
+      
+      // Find subscription that covers this service
+      const coveringSubscription = activeUserSubs.find(sub => {
+        const subName = sub.category;
+        
+        // Check if it's a static plan that includes this service
+        if (staticPlanMap.has(subName)) {
+          const includedServiceIds = staticPlanMap.get(subName) || [];
+          return includedServiceIds.includes(service._id);
+        }
+        
+        // Check if it's a dynamic plan for this service's subcategory
+        return service.subcategory === subName;
+      });
+      
+      if (coveringSubscription) {
+        remainingVerifications = Math.max(0, coveringSubscription.usageLimit - coveringSubscription.usageCount);
+      }
+      
+      serviceVerifications[service._id] = remainingVerifications;
+    });
+    
+    return serviceVerifications;
+  }, [userInfo, pricingPlans, services]);
+
   const handleActionButtonClick = (service) => {
     setVerificationResult(null);
     setVerificationError(null);
@@ -127,12 +167,16 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
       <div className="flex justify-between items-center mb-4">
         <h1 className="font-bold text-xl">KYC Verification Services</h1>
         {/* View Mode Toggle Buttons */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200">
+        <div className="hidden md:flex items-center gap-1 p-1 rounded-lg bg-gray-200">
           <Button
             size="sm"
             variant="ghost"
             onClick={() => setViewMode('grid')}
-            className={`px-3 py-1 h-8 transition-colors ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-blue-600'}`}
+            className={`px-3 py-1 h-8 transition-colors ${
+              viewMode === 'grid' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
           >
             <LayoutGrid className="w-4 h-4" />
           </Button>
@@ -140,7 +184,11 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
             size="sm"
             variant="ghost"
             onClick={() => setViewMode('list')}
-            className={`px-3 py-1 h-8 transition-colors ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-blue-600'}`}
+            className={`px-3 py-1 h-8 transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
           >
             <List className="w-4 h-4" />
           </Button>
@@ -152,16 +200,18 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {services.map((svc) => {
             const isSubscribed = accessibleServiceIds.has(svc._id);
+            const remainingVerifications = getServiceVerifications[svc._id] || 0;
             return (
               <ServiceCard
                 key={svc._id}
                 service={svc}
                 imageSrc={svc.imageUrl || "/placeholder.svg"}
                 serviceName={svc.name}
-                verificationCount={svc.globalUsageCount}
+                verificationCount={remainingVerifications}
                 price={svc.price}
                 buttonType={isSubscribed ? "verify" : "purchase"}
                 onButtonClick={() => handleActionButtonClick(svc)}
+                isSubscribed={isSubscribed}
               />
             );
           })}
@@ -170,12 +220,15 @@ export default function ServiceCardsViewer({ services = [], pricingPlans = [], i
         <div className="space-y-4">
           {services.map((svc) => {
             const isSubscribed = accessibleServiceIds.has(svc._id);
+            const remainingVerifications = getServiceVerifications[svc._id] || 0;
             return (
               <ServiceListCard
                 key={svc._id}
                 service={svc}
                 buttonType={isSubscribed ? "verify" : "purchase"}
                 onButtonClick={() => handleActionButtonClick(svc)}
+                remainingVerifications={remainingVerifications}
+                isSubscribed={isSubscribed}
               />
             );
           })}

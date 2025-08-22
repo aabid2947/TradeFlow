@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function ServiceListCard({ service, buttonType, onButtonClick }) {
+export default function ServiceListCard({ service, buttonType, onButtonClick, remainingVerifications = 0, isSubscribed = false }) {
   const isPurchased = buttonType === "verify";
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,12 +62,13 @@ export default function ServiceListCard({ service, buttonType, onButtonClick }) 
           <div className="flex items-center gap-6 text-sm text-gray-700 my-2">
             <div className="flex items-center gap-1.5">
               <Shield className="w-4 h-4 text-blue-500" />
-              <span>{service.globalUsageCount} Verifications</span>
+              <span>
+                {isSubscribed 
+                  ? `${remainingVerifications} Verifications Left` 
+                  : "0 Verifications Available"
+                }
+              </span>
             </div>
-            {/* <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span>{service.durationDays || 'N/A'} days</span>
-            </div> */}
           </div>
           
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
