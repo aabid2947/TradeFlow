@@ -376,16 +376,7 @@ export default function ServiceExecutionPage() {
     }
     
     // --- Safe Debugging Logic ---
-    console.log("--- Checking Final Payload ---");
-    if (finalPayload instanceof FormData) {
-        for (let [key, value] of finalPayload.entries()) { 
-            console.log(`FormData -> ${key}:`, value); 
-        }
-    } else {
-        console.log("JSON Payload ->", finalPayload);
-    }
-    console.log("----------------------------");
-
+   
     const processError = (errorData) => {
         let apiMessage = errorData?.message || "An unexpected error occurred. Please try again.";
         let userMessage = apiMessage;
