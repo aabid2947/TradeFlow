@@ -39,7 +39,7 @@ const ResetPasswordPage = () => {
     if (!validate()) return;
     
     try {
-        console.log(token)
+        // console.log(token)
       await resetPassword({ token, password }).unwrap();
     } catch (err) {
       console.error('Failed to reset password:', err);

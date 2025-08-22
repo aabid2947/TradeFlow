@@ -78,21 +78,22 @@ export function LoginForm() {
   // --- SUBMIT HANDLERS ---
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData)
     const emailError = validateField('email', formData.email);
     const passwordError = validateField('password', formData.password);
     if (emailError || passwordError) {
       setErrors({ email: emailError, password: passwordError });
       return;
     }
-
+    
     try {
       const response = await login(formData).unwrap();
-
+      
       dispatch(setCredentials(response));
       navigate("/user");
     } catch (err) {
-      const message = err?.data?.message || "Registration failed. Try again."
-      setErrors({ general: message });
+      const message = "Registration failed. Try again."
+      setErrors( "Failed to log in: Try with correct credentials ");
       console.error("Failed to log in: Try with correct credentials");
     }
   };
@@ -106,7 +107,7 @@ export function LoginForm() {
         return;
       }
       // Mock sending code and move to the next step
-      console.log("Sending verification code to:", formData.phone);
+      // console.log("Sending verification code to:", formData.phone);
       setFlowStep(2);
       setErrors({});
     } else {
@@ -116,7 +117,7 @@ export function LoginForm() {
         return;
       }
       // Mock phone login success
-      console.log("Verifying code:", formData.verificationCode);
+      // console.log("Verifying code:", formData.verificationCode);
       const mockResponse = { user: { id: 'phone_user', phone: formData.phone }, token: 'mock_phone_token' };
       dispatch(setCredentials(mockResponse));
       navigate("/user");

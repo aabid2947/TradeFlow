@@ -94,7 +94,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
       const timer = setTimeout(() => setIsAnimating(false), 300);
       return () => clearTimeout(timer);
     }
-    console.log(user)
+    // console.log(user)
   }, [isOpen, user]);
 
   if (!isOpen || !user) return null;
