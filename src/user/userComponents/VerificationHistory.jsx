@@ -182,7 +182,11 @@ const generatePDF = (result) => {
                         ${key}
                       </td>
                       <td style="padding: 15px; color: #1a202c; font-weight: 500; word-wrap: break-word; font-size: 18px; width: 55%; line-height: 1.5; border: 1px solid #000;">
-                        ${(value === null || value === undefined) ? 'N/A' : String(value)}
+                        ${(value === null || value === undefined) ? 'N/A' : 
+                          (typeof value === 'object' && value !== null) 
+                            ? (value.filename ? `File: ${value.filename}` : JSON.stringify(value))
+                            : String(value)
+                        }
                       </td>
                     </tr>`
                   ).join('')
@@ -426,7 +430,12 @@ const InfoCard = ({ icon: Icon, title, value, description, status = "neutral" })
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-gray-700 text-xs">{title}</h4>
-          <p className="text-base font-bold text-gray-900 mt-1 truncate">{value}</p>
+          <p className="text-base font-bold text-gray-900 mt-1 truncate">
+            {typeof value === 'object' && value !== null 
+              ? (value.filename ? `File: ${value.filename}` : JSON.stringify(value))
+              : String(value)
+            }
+          </p>
           {description && (
             <p className="text-xs text-gray-500 mt-1">{description}</p>
           )}
@@ -454,8 +463,13 @@ const SimpleDataTable = ({ data, title }) => {
       const fullKey = prefix ? `${prefix}.${key}` : key;
       
       if (typeof value === 'object' && !Array.isArray(value)) {
-        const nestedEntries = getMeaningfulEntries(value, fullKey);
-        entries.push(...nestedEntries);
+        // Handle file objects specifically
+        if (value.filename && value.mimetype && value.size) {
+          entries.push([fullKey, `File: ${value.filename} (${value.size} bytes)`]);
+        } else {
+          const nestedEntries = getMeaningfulEntries(value, fullKey);
+          entries.push(...nestedEntries);
+        }
       } else {
         entries.push([fullKey, value]);
       }
@@ -525,6 +539,9 @@ const SimpleDataTable = ({ data, title }) => {
                 }`}>
                   {value ? 'Yes' : 'No'}
                 </span>
+              ) : typeof value === 'object' && value !== null ? (
+                // Handle file objects and other objects
+                value.filename ? `File: ${value.filename}` : JSON.stringify(value)
               ) : (
                 String(value)
               )}
@@ -586,7 +603,33 @@ const ResultCard = ({ result, index }) => {
         { icon: Info, title: "Country", value: payload.countryCode || 'N/A', description: "Country code for the number" }
       ];
     }
-    return Object.entries(payload).map(([key, value]) => ({ icon: Info, title: toTitleCase(key), value, description: "Checked parameter" }));
+    return Object.entries(payload).map(([key, value]) => {
+      // Handle file objects with filename, mimetype, size properties
+      if (value && typeof value === 'object' && value.filename) {
+        return { 
+          icon: Info, 
+          title: toTitleCase(key), 
+          value: `File: ${value.filename}`, 
+          description: `Size: ${value.size || 'Unknown'}, Type: ${value.mimetype || 'Unknown'}` 
+        };
+      }
+      // Handle other objects by converting to string
+      if (value && typeof value === 'object') {
+        return { 
+          icon: Info, 
+          title: toTitleCase(key), 
+          value: JSON.stringify(value), 
+          description: "Object data" 
+        };
+      }
+      // Handle primitive values
+      return { 
+        icon: Info, 
+        title: toTitleCase(key), 
+        value: value === null || value === undefined ? 'N/A' : String(value), 
+        description: "Checked parameter" 
+      };
+    });
   };
 
   const ServiceIcon = getServiceIcon(result.service?.name);
