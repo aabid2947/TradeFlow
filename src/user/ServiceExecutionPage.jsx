@@ -287,7 +287,7 @@ const isVerificationSuccessful = (result) => {
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     if (apiData.status === 'INVALID') return false;
 
-    // Define negative words/phrases that indicate failure
+    // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
         'no record',
         'not found',
@@ -302,20 +302,27 @@ const isVerificationSuccessful = (result) => {
         'doesn\'t match',
         'cannot verify',
         'can\'t verify',
-        'failed',
-        'failure',
-        'error',
-        'invalid',
-        'incorrect',
-        'mismatch',
-        'unavailable',
-        'denied',
-        'rejected',
-        'blocked',
-        'suspended',
-        'inactive',
-        'expired',
-        'cancelled'
+        'verification failed',
+        'validation failed',
+        'request failed',
+        'processing failed',
+        'failed to process',
+        'failed to verify',
+        'is invalid',
+        'are invalid',
+        'incorrect details',
+        'data mismatch',
+        'details mismatch',
+        'service unavailable',
+        'currently unavailable',
+        'access denied',
+        'request denied',
+        'account blocked',
+        'account suspended',
+        'account inactive',
+        'document expired',
+        'subscription expired',
+        'plan cancelled'
     ];
 
     // Check if the response contains negative indicators (using exact phrase matching)
@@ -371,6 +378,41 @@ export default function ServiceExecutionPage() {
     const [executeService, { isLoading: isVerifying }] = useExecuteSubscribedServiceMutation();
 
     const service = useMemo(() => servicesResponse?.data?.find(s => s.service_key === serviceKey), [servicesResponse, serviceKey]);
+
+    // Map service category/subcategory to sidebar categories
+    const mappedActiveCategory = useMemo(() => {
+        if (!service) return null;
+        
+        // Check subcategory first, then category
+        const serviceSubcategory = service.subcategory;
+        const serviceCategory = service.category;
+        
+        console.log('🔍 Service mapping debug:', {
+            serviceKey,
+            serviceCategory,
+            serviceSubcategory,
+            serviceName: service.name
+        });
+        
+        // Direct subcategory mapping
+        if (serviceSubcategory === 'Employer Verification') {
+            return 'Employer Verification';
+        }
+        
+        // Category to sidebar label mapping
+        const categoryMapping = {
+            'Employment': 'Employer Verification',
+            'Identity Verification': 'Identity Verification', 
+            'Financial & Business Checks': 'Financial & Business Checks',
+            'Legal & Compliance Checks': 'Legal & Compliance Checks',
+            'Biometric & AI-Based Verification': 'Biometric & AI-Based Verification',
+            'Profile & Database Lookup': 'Profile & Database Lookup'
+        };
+        
+        const mappedCategory = categoryMapping[serviceCategory] || serviceCategory || serviceSubcategory;
+        console.log('📍 Final mapped category:', mappedCategory);
+        return mappedCategory;
+    }, [service, serviceKey]);
 
 
     useEffect(()=>{
@@ -517,7 +559,7 @@ export default function ServiceExecutionPage() {
                 isOpen={sidebarOpen}
                 activeView="services"
                 onNavigate={handleNavigate}
-                activeCategory={service?.category}
+                activeCategory={mappedActiveCategory}
                 onCategorySelect={handleCategorySelect}
             />
             <div className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
@@ -528,7 +570,9 @@ export default function ServiceExecutionPage() {
                             <nav className="flex items-center text-sm text-gray-500 space-x-1">
                                 <button onClick={() => handleNavigate('dashboard')} className="hover:text-gray-700 transition-colors">Dashboard</button>
                                 <ChevronRight className="h-4 w-4" />
-                                <button onClick={handleGoBackToCategory} className="hover:text-gray-700 transition-colors">{toTitleCase(service.category)}</button>
+                                <button onClick={handleGoBackToCategory} className="hover:text-gray-700 transition-colors">
+                                    {service.subcategory === 'Employer Verification' ? 'Employer Verification' : toTitleCase(service.category)}
+                                </button>
                                 <ChevronRight className="h-4 w-4" />
                                 <span className="text-gray-800 font-medium">{service.name}</span>
                             </nav>
