@@ -571,7 +571,7 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
 
 const isVerificationSuccessful = (result) => {
     console.log(result.data)
-    if (!result || !result.data || !result.ocr_data) return false;
+    if (!result || (!result.data || !result.ocr_data)) return false;
     const apiData = result.data || result.ocr_data;
 
     // First check for explicit error codes
@@ -582,7 +582,7 @@ const isVerificationSuccessful = (result) => {
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
         ' not ',
-        // ' no ',
+        ' no ',
         'no record',
         'not found',
         'not valid',
