@@ -151,12 +151,45 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     const isFormFilled = service ? 
         service.inputFields.every(field => !!formData[field.name]) && consentChecked : false;
 
-    // **UPDATED** handleInputChange now supports file inputs
+    // **UPDATED** handleInputChange now supports file inputs and base64 conversion
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
+        console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
+        
         if (type === 'file') {
-            setFormData((prev) => ({ ...prev, [name]: files[0] || null }));
+            const file = files[0];
+            // Check if this is a base64 field (regardless of what type is specified in service config)
+            if (file && (name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64'))) {
+                console.log('🖼️ Processing base64 field:', name);
+                // Convert image to base64 for base64data field
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    let base64String = event.target.result;
+                    
+                    // Debug: Log the original base64 string
+                    console.log('🖼️ Original base64 from FileReader for field', name, ':', base64String.substring(0, 100) + '...');
+                    
+                    // Extract just the base64 part (remove data:image/jpeg;base64, prefix)
+                    if (base64String.includes(',')) {
+                        base64String = base64String.split(',')[1];
+                        console.log('🔧 Extracted base64 for field', name, '(without prefix):', base64String.substring(0, 100) + '...');
+                    }
+                    
+                    console.log('💾 Updating formData for field:', name);
+                    setFormData((prev) => {
+                        const newData = { ...prev, [name]: base64String };
+                        console.log('📊 Updated form state:', Object.keys(newData));
+                        return newData;
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                console.log('📎 Processing regular file field:', name);
+                // Regular file handling for other file inputs
+                setFormData((prev) => ({ ...prev, [name]: file || null }));
+            }
         } else {
+            console.log('✏️ Processing text field:', name);
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
@@ -184,8 +217,64 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                 
                 <CustomCardContent>
                     <div className="space-y-4">
-                        {/* **UPDATED** Conditional rendering for text vs file inputs */}
+                        {/* **UPDATED** Conditional rendering for text vs file vs base64data inputs */}
                         {service.inputFields.map(({ name, type, label, placeholder }) => {
+                            // **NEW** Special handling for base64data field - always treat as image upload regardless of type
+                            const isBase64Field = name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64');
+                            
+                            if (isBase64Field) {
+                                console.log('🎯 Rendering base64 field:', { name, type, label });
+                                const imageData = formData[name];
+                                return (
+                                    <div key={name} className="space-y-1">
+                                        <CustomLabel htmlFor={name}>
+                                            {label || 'Upload Image'} <span className="text-red-500">*</span>
+                                        </CustomLabel>
+                                        {!imageData ? (
+                                            <div className="relative">
+                                                <input
+                                                    id={name}
+                                                    name={name}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleInputChange}
+                                                    required
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <div className="flex items-center justify-center w-full px-3 py-2.5 border border-dashed border-gray-400 rounded-lg text-center text-gray-500 cursor-pointer hover:bg-gray-50 transition-colors">
+                                                    <FileText className="inline-block w-5 h-5 mr-2" />
+                                                    <span>Click to upload image</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between w-full px-3 py-2.5 border border-gray-300 bg-gray-50 rounded-lg">
+                                                    <div className="flex items-center text-sm text-gray-700">
+                                                        <CheckCircle className="w-5 h-5 mr-2 text-green-600 flex-shrink-0" />
+                                                        <span>Image uploaded successfully</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData(prev => ({ ...prev, [name]: null }))}
+                                                        className="p-1 ml-2 text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                {/* Image preview */}
+                                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                    <img 
+                                                        src={`data:image/jpeg;base64,${imageData}`}
+                                                        alt="Uploaded preview" 
+                                                        className="w-full h-32 object-contain bg-gray-50"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            
                             // **NEW** Logic for file input rendering
                             if (type === 'file') {
                                 const file = formData[name];
@@ -344,15 +433,15 @@ const isVerificationSuccessful = (result) => {
     }
 
     // Positive success indicators (only check if no negative words found)
-    if (result.success === true) return true;
-    if (apiData.message) {
-        const message = apiData.message.toLowerCase();
-        if (message.includes('verified successfully')) return true;
-        if (message.includes('record found')) return true;
-        if (message.includes('verification successful')) return true;
-    }
-    if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) return true;
-    if (String(apiData.code) === '1000') return true;
+    // if (result.success === true) return true;
+    // if (apiData.message) {
+    //     const message = apiData.message.toLowerCase();
+    //     if (message.includes('verified successfully')) return true;
+    //     if (message.includes('record found')) return true;
+    //     if (message.includes('verification successful')) return true;
+    // }
+    // if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) return true;
+    // if (String(apiData.code) === '1000') return true;
 
     // If no negative words and some positive indicators, consider successful
     return true;
@@ -387,12 +476,12 @@ export default function ServiceExecutionPage() {
         const serviceSubcategory = service.subcategory;
         const serviceCategory = service.category;
         
-        console.log('🔍 Service mapping debug:', {
-            serviceKey,
-            serviceCategory,
-            serviceSubcategory,
-            serviceName: service.name
-        });
+        // console.log('🔍 Service mapping debug:', {
+        //     serviceKey,
+        //     serviceCategory,
+        //     serviceSubcategory,
+        //     serviceName: service.name
+        // });
         
         // Direct subcategory mapping
         if (serviceSubcategory === 'Employer Verification') {
@@ -443,30 +532,61 @@ export default function ServiceExecutionPage() {
         setNotification(null);
     };
     
-    // **UPDATED** Handler to correctly build FormData for file uploads
+    // **UPDATED** Handler to correctly build FormData for file uploads and handle base64 data
    const handleExecuteVerification = async (payload) => {
     setInputData(payload);
     setVerificationResult(null);
     setVerificationError(null);
 
-    const hasFileUpload = service.inputFields.some(field => field.type === 'file');
+    // Check if we have regular file uploads (not base64data)
+    const hasFileUpload = service.inputFields.some(field => 
+        field.type === 'file' && 
+        !field.name.toLowerCase().includes('base64') && 
+        field.name !== 'base64data' && 
+        field.name !== 'base64_data'
+    );
+    // Check if we have base64data field
+    const hasBase64Data = service.inputFields.some(field => 
+        field.name === 'base64data' || 
+        field.name === 'base64_data' || 
+        field.name.toLowerCase().includes('base64')
+    );
+    
     let finalPayload;
 
-    if (hasFileUpload) {
+    if (hasFileUpload && !hasBase64Data) {
+        // Regular file upload handling
         finalPayload = new FormData();
         
-        // **FIXED & SIMPLIFIED LOOP**
-        // This now correctly handles any number of fields (text or file).
         for (const key in payload) {
-            // Simply append each key-value pair from the form state.
-            // This works because the keys ('file_front', 'file_back') are already correct.
             if (payload[key]) {
                 finalPayload.append(key, payload[key]);
             }
         }
-
-    } else {
+        console.log('📤 Sending regular file FormData to backend');
+    } else if (hasBase64Data && !hasFileUpload) {
+        // Base64 data - send as JSON
         finalPayload = payload;
+        console.log('📤 Sending base64 JSON to backend:', {
+            ...payload,
+            // Don't log full base64 string, just show preview
+            ...(payload.base64data && { base64data: payload.base64data.substring(0, 50) + '...' }),
+            ...(payload.base64_data && { base64_data: payload.base64_data.substring(0, 50) + '...' })
+        });
+    } else if (hasFileUpload && hasBase64Data) {
+        // Mixed case - use FormData but base64 will be string
+        finalPayload = new FormData();
+        
+        for (const key in payload) {
+            if (payload[key]) {
+                finalPayload.append(key, payload[key]);
+            }
+        }
+        console.log('📤 Sending mixed FormData (files + base64) to backend');
+    } else {
+        // No file uploads - send as regular JSON
+        finalPayload = payload;
+        console.log('📤 Sending regular JSON to backend:', payload);
     }
     
     // --- Safe Debugging Logic ---
