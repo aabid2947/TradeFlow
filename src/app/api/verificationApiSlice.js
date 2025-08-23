@@ -18,7 +18,7 @@ export const verificationApiSlice = apiSlice.injectEndpoints({
           // If so, append the serviceKey as a separate field.
           // The backend's multipart parser will place this in `req.body`.
           payload.append('serviceKey', serviceKey);
-          console.log(payload)
+          // console.log(payload)
           body = payload;
         } else {
           // For standard JSON requests, create a flat object with serviceKey

@@ -55,11 +55,7 @@ export default function ServicePage() {
   const parentCategory = useMemo(() => {
     if (filteredServices.length > 0) {
       const serviceCategory = filteredServices[0].category;
-      console.log('🔍 ServicePage Debug:', {
-        subcategory,
-        serviceCategory,
-        service: filteredServices[0]
-      });
+      
       if(subcategory === 'Employer Verification' || serviceCategory === 'Employer Verification'){
         return 'Employer Verification';
       }
@@ -75,7 +71,7 @@ export default function ServicePage() {
       };
       
       const mappedCategory = categoryMapping[serviceCategory] || serviceCategory;
-      console.log('📍 Category mapping:', serviceCategory, '→', mappedCategory);
+
       return mappedCategory;
     }
     return null;

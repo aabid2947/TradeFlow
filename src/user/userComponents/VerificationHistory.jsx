@@ -734,7 +734,7 @@ export default function VerificationHistory() {
   const { data: response, isLoading, isError, error } = useGetVerificationHistoryQuery({ page, limit: 10 });
   const results = response?.data || [];
   const pagination = response?.pagination;
-  console.log(response)
+
 
   useEffect(()=>{
        window.scrollTo({

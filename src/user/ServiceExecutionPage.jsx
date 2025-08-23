@@ -253,19 +253,19 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     // **UPDATED** handleInputChange now supports file inputs and base64 conversion
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
-        console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
+        // console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
         
         if (type === 'file') {
             const file = files[0];
             
             // Validate file for image uploads
             if (file) {
-                console.log('📁 File details:', { 
-                    name: file.name, 
-                    size: file.size, 
-                    type: file.type, 
-                    fieldName: name 
-                });
+                // console.log('📁 File details:', { 
+                //     name: file.name, 
+                //     size: file.size, 
+                //     type: file.type, 
+                //     fieldName: name 
+                // });
                 
                 // Check file size (3MB = 3 * 1024 * 1024 bytes)
                 const maxSize = 3 * 1024 * 1024; // 3MB
@@ -294,42 +294,42 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
             
             // Check if this is a base64 field (regardless of what type is specified in service config)
             if (file && (name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64'))) {
-                console.log('🖼️ Processing base64 field:', name);
+                // console.log('🖼️ Processing base64 field:', name);
                 
                 // Create a closure to capture the current field name and timestamp for uniqueness
                 const currentFieldName = name;
                 const timestamp = Date.now();
-                console.log('🔐 Captured field name in closure:', currentFieldName, 'at', timestamp);
+                // console.log('🔐 Captured field name in closure:', currentFieldName, 'at', timestamp);
                 
                 // Convert image to base64 for base64data field
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    console.log('🎯 FileReader completed for field:', currentFieldName, 'at', timestamp);
+                    // console.log('🎯 FileReader completed for field:', currentFieldName, 'at', timestamp);
                     let base64String = event.target.result;
                     
                     // Debug: Log the original base64 string
-                    console.log('🖼️ Original base64 from FileReader for field', currentFieldName, ':', base64String.substring(0, 100) + '...');
+                    // console.log('🖼️ Original base64 from FileReader for field', currentFieldName, ':', base64String.substring(0, 100) + '...');
                     
                     // Extract just the base64 part (remove data:image/jpeg;base64, prefix)
                     if (base64String.includes(',')) {
                         base64String = base64String.split(',')[1];
-                        console.log('🔧 Extracted base64 for field', currentFieldName, '(without prefix):', base64String.substring(0, 100) + '...');
+                        // console.log('🔧 Extracted base64 for field', currentFieldName, '(without prefix):', base64String.substring(0, 100) + '...');
                     }
                     
-                    console.log('💾 Updating formData for field:', currentFieldName);
+                    // console.log('💾 Updating formData for field:', currentFieldName);
                     setFormData((prev) => {
-                        console.log('📥 Previous form data before update:', Object.keys(prev));
+                        // console.log('📥 Previous form data before update:', Object.keys(prev));
                         const newData = { 
                             ...prev, 
                             [currentFieldName]: base64String 
                         };
-                        console.log('📊 Updated form state fields:', Object.keys(newData));
-                        console.log('📊 Form data for field', currentFieldName, ':', newData[currentFieldName] ? 'Has data' : 'No data');
+                        // console.log('📊 Updated form state fields:', Object.keys(newData));
+                        // console.log('📊 Form data for field', currentFieldName, ':', newData[currentFieldName] ? 'Has data' : 'No data');
                         
                         // Log all base64 fields to see if multiple are being affected
                         Object.keys(newData).forEach(key => {
                             if (key.toLowerCase().includes('base64')) {
-                                console.log(`📋 Base64 field ${key}:`, newData[key] ? 'Has data' : 'No data');
+                                // console.log(`📋 Base64 field ${key}:`, newData[key] ? 'Has data' : 'No data');
                             }
                         });
                         
@@ -338,12 +338,12 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                 };
                 reader.readAsDataURL(file);
             } else {
-                console.log('📎 Processing regular file field:', name);
+                // console.log('📎 Processing regular file field:', name);
                 // Regular file handling for other file inputs
                 setFormData((prev) => ({ ...prev, [name]: file || null }));
             }
         } else {
-            console.log('✏️ Processing text field:', name);
+            // console.log('✏️ Processing text field:', name);
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
@@ -355,11 +355,11 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isFormFilled) {
-            console.log('🚀 Submitting form data:', formData);
-            console.log('🚀 All base64 fields in submission:');
+            // console.log('🚀 Submitting form data:', formData);
+            // console.log('🚀 All base64 fields in submission:');
             Object.keys(formData).forEach(key => {
                 if (key.toLowerCase().includes('base64')) {
-                    console.log(`📤 ${key}:`, formData[key] ? 'Has data' : 'No data');
+                    // console.log(`📤 ${key}:`, formData[key] ? 'Has data' : 'No data');
                 }
             });
             onVerify({ ...formData });
@@ -597,10 +597,10 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
 
 
 const isVerificationSuccessful = (result) => {
-    console.log(result)
+    // console.log(result)
     if (!result || !result.data ) return false;
     const apiData = result.data ;
-    console.log(result.data)
+  
 
     // First check for explicit error codes
     const errorCodes = [ '404', '400'];
@@ -650,18 +650,13 @@ const isVerificationSuccessful = (result) => {
     // Check if the response contains negative indicators (using exact phrase matching)
     const responseText = ' ' + JSON.stringify(apiData?.message).toLowerCase() + ' '; // Add spaces for boundary checking
     
-    // Debug: Check each negative word individually
-    console.log('🔍 Full API Response:', apiData);
-    console.log('📝 Response Text:', responseText);
-    
+  
     const foundNegatives = negativeWords.filter(phrase => responseText.includes(phrase));
-    console.log('❌ Found negative phrases:', foundNegatives);
-    
+ 
     const hasNegativeWord = foundNegatives.length > 0;
-    console.log('🎯 Has negative word:', hasNegativeWord);
-    // If negative words are found, treat as error
+    
     if (hasNegativeWord) {
-        console.log('Verification failed: Negative indicators found in response', apiData);
+        // console.log('Verification failed: Negative indicators found in response', apiData);
         return false;
     }
 
@@ -709,18 +704,13 @@ export default function ServiceExecutionPage() {
         const serviceSubcategory = service.subcategory;
         const serviceCategory = service.category;
         
-        console.log('🔍 Service mapping debug:', {
-            serviceKey,
-            serviceCategory,
-            serviceSubcategory,
-            serviceName: service.name
-        });
+      
         
         // If we have a subcategory, map it to its parent category using our mapping
         if (serviceSubcategory) {
             const mappedCategory = getCategoryBySubcategory(serviceSubcategory);
             if (mappedCategory) {
-                console.log('📍 Mapped subcategory to category:', serviceSubcategory, '->', mappedCategory);
+               
                 return mappedCategory;
             }
         }
@@ -737,7 +727,7 @@ export default function ServiceExecutionPage() {
         };
         
         const mappedCategory = categoryMapping[serviceCategory] || serviceCategory || serviceSubcategory;
-        console.log('📍 Final mapped category:', mappedCategory);
+        // console.log('📍 Final mapped category:', mappedCategory);
         return mappedCategory;
     }, [service, serviceKey]);
 
@@ -848,6 +838,14 @@ export default function ServiceExecutionPage() {
         if (isVerificationSuccessful(result)) {
             showNotification(result.data?.message || 'Verification Successful!', 'success');
             setVerificationResult(result);
+            
+            // Refetch profile and services data to update remaining verification counts
+            dispatch(apiSlice.util.invalidateTags([
+                { type: 'User', id: 'PROFILE' },
+                { type: 'Service', id: 'LIST' },
+                { type: 'Subscription' }
+            ]));
+            await Promise.all([refetchProfile(), refetchServices()]);
         } else {
             if (result.data?.message === "You do not have a valid subscription to use this service, or you have reached your usage limit for the month.") {
                 dispatch(apiSlice.util.invalidateTags([
@@ -858,6 +856,14 @@ export default function ServiceExecutionPage() {
                 await Promise.all([refetchProfile(), refetchServices()]);
             }
             processError(result.data);
+            
+            // Refetch profile and services data even on failure to update remaining verification counts
+            dispatch(apiSlice.util.invalidateTags([
+                { type: 'User', id: 'PROFILE' },
+                { type: 'Service', id: 'LIST' },
+                { type: 'Subscription' }
+            ]));
+            await Promise.all([refetchProfile(), refetchServices()]);
         }
     } catch (err) {
         if (err.data?.message === "You do not have a valid subscription to use this service, or you have reached your usage limit for the month.") {
@@ -869,6 +875,14 @@ export default function ServiceExecutionPage() {
             await Promise.all([refetchProfile(), refetchServices()]);
         }
         processError(err.data);
+        
+        // Refetch profile and services data even on error to update remaining verification counts
+        dispatch(apiSlice.util.invalidateTags([
+            { type: 'User', id: 'PROFILE' },
+            { type: 'Service', id: 'LIST' },
+            { type: 'Subscription' }
+        ]));
+        await Promise.all([refetchProfile(), refetchServices()]);
     }
 };
     

@@ -165,7 +165,6 @@ export default function UserDashBoard() {
   const handleCategorySelect = (category) => {
     setActiveView("services");
     setCategoryFilter(category);
-    console.log(category)
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 

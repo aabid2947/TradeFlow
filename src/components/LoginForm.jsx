@@ -78,7 +78,7 @@ export function LoginForm() {
   // --- SUBMIT HANDLERS ---
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData)
+    // console.log(formData)
     const emailError = validateField('email', formData.email);
     const passwordError = validateField('password', formData.password);
     if (emailError || passwordError) {

@@ -124,7 +124,7 @@ export default function ServicesSection() {
  })();
 
  const handleCardClick = (serviceId) => {
-   console.log(`Navigating to product/${serviceId}`);
+  //  console.log(`Navigating to product/${serviceId}`);
    window.location.href = `/product/${serviceId}`;
  };
 
