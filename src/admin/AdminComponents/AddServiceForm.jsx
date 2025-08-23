@@ -165,6 +165,7 @@ export default function AddServiceForm({ onSubmit, onClose, isLoading, error, in
                             <option value="number">Number</option>
                             <option value="file">File</option>
                             <option value="date">Date</option>
+                            <option value="boolean">Boolean</option>
                             <option value="string">String</option>
                             <option value="object">Object</option>
                             <option value="array">Array</option>

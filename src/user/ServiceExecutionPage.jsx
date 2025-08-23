@@ -518,6 +518,33 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                                 );
                             }
                             
+                            // **NEW** Logic for boolean input rendering
+                            if (type === 'boolean') {
+                                return (
+                                    <div key={name} className="space-y-1">
+                                        <CustomLabel htmlFor={name}>
+                                            {label || toTitleCase(name)} <span className="text-red-500">*</span>
+                                        </CustomLabel>
+                                        <div className="flex items-center space-x-3 pt-2">
+                                            <input
+                                                id={name}
+                                                name={name}
+                                                type="checkbox"
+                                                checked={formData[name] || false}
+                                                onChange={(e) => {
+                                                    const { name, checked } = e.target;
+                                                    setFormData(prev => ({ ...prev, [name]: checked }));
+                                                }}
+                                                className="h-4 w-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
+                                            />
+                                            <label htmlFor={name} className="text-sm text-gray-600">
+                                                {placeholder || `Enable ${toTitleCase(name)}`}
+                                            </label>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            
                             // Existing logic for text-based inputs
                             return (
                                 <div key={name} className="space-y-1">
