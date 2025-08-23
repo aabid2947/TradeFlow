@@ -366,11 +366,11 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     );
 };
 
-// FIXED & UPDATED Helper function to correctly check if verification was successful
+
 const isVerificationSuccessful = (result) => {
+    console.log(result.data)
     if (!result || !result.data) return false;
     const apiData = result.data;
-    console.log("tre",apiData)
 
     // First check for explicit error codes
     const errorCodes = [ '404', '400'];
@@ -379,6 +379,8 @@ const isVerificationSuccessful = (result) => {
 
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
+        'not',
+        'no',
         'no record',
         'not found',
         'not valid',
@@ -636,10 +638,10 @@ export default function ServiceExecutionPage() {
 };
     
     const handleGoBackToCategory = () => {
-        navigate('/user', { 
+        navigate(`/user/service/${service.subcategory}`, { 
           state: { 
             view: 'services', 
-            category: service.category 
+            category: service.subcategory || service.category 
           },
           replace: true 
         });
@@ -692,7 +694,7 @@ export default function ServiceExecutionPage() {
                                 <button onClick={() => handleNavigate('dashboard')} className="hover:text-gray-700 transition-colors">Dashboard</button>
                                 <ChevronRight className="h-4 w-4" />
                                 <button onClick={handleGoBackToCategory} className="hover:text-gray-700 transition-colors">
-                                    {service.subcategory === 'Employer Verification' ? 'Employer Verification' : toTitleCase(service.category)}
+                                    {service.subcategory ? toTitleCase(service.subcategory) : toTitleCase(service.category)}
                                 </button>
                                 <ChevronRight className="h-4 w-4" />
                                 <span className="text-gray-800 font-medium">{service.name}</span>
