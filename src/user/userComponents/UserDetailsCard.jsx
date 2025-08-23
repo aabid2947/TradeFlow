@@ -90,6 +90,11 @@ const SimpleDataTable = ({ data, title }) => {
 
       if (value === null || value === undefined) continue;
 
+      // Skip arrays only
+      if (Array.isArray(value)) {
+        continue;
+      }
+
       const fullKey = prefix ? `${prefix}.${key}` : key;
 
       if (typeof value === 'object' && !Array.isArray(value)) {
@@ -170,10 +175,30 @@ const generatePDF = (result, serviceName = 'Verification') => {
     if (!obj || typeof obj !== 'object') return [];
     return Object.entries(obj).reduce((acc, [key, value]) => {
       const newKey = prefix ? `${prefix} → ${toTitleCase(key)}` : toTitleCase(key);
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
+      
+      // Skip if key contains base64 image file reference
+      if (key.toLowerCase().includes('base64')) {
+        return acc;
+      }
+      
+      // Skip metadata fields
+      if (key.toLowerCase().includes('metadata')) {
+        return acc;
+      }
+      
+      // Skip arrays as they display as "[object Object]"
+      if (Array.isArray(value)) {
+        return acc;
+      }
+      
+      if (value && typeof value === 'object') {
         acc.push(...flattenDetailsForDisplay(value, newKey));
       } else {
-        acc.push({ key: newKey, value });
+        // Truncate value if it's longer than 20 characters
+        const displayValue = value && value.toString().length > 20 
+          ? value.toString().substring(0, 20) + '...' 
+          : value;
+        acc.push({ key: newKey, value: displayValue });
       }
       return acc;
     }, []);

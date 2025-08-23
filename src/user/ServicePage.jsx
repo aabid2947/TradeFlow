@@ -38,7 +38,7 @@ export default function ServicePage() {
 
   const { refetch: refetchUserProfile } = useGetProfileQuery();
   const userInfo = useSelector(selectCurrentUser);
-  console.log(userInfo)
+
   const { data: servicesResponse, isLoading: isLoadingServices } = useGetServicesQuery();
   const { data: pricingPlansResponse, isLoading: isLoadingPricing } = useGetPricingPlansQuery();
 
