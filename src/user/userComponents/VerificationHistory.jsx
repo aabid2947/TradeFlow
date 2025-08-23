@@ -73,9 +73,8 @@ const findDetailsObject = (data) => {
   return detailsKey ? data[detailsKey] : null;
 };
 
-// PDF Generation Function (synchronized with UserDetailsCard.jsx)
+// PDF Generation Function (Enhanced with Perfect UI)
 const generatePDF = (result) => {
-  const reportElement = document.createElement('div');
   const serviceName = result.service?.name || 'Verification';
   
   // Use the same data extraction logic as UserDetailsCard.jsx
@@ -85,131 +84,280 @@ const generatePDF = (result) => {
   const flattenDetailsForDisplay = (obj, prefix = '') => {
     if (!obj || typeof obj !== 'object') return [];
     return Object.entries(obj).reduce((acc, [key, value]) => {
-      const newKey = prefix ? `${prefix} → ${toTitleCase(key)}` : toTitleCase(key);
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const newKey = toTitleCase(key);
+      
+      // Skip if key contains base64 image file reference
+      if (key.toLowerCase().includes('base64')) {
+        return acc;
+      }
+      
+      // Skip metadata fields
+      if (key.toLowerCase().includes('metadata')) {
+        return acc;
+      }
+      
+      // Skip arrays as they display as "[object Object]"
+      if (Array.isArray(value)) {
+        return acc;
+      }
+      
+      if (value && typeof value === 'object') {
         acc.push(...flattenDetailsForDisplay(value, newKey));
       } else {
-        acc.push({ key: newKey, value });
+        // Show full value without truncation
+        const displayValue = value || '';
+        acc.push({ key: newKey, value: displayValue });
       }
       return acc;
     }, []);
   };
-  
+
   const allDetails = details ? flattenDetailsForDisplay(details) : [];
-  
-  // The HTML and CSS structure is now identical to UserDetailsCard.jsx
-  reportElement.innerHTML = `
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>${serviceName} Verification Report</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-            body { font-family: 'Roboto', Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 0; background-color: #fff; }
-            .report-container { width: 550px; padding: 40px; background: #fff; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-            .logo { width: 120px; height: 50px;object-fit:contain }
-            .company-info { text-align: right; font-size: 11px; color: #555; }
-            .company-info h3 { margin: 0 0 5px 0; color: #111; font-size: 14px; font-weight: 700; }
-            .title-section { padding: 25px 0; text-align: center; }
-            .title-section h1 { font-size: 22px; color: #1a202c; margin: 0 0 8px 0; font-weight: 700; }
-            .title-section p { font-size: 14px; color: #4a5568; margin: 0; }
-            .current-date { text-align: right; margin-bottom: 20px; font-size: 11px; color: #718096; }
-            .data-table { width: 100%; border-collapse: collapse; }
-            .data-table tr { border-bottom: 1px solid #edf2f7; }
-            .data-table tr:last-child { border-bottom: none; }
-            .data-table td { padding: 12px 0; vertical-align: top; }
-            .data-table td:first-child { font-weight: 500; width: 45%; color: #4a5568; }
-            .data-table td:last-child { color: #1a202c; font-weight: 500; }
-            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #718096; }
-            .footer h4 { font-size: 11px; font-weight: 700; color: #2d3748; margin-bottom: 10px; }
-            .footer p { margin-bottom: 8px; text-align: justify; line-height: 1.6; }
-            .confidential { text-align: center; font-weight: bold; color: #c53030; margin-top: 20px; font-size: 10px; letter-spacing: 0.5px; }
-        </style>
-    </head>
-    <body>
-        <div class="report-container">
-            <div class="header">
-                <img src="${VerifyMyKyc}" alt="Company Logo" class="logo"/>
-                <div class="company-info"><h3>Verify My KYC</h3><p>A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p></div>
+  // Get only the first 10 fields for display
+  let displayDetails = allDetails;
+  if(allDetails.length > 10) {
+       displayDetails = allDetails.slice(0, 10);
+  }
+
+  // Enhanced html2canvas with separate pages
+  const generateWithEnhancedCanvas = () => {
+    // Create First Page (Verification Data)
+    const createFirstPage = () => {
+      const firstPageElement = document.createElement('div');
+      firstPageElement.innerHTML = `
+        <div class="report-container" style="
+          font-family: 'Roboto', Arial, sans-serif; 
+          font-size: 18px; 
+          color: #333; 
+          margin: 0; 
+          padding: 8px; 
+          background: #fff; 
+          width: 800px;
+          max-width: 800px;
+          line-height: 1.6;
+          box-sizing: border-box;
+          height: 1000px;
+        ">
+          <div class="header" style="
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            padding-bottom: 8px; 
+            border-bottom: 3px solid #e5e7eb; 
+            margin-bottom: 0px;
+          ">
+            <img style="height:80px;width:240px;margin-left:-8px" src="${VerifyMyKyc}" alt="Company Logo"/>
+            <div class="company-info" style="text-align: right; font-size: 16px; color: #555;">
+              <h3 style="margin: 0 0 0px 0; color: #111; font-size: 24px; font-weight: 700;">Navigant Digital Pvt. Ltd.</h3>
+              <p style="margin: 0; line-height: 1.7;">A-24/5, Mohan Cooperative Industrial Area,<br>Badarpur, Second Floor,<br>New Delhi 110044</p>
             </div>
-            <div class="title-section"><h1>Verification Report</h1><p>${serviceName} Status</p></div>
-            <div class="current-date"><strong>Date of Report:</strong> ${currentDate}</div>
-            <div class="data-section">
-                <table class="data-table"><tbody>
-                    ${allDetails.length > 0 ? allDetails.map(({ key, value }) => `<tr><td>${key}</td><td>${(value === null || value === undefined) ? 'N/A' : String(value)}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding: 20px;">No details available.</td></tr>'}
-                </tbody></table>
-            </div>
-            <div class="footer">
-                <h4>LEGAL DISCLAIMER</h4>
-                <p>All rights reserved. The report and its contents are the property of Verify My KYC and may not be reproduced in any manner without the express written permission of Verify My KYC.</p>
-                <p>The reports and information contained herein are confidential and are meant only for the internal use of the Verify My KYC client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.</p>
-                <p>Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. Verify My KYC expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice.</p>
-                <p>Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.</p>
-                <p>Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.</p>
-                <div class="confidential">- VERIFY MY KYC CONFIDENTIAL -</div>
-            </div>
+          </div>
+
+          <div class="title-section" style="padding: 0px 0; text-align: center; margin-bottom: 2px;">
+            <h1 style="font-size: 32px; color: #1a202c; margin: 0 0 0px 0; font-weight: 700;">${serviceName}</h1>
+            <p style="font-size: 12px; color: #4a5568; margin: 0; font-weight: 500;">Details of ${serviceName}: ${result.resultData?.document_number || result.resultData?.account_number || result.resultData?.pan_number || 'N/A'}</p>
+          </div>
+          
+          <div class="status-section" style="margin-bottom: 2px;">
+            <h2 style="font-size: 20px; color: #1a202c; margin: 0 0 0px 0; font-weight: 600; padding: 12px 0; border-bottom: 2px solid #e5e7eb;">
+              Know Your ${serviceName.replace(' Verification', '').replace(' Status', '')} Status
+            </h2>
+          </div>
+          
+          <div class="current-date" style="text-align: right; margin-bottom: 8px; font-size: 18px; color: #718096; font-weight: 500;">
+            <strong>Date of Report:</strong> ${currentDate}
+          </div>
+          
+          <div class="data-section" style="margin-bottom: 8px;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid #000;">
+              <tbody>
+                ${displayDetails.length > 0
+                  ? displayDetails.map(({ key, value }) =>
+                    `<tr style="border: 1px solid #000;">
+                      <td style="padding: 15px; vertical-align: top; font-weight: 700; width: 45%; color: #4a5568; word-wrap: break-word; font-size: 18px; line-height: 1.5; border: 1px solid #000;">
+                        ${key}
+                      </td>
+                      <td style="padding: 15px; color: #1a202c; font-weight: 500; word-wrap: break-word; font-size: 18px; width: 55%; line-height: 1.5; border: 1px solid #000;">
+                        ${(value === null || value === undefined) ? 'N/A' : String(value)}
+                      </td>
+                    </tr>`
+                  ).join('')
+                  : `<tr>
+                      <td colspan="2" style="text-align:center; padding: 50px; font-size: 20px; color: #718096; font-style: italic; border: 1px solid #000;">
+                        No details available.
+                      </td>
+                    </tr>`
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
-    </body></html>
-  `;
+      `;
+      return firstPageElement;
+    };
 
-  // Append to body to render it off-screen
-  document.body.appendChild(reportElement);
-  
-  const elementToCapture = reportElement.querySelector('.report-container');
+    // Create Second Page (Legal Disclaimer)
+    const createSecondPage = () => {
+      const secondPageElement = document.createElement('div');
+      secondPageElement.innerHTML = `
+        <div class="report-container" style="
+          font-family: 'Roboto', Arial, sans-serif; 
+          font-size: 18px; 
+          color: #333; 
+          margin: 0; 
+          padding: 20px; 
+          background: #fff; 
+          width: 800px;
+          max-width: 800px;
+          line-height: 1.6;
+          box-sizing: border-box;
+          height: 1000px;
+        ">
+          <div class="header" style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #e5e7eb;">
+            <h1 style="font-size: 28px; color: #1a202c; margin: 0; font-weight: 700;">LEGAL DISCLAIMER</h1>
+          </div>
+          
+          <div class="disclaimer-content" style="font-size: 14px; color: #718096; line-height: 1.8;">
+            <p style="margin-bottom: 18px; text-align: justify;">
+              All rights reserved. The report and its contents are the property of VerifyMyKyc (operated by Navigant Digital Pvt. Ltd.) and may not be reproduced in any manner without the express written permission of VerifyMyKyc.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              The reports and information contained herein are confidential and are meant only for the internal use of the VerifyMyKyc client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. VerifyMyKyc expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice. No warranty of any kind implied, express, or statutory including but not limited to the warranties of non-infringement of third party rights, title, merchantability, fitness for a particular purpose or freedom from computer virus, is given with respect to the contents of this report.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.
+            </p>
+            <p style="margin-bottom: 18px; text-align: justify;">
+              These reports are not intended for publication or circulation. They should not be shared with any person, entity, association, corporation, or any other purposes, in whole or in part, without prior written consent from VerifyMyKyc in each specific instance. Our reports cannot be used by clients to claim all responsibility or liability that may arise due to omissions, additions, correction, and accuracy. All the information has been obtained from various sources as per industry practice to make an informed decision, and we hereby disclaim all responsibility or liability that may arise due to errors in the report.
+            </p>
+            <p style="margin-bottom: 30px; text-align: justify;">
+              Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.
+            </p>
+          </div>
+          
+          <div class="confidential" style="
+            text-align: center; 
+            font-weight: bold; 
+            color: #c53030; 
+            margin-top: 60px; 
+            font-size: 16px; 
+            letter-spacing: 1px;
+            padding: 25px 0;
+            border-top: 1px solid #e5e7eb;
+          ">
+            - VerifyMyKyc CONFIDENTIAL -
+          </div>
+        </div>
+      `;
+      return secondPageElement;
+    };
 
-  if (elementToCapture) {
-      html2canvas(elementToCapture, { 
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        // These options are key to capturing the entire element, not just the visible part
-        height: elementToCapture.scrollHeight,
-        windowHeight: elementToCapture.scrollHeight
-      }).then(canvas => {
-          try {
-              const imgData = canvas.toDataURL('image/png');
-              const pdf = new jsPDF('p', 'mm', 'a4');
-              
-              const pdfWidth = pdf.internal.pageSize.getWidth();
-              const pdfHeight = pdf.internal.pageSize.getHeight();
-              
-              const canvasWidth = canvas.width;
-              const canvasHeight = canvas.height;
-              
-              const ratio = canvasWidth / canvasHeight;
-              const imgHeight = pdfWidth / ratio;
-              
-              let heightLeft = imgHeight;
-              let position = 0;
-              let page = 1;
+    // Generate both pages and merge them
+    const generateCombinedPDF = async () => {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pdfWidth - (margin * 2);
+      const contentHeight = pdfHeight - (margin * 2);
 
-              // Add the first page
-              pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-              heightLeft -= pdfHeight;
+      try {
+        // Generate First Page
+        const firstPageElement = createFirstPage();
+        document.body.appendChild(firstPageElement);
+        
+        const firstPageCanvas = await html2canvas(firstPageElement.querySelector('.report-container'), {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 800,
+          height: 1000,
+          windowWidth: 800,
+          windowHeight: 1000
+        });
 
-              // Add more pages if the content is longer than one page
-              while (heightLeft > 0) {
-                  position = -pdfHeight * page;
-                  pdf.addPage();
-                  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                  heightLeft -= pdfHeight;
-                  page++;
-              }
-              
-              pdf.save(`Verification_Report_${serviceName.replace(/\s+/g, '_')}.pdf`);
-          } catch (e) {
-              console.error("Error creating PDF:", e);
-          } finally {
-              document.body.removeChild(reportElement);
+        const firstPageData = firstPageCanvas.toDataURL('image/png', 1.0);
+        
+        // Add first page to PDF
+        const firstPageAspectRatio = firstPageCanvas.height / firstPageCanvas.width;
+        const firstPageHeight = contentWidth * firstPageAspectRatio;
+        
+        pdf.addImage(
+          firstPageData,
+          'PNG',
+          margin,
+          margin,
+          contentWidth,
+          Math.min(firstPageHeight, contentHeight)
+        );
+
+        // Generate Second Page
+        const secondPageElement = createSecondPage();
+        document.body.appendChild(secondPageElement);
+        
+        const secondPageCanvas = await html2canvas(secondPageElement.querySelector('.report-container'), {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 800,
+          height: 1000,
+          windowWidth: 800,
+          windowHeight: 1000
+        });
+
+        const secondPageData = secondPageCanvas.toDataURL('image/png', 1.0);
+        
+        // Add second page to PDF
+        pdf.addPage();
+        const secondPageAspectRatio = secondPageCanvas.height / secondPageCanvas.width;
+        const secondPageHeight = contentWidth * secondPageAspectRatio;
+        
+        pdf.addImage(
+          secondPageData,
+          'PNG',
+          margin,
+          margin,
+          contentWidth,
+          Math.min(secondPageHeight, contentHeight)
+        );
+
+        // Clean up DOM elements
+        if (document.body.contains(firstPageElement)) {
+          document.body.removeChild(firstPageElement);
+        }
+        if (document.body.contains(secondPageElement)) {
+          document.body.removeChild(secondPageElement);
+        }
+
+        // Save the PDF
+        const fileName = `${serviceName.replace(/\s+/g, '_')}_Verification_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        // Clean up in case of error
+        const elements = document.querySelectorAll('.report-container');
+        elements.forEach(el => {
+          if (document.body.contains(el.parentElement)) {
+            document.body.removeChild(el.parentElement);
           }
-      }).catch(err => {
-          console.error("html2canvas failed:", err);
-          if (document.body.contains(reportElement)) {
-              document.body.removeChild(reportElement);
-          }
-      });
-  } else {
-      console.error("Could not find element to capture for PDF generation.");
+        });
+      }
+    };
+
+    generateCombinedPDF();
+  };
+
+  // Use the enhanced canvas method with separate pages
+  try {
+    generateWithEnhancedCanvas();
+  } catch (error) {
+    console.error("PDF generation failed:", error);
   }
 };
 

@@ -199,7 +199,7 @@ const generatePDF = (result, serviceName = 'Verification') => {
   const flattenDetailsForDisplay = (obj, prefix = '') => {
     if (!obj || typeof obj !== 'object') return [];
     return Object.entries(obj).reduce((acc, [key, value]) => {
-      const newKey = prefix ? `${prefix} → ${toTitleCase(key)}` : toTitleCase(key);
+      const newKey = toTitleCase(key);
       
       // Skip if key contains base64 image file reference
       if (key.toLowerCase().includes('base64')) {

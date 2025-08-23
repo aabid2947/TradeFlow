@@ -201,6 +201,48 @@ const CustomCardContent = ({ children }) => {
     );
 };
 
+// Function to get available financial years (current and past only)
+const getFinancialYears = () => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11
+    
+    // Financial year in India runs from April to March
+    // If current month is April (3) or later, current FY is currentYear-currentYear+1
+    // If current month is Jan-Mar, current FY is (currentYear-1)-currentYear
+    const currentFY = currentMonth >= 3 ? currentYear : currentYear - 1;
+    
+    const years = [];
+    // Generate past 10 financial years including current
+    for (let i = 0; i <= 10; i++) {
+        const startYear = currentFY - i;
+        const endYear = startYear + 1;
+        years.push(`${startYear}-${endYear.toString().slice(-2)}`);
+    }
+    
+    return years;
+};
+
+// Custom Select Component for Financial Year
+const CustomSelect = ({ id, name, value, onChange, required, children, className = "" }) => {
+    return (
+        <select
+            id={id}
+            name={name}
+            value={value}
+            onChange={onChange}
+            required={required}
+            className={`
+                w-full px-3 py-2.5 border border-gray-300 rounded-lg
+                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
+                transition-all duration-200 bg-white
+                ${className}
+            `}
+        >
+            {children}
+        </select>
+    );
+};
+
 const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     const [formData, setFormData] = useState({});
     const [consentChecked, setConsentChecked] = useState(false);
@@ -373,6 +415,33 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                                     </div>
                                 );
                             }
+                            
+                            // **NEW** Special handling for financial_year field
+                            if (label === 'Financial Year (eg: 2024-25)') {
+                                const financialYears = getFinancialYears();
+                                return (
+                                    <div key={name} className="space-y-1">
+                                        <CustomLabel htmlFor={name}>
+                                            {label || 'Financial Year'} <span className="text-red-500">*</span>
+                                        </CustomLabel>
+                                        <CustomSelect
+                                            id={name}
+                                            name={name}
+                                            value={formData[name] || ''}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
+                                            <option value="">Select Financial Year</option>
+                                            {financialYears.map((year) => (
+                                                <option key={year} value={year}>
+                                                    {year}
+                                                </option>
+                                            ))}
+                                        </CustomSelect>
+                                    </div>
+                                );
+                            }
+                            
                             // Existing logic for text-based inputs
                             return (
                                 <div key={name} className="space-y-1">
