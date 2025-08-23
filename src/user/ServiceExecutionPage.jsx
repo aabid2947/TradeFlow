@@ -154,42 +154,42 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     // **UPDATED** handleInputChange now supports file inputs and base64 conversion
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
-        console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
+        // console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
         
         if (type === 'file') {
             const file = files[0];
             // Check if this is a base64 field (regardless of what type is specified in service config)
             if (file && (name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64'))) {
-                console.log('🖼️ Processing base64 field:', name);
+                // console.log('🖼️ Processing base64 field:', name);
                 // Convert image to base64 for base64data field
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     let base64String = event.target.result;
                     
                     // Debug: Log the original base64 string
-                    console.log('🖼️ Original base64 from FileReader for field', name, ':', base64String.substring(0, 100) + '...');
+                    // console.log('🖼️ Original base64 from FileReader for field', name, ':', base64String.substring(0, 100) + '...');
                     
                     // Extract just the base64 part (remove data:image/jpeg;base64, prefix)
                     if (base64String.includes(',')) {
                         base64String = base64String.split(',')[1];
-                        console.log('🔧 Extracted base64 for field', name, '(without prefix):', base64String.substring(0, 100) + '...');
+                        // console.log('🔧 Extracted base64 for field', name, '(without prefix):', base64String.substring(0, 100) + '...');
                     }
                     
-                    console.log('💾 Updating formData for field:', name);
+                    // console.log('💾 Updating formData for field:', name);
                     setFormData((prev) => {
                         const newData = { ...prev, [name]: base64String };
-                        console.log('📊 Updated form state:', Object.keys(newData));
+                        // console.log('📊 Updated form state:', Object.keys(newData));
                         return newData;
                     });
                 };
                 reader.readAsDataURL(file);
             } else {
-                console.log('📎 Processing regular file field:', name);
+                // console.log('📎 Processing regular file field:', name);
                 // Regular file handling for other file inputs
                 setFormData((prev) => ({ ...prev, [name]: file || null }));
             }
         } else {
-            console.log('✏️ Processing text field:', name);
+            // console.log('✏️ Processing text field:', name);
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
@@ -223,7 +223,7 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                             const isBase64Field = name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64');
                             
                             if (isBase64Field) {
-                                console.log('🎯 Rendering base64 field:', { name, type, label });
+                                // console.log('🎯 Rendering base64 field:', { name, type, label });
                                 const imageData = formData[name];
                                 return (
                                     <div key={name} className="space-y-1">
@@ -370,11 +370,12 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
 const isVerificationSuccessful = (result) => {
     if (!result || !result.data) return false;
     const apiData = result.data;
+    console.log("tre",apiData)
 
     // First check for explicit error codes
-    const errorCodes = ['1004', '1001', '1003', '1005', '1006', '404', '400'];
+    const errorCodes = [ '404', '400'];
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
-    if (apiData.status === 'INVALID') return false;
+    // if (apiData.status === 'INVALID') return false;
 
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
@@ -499,7 +500,7 @@ export default function ServiceExecutionPage() {
         };
         
         const mappedCategory = categoryMapping[serviceCategory] || serviceCategory || serviceSubcategory;
-        console.log('📍 Final mapped category:', mappedCategory);
+        // console.log('📍 Final mapped category:', mappedCategory);
         return mappedCategory;
     }, [service, serviceKey]);
 
@@ -563,16 +564,16 @@ export default function ServiceExecutionPage() {
                 finalPayload.append(key, payload[key]);
             }
         }
-        console.log('📤 Sending regular file FormData to backend');
+        // console.log('📤 Sending regular file FormData to backend');
     } else if (hasBase64Data && !hasFileUpload) {
         // Base64 data - send as JSON
         finalPayload = payload;
-        console.log('📤 Sending base64 JSON to backend:', {
-            ...payload,
-            // Don't log full base64 string, just show preview
-            ...(payload.base64data && { base64data: payload.base64data.substring(0, 50) + '...' }),
-            ...(payload.base64_data && { base64_data: payload.base64_data.substring(0, 50) + '...' })
-        });
+        // console.log('📤 Sending base64 JSON to backend:', {
+        //     ...payload,
+        //     // Don't log full base64 string, just show preview
+        //     ...(payload.base64data && { base64data: payload.base64data.substring(0, 50) + '...' }),
+        //     ...(payload.base64_data && { base64_data: payload.base64_data.substring(0, 50) + '...' })
+        // });
     } else if (hasFileUpload && hasBase64Data) {
         // Mixed case - use FormData but base64 will be string
         finalPayload = new FormData();
@@ -582,11 +583,11 @@ export default function ServiceExecutionPage() {
                 finalPayload.append(key, payload[key]);
             }
         }
-        console.log('📤 Sending mixed FormData (files + base64) to backend');
+        // console.log('📤 Sending mixed FormData (files + base64) to backend');
     } else {
         // No file uploads - send as regular JSON
         finalPayload = payload;
-        console.log('📤 Sending regular JSON to backend:', payload);
+        // console.log('📤 Sending regular JSON to backend:', payload);
     }
     
     // --- Safe Debugging Logic ---
