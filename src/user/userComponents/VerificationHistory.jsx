@@ -17,7 +17,11 @@ import VerifyMyKyc from "@/assets/VerifyMyKyc.svg";
 // Helper function to format keys into titles (from UserDetailsCard.jsx)
 const toTitleCase = (str) => {
   if (!str) return "";
-  return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => {
+    if (!txt || txt.length === 0) return txt;
+    const remaining = txt.substr(1);
+    return txt.charAt(0).toUpperCase() + (remaining ? remaining.toLowerCase() : '');
+  });
 };
 
 // Enhanced function to find the main data object within the API response (from UserDetailsCard.jsx)
