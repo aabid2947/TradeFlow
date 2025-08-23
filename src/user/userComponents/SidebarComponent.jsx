@@ -167,10 +167,12 @@ export default function SidebarComponent({
         aria-hidden="true"
       />
 
-      <aside
-        className={`fixed left-0 z-40 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${isOpen ? "w-64" : "w-20"} ${isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'}`}
-        style={{ top: '73px', height: 'calc(100vh - 73px)'}}
-      >
+     <aside
+  className={`fixed left-0 z-40 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 transition-all duration-300 ease-out ${isOpen ? "w-64" : "w-20"} ${isOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full'}`}
+  style={{ top: window.innerWidth < 768 ? '64px' : '73px', height: 'calc(100vh - 73px)'}}
+>
+
+
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto modern-scrollbar py-4">
             <div className="mb-6 w-full px-2">
