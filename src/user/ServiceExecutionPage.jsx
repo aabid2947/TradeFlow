@@ -582,7 +582,7 @@ const isVerificationSuccessful = (result) => {
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
         ' not ',
-        ' no ',
+        // ' no ',
         'no record',
         'not found',
         'not valid',
