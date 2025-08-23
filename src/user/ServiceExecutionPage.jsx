@@ -282,21 +282,64 @@ const isVerificationSuccessful = (result) => {
     if (!result || !result.data) return false;
     const apiData = result.data;
 
+    // First check for explicit error codes
     const errorCodes = ['1004', '1001', '1003', '1005', '1006', '404', '400'];
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     if (apiData.status === 'INVALID') return false;
 
-    // Positive success indicators
+    // Define negative words/phrases that indicate failure
+    const negativeWords = [
+        'no',
+        'not',
+        'does not',
+        'doesn\'t',
+        'cannot',
+        'can\'t',
+        'failed',
+        'failure',
+        'error',
+        'invalid',
+        'incorrect',
+        'mismatch',
+        'not found',
+        'not valid',
+        'not verified',
+        'no record',
+        'no match',
+        'no data',
+        'unavailable',
+        'denied',
+        'rejected',
+        'blocked',
+        'suspended',
+        'inactive',
+        'expired',
+        'cancelled'
+    ];
+
+    // Check if the response contains negative indicators
+    const responseText = JSON.stringify(apiData).toLowerCase();
+    const hasNegativeWord = negativeWords.some(word => responseText.includes(word));
+    
+    // If negative words are found, treat as error
+    if (hasNegativeWord) {
+        console.log('Verification failed: Negative indicators found in response', apiData);
+        return false;
+    }
+
+    // Positive success indicators (only check if no negative words found)
     if (result.success === true) return true;
     if (apiData.message) {
         const message = apiData.message.toLowerCase();
         if (message.includes('verified successfully')) return true;
-        if (message.includes('record found')) return true; // Fix for "1 record found"
+        if (message.includes('record found')) return true;
+        if (message.includes('verification successful')) return true;
     }
     if (apiData.status === 'VALID' || apiData.status === 'ACTIVE' || apiData.verified === true || apiData.account_exists === true) return true;
     if (String(apiData.code) === '1000') return true;
 
-    return false;
+    // If no negative words and some positive indicators, consider successful
+    return true;
 };
 
 

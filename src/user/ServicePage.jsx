@@ -54,10 +54,32 @@ export default function ServicePage() {
 
   const parentCategory = useMemo(() => {
     if (filteredServices.length > 0) {
-      return filteredServices[0].category;
+      const serviceCategory = filteredServices[0].category;
+      console.log('🔍 ServicePage Debug:', {
+        subcategory,
+        serviceCategory,
+        service: filteredServices[0]
+      });
+      if(subcategory === 'Employer Verification' || serviceCategory === 'Employer Verification'){
+        return 'Employer Verification';
+      }
+      
+      // Map backend categories to sidebar labels
+      const categoryMapping = {
+        'Employer Verification': 'Employer Verification',
+        'Identity': 'Identity Verification', 
+        'Financial': 'Financial & Business Checks',
+        'Legal': 'Legal & Compliance Checks',
+        'Biometric': 'Biometric & AI-Based Verification',
+        'Profile': 'Profile & Database Lookup'
+      };
+      
+      const mappedCategory = categoryMapping[serviceCategory] || serviceCategory;
+      console.log('📍 Category mapping:', serviceCategory, '→', mappedCategory);
+      return mappedCategory;
     }
     return null;
-  }, [filteredServices]);
+  }, [filteredServices, subcategory]);
 
   //Enhanced subscription logic to check static plans (Personal, Professional, etc.)
   const subscriptionInfo = useMemo(() => {

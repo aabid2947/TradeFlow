@@ -206,15 +206,30 @@ export default function SidebarComponent({
 
               {isServicesOpen && (
                 <div className="mt-2 space-y-0.5 pb-2">
-                  {serviceCategories.map((category) => (
-                    <SubMenuButton
-                      key={category.value}
-                      icon={category.icon}
-                      label={category.label}
-                      isActive={activeView === "services" && activeCategory === category.label}
-                      onClick={() => onCategorySelect(category.label)}
-                    />
-                  ))}
+                  {serviceCategories.map((category) => {
+                    const isActive = activeView === "services" && activeCategory === category.label;
+                    
+                    // Debug logging for category matching
+                    if (category.label === 'Employer Verification') {
+                      console.log('🎯 Sidebar Debug - Employer Verification:', {
+                        activeView,
+                        activeCategory,
+                        categoryLabel: category.label,
+                        isActive,
+                        comparison: `"${activeCategory}" === "${category.label}"`
+                      });
+                    }
+                    
+                    return (
+                      <SubMenuButton
+                        key={category.value}
+                        icon={category.icon}
+                        label={category.label}
+                        isActive={isActive}
+                        onClick={() => onCategorySelect(category.label)}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

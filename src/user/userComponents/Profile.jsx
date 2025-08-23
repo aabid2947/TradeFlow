@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
-import { 
-    MoreVertical, Bell, Edit3, Check, X, User, Mail, ShieldCheck, AlertTriangle, CreditCard, 
+import {
+    MoreVertical, Bell, Edit3, Check, X, User, Mail, ShieldCheck, AlertTriangle, CreditCard,
     Activity, Shield, Award, Settings, Phone, CheckCircle, XCircle, Crown, Upload, Loader2
 } from "lucide-react"
 import { useSelector } from "react-redux"
@@ -13,6 +13,21 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+// Generate a random color for the avatar background (same as header)
+const generateRandomColor = (name) => {
+    if (!name) return '#1987BF';
+
+    const colors = [
+        '#1987BF', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+        '#1abc9c', '#34495e', '#e67e22', '#3498db', '#8e44ad',
+        '#27ae60', '#f1c40f', '#e74c3c', '#95a5a6', '#d35400'
+    ];
+
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+};
 
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -35,6 +50,9 @@ export default function Profile() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
+
+    // Generate avatar background color
+    const avatarBgColor = generateRandomColor(user?.name);
 
     useEffect(() => {
         if (!user?._id || !user.activeSubscriptions) return;
@@ -96,7 +114,7 @@ export default function Profile() {
         setEditedName(e.target.value);
         if (error) setError("");
     }
-    
+
     // --- NEW: Handlers for avatar upload ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -139,7 +157,7 @@ export default function Profile() {
     ];
 
     const paidSubCategories = user?.activeSubscriptions?.map(sub => sub.category) || [];
-    
+
     const promotedSubs = user?.promotedCategories
         ?.filter(cat => !paidSubCategories.includes(cat))
         .map(cat => ({
@@ -148,8 +166,8 @@ export default function Profile() {
             expiresAt: 'Never',
             type: 'promoted'
         })) || [];
-        
-    const paidSubs = user?.activeSubscriptions?.map(sub => ({...sub, type: 'paid'})) || [];
+
+    const paidSubs = user?.activeSubscriptions?.map(sub => ({ ...sub, type: 'paid' })) || [];
     const combinedSubscriptions = [...paidSubs, ...promotedSubs];
 
 
@@ -157,65 +175,87 @@ export default function Profile() {
         <>
             <div className="space-y-6 mt-6">
                 <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                
-                <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                    <CardHeader className=" p-6 border-b border-blue-100 flex-col md:flex-row items-center gap-6">
-                         <div className="relative group">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                                accept="image/png, image/jpeg, image/gif"
-                                className="hidden"
-                            />
-                            <div className="h-24 w-24 border-4 border-white ring-4 ring-blue-500/20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                <img 
-                                    src={imagePreview || user?.avatar || userPic} 
-                                    alt={`${user?.name} profile picture`} 
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploadingAvatar}
-                                className="absolute inset-0 bg-black/50 w-24 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            >
-                                {isUploadingAvatar ? (
-                                    <Loader2 className="w-6 h-6 text-white animate-spin"/>
-                                ) : (
-                                    <Upload className="w-6 h-6 text-white"/>
-                                )}
-                            </button>
-                         </div>
 
-                         <div className="flex-1 text-center md:text-left">
-                            {imagePreview ? (
-                                <div className="flex items-center justify-center md:justify-start gap-2">
-                                    <Button size="sm" onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
-                                        {isUploadingAvatar ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Saving...</> : <><Check className="w-4 h-4 mr-2"/> Save</>}
-                                    </Button>
-                                    <Button size="sm" variant="ghost" onClick={handleCancelAvatar} disabled={isUploadingAvatar}>
-                                        <X className="w-4 h-4 mr-2"/> Cancel
-                                    </Button>
-                                </div>
-                            ) : (
-                                <>
-                                    <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
-                                    <p className="text-gray-600">{user?.email}</p>
-                                </>
-                            )}
-                            <div className="flex items-center justify-center md:justify-start space-x-2 mt-2">
-                               {user?.role === 'admin' && <Badge variant="secondary" className="bg-purple-100 text-purple-700"><Crown className="w-3 h-3 mr-1" />Admin</Badge>}
-                               <Badge variant={user?.isVerified ? 'default' : 'destructive'}>
-                                   {user?.isVerified ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
-                                   {user?.isVerified ? 'Verified' : 'Unverified'}
-                               </Badge>
+                <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="p-4 border-b border-blue-100 flex flex-row items-center justify-between gap-4">
+                        {/* ===== START: Left-side content group ===== */}
+                        <div className="flex items-center gap-4">
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    accept="image/png, image/jpeg, image/gif"
+                                    className="hidden"
+                                />
+                                <Avatar className="h-16 w-16 border-2 border-white ring-2 ring-blue-500/20">
+                                    {(imagePreview || (user?.avatar && user.avatar.trim() !== '')) && (
+                                        <AvatarImage
+                                            src={imagePreview || user?.avatar}
+                                            alt={`${user?.name} profile picture`}
+                                        />
+                                    )}
+                                    <AvatarFallback
+                                        className="text-white text-lg font-medium"
+                                        style={{ backgroundColor: avatarBgColor }}
+                                    >
+                                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploadingAvatar}
+                                    className="absolute inset-0 bg-black/50 w-16 h-16 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                >
+                                    {isUploadingAvatar ? (
+                                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                    ) : (
+                                        <Upload className="w-4 h-4 text-white" />
+                                    )}
+                                </button>
                             </div>
-                         </div>
-                         <Button onClick={handleEditClick} disabled={isUploadingAvatar} className="bg-white text-gray-800 border shadow-sm hover:bg-gray-50">
-                            <Edit3 className="w-4 h-4 mr-2" />
-                            Edit Profile
-                        </Button>
+
+                            {/* User Info / Upload Actions */}
+                            <div>
+                                {imagePreview ? (
+                                    <div className="flex items-center gap-2">
+                                        <Button size="sm" onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
+                                            {isUploadingAvatar ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Saving...</> : <><Check className="w-4 h-4 mr-1" /> Save</>}
+                                        </Button>
+                                        <Button size="sm" variant="ghost" onClick={handleCancelAvatar} disabled={isUploadingAvatar}>
+                                            <X className="w-4 h-4 mr-1" /> Cancel
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                                        <p className="text-sm text-gray-600">{user?.email}</p>
+                                        <div className="flex items-center space-x-2 mt-1">
+                                            {user?.role === 'admin' && <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs"><Crown className="w-3 h-3 mr-1" />Admin</Badge>}
+                                            <Badge variant={user?.isVerified ? 'default' : 'destructive'} className="text-xs">
+                                                {user?.isVerified ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                                                {user?.isVerified ? 'Verified' : 'Unverified'}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {/* ===== END: Left-side content group ===== */}
+
+                        {/* ===== START: Right-side Edit Button (conditionally rendered) ===== */}
+                        {!imagePreview && (
+                            <Button
+                                size="sm"
+                                onClick={handleEditClick}
+                                disabled={isUploadingAvatar}
+                                className="bg-white text-gray-800 border shadow-sm hover:bg-gray-50 px-3 py-1 text-sm flex-shrink-0"
+                            >
+                                <Edit3 className="w-3 h-3 mr-1" />
+                                Edit
+                            </Button>
+                        )}
+                        {/* ===== END: Right-side Edit Button ===== */}
                     </CardHeader>
 
                     {/* Tabs */}
@@ -230,7 +270,7 @@ export default function Profile() {
                             ))}
                         </div>
                     </div>
-                    
+
                     {/* Tab Content (No changes needed below this line) */}
                     <CardContent className="p-6">
                         {activeTab === 'overview' && (
@@ -247,7 +287,7 @@ export default function Profile() {
                                 </div>
                                 {user?.promotedCategories?.length > 0 && (
                                     <div className="md:col-span-2 space-y-3">
-                                        <h4 className="font-semibold text-gray-800 flex items-center gap-2"><Award className="w-4 h-4 text-yellow-600"/>Promoted Categories</h4>
+                                        <h4 className="font-semibold text-gray-800 flex items-center gap-2"><Award className="w-4 h-4 text-yellow-600" />Promoted Categories</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {user.promotedCategories.map(cat => <Badge key={cat} variant="secondary" className="bg-yellow-100 text-yellow-800">{cat.replace(/_/g, ' ')}</Badge>)}
                                         </div>
@@ -261,9 +301,9 @@ export default function Profile() {
                                     <div key={sub.category} className={`p-4 rounded-lg border flex flex-col sm:flex-row justify-between sm:items-center gap-2
                                         ${sub.type === 'paid' ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
                                         <div className="flex items-center gap-3">
-                                            {sub.type === 'paid' 
-                                                ? <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0"/> 
-                                                : <Award className="w-6 h-6 text-amber-600 flex-shrink-0"/>}
+                                            {sub.type === 'paid'
+                                                ? <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+                                                : <Award className="w-6 h-6 text-amber-600 flex-shrink-0" />}
                                             <div>
                                                 <p className={`font-semibold ${sub.type === 'paid' ? 'text-green-900' : 'text-amber-900'}`}>
                                                     {sub.category.replace(/_/g, " ")}
@@ -291,7 +331,7 @@ export default function Profile() {
                             </div>
                         )}
                         {activeTab === 'security' && (
-                           <div className="space-y-3">
+                            <div className="space-y-3">
                                 <div className="flex justify-between items-center p-3 border rounded-lg">
                                     <span className="text-gray-600">Password Status</span>
                                     <span className={user?.password ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>{user?.password ? 'Set' : 'Not Set (Google Sign-In)'}</span>
@@ -300,7 +340,7 @@ export default function Profile() {
                                     <span className="text-gray-600">Account Verified</span>
                                     <span className={user?.isVerified ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>{user?.isVerified ? 'Yes' : 'No'}</span>
                                 </div>
-                           </div>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
@@ -314,22 +354,26 @@ export default function Profile() {
                         onClick={(e) => e.target === e.currentTarget && handleCancelEdit()}>
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
                             className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl">
-                             <Button variant="ghost" size="icon" onClick={handleCancelEdit} className="absolute top-3 right-3 z-10"><X className="h-5 w-5"/></Button>
+                            <Button variant="ghost" size="icon" onClick={handleCancelEdit} className="absolute top-3 right-3 z-10"><X className="h-5 w-5" /></Button>
                             <div className="p-6 border-b"><h3 className="text-xl font-semibold">Edit Profile</h3></div>
                             <div className="p-6 space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"/>
+                                    <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Name</label>
-                                    <input type="text" value={editedName} onChange={handleNameChange} className={`w-full px-4 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`} autoFocus/>
+                                    <input type="text" value={editedName} onChange={handleNameChange} className={`w-full px-4 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`} autoFocus />
                                     {error && (<p className="text-sm text-red-600 mt-1">{error}</p>)}
                                 </div>
                             </div>
                             <div className="flex gap-3 p-4 bg-gray-50 border-t rounded-b-2xl">
                                 <Button variant="outline" className="flex-1" onClick={handleCancelEdit} disabled={isUpdatingProfile}>Cancel</Button>
-                                <Button className="flex-1" onClick={handleSaveName} disabled={isUpdatingProfile || !editedName.trim()}>
+                                <Button
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 hover:border-blue-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+                                    onClick={handleSaveName}
+                                    disabled={isUpdatingProfile || !editedName.trim()}
+                                >
                                     {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
                                 </Button>
                             </div>
