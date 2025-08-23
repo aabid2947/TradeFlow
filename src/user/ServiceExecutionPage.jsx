@@ -253,42 +253,97 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     // **UPDATED** handleInputChange now supports file inputs and base64 conversion
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
-        // console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
+        console.log('📝 Input change detected:', { name, type, hasFiles: !!files?.[0] });
         
         if (type === 'file') {
             const file = files[0];
+            
+            // Validate file for image uploads
+            if (file) {
+                console.log('📁 File details:', { 
+                    name: file.name, 
+                    size: file.size, 
+                    type: file.type, 
+                    fieldName: name 
+                });
+                
+                // Check file size (3MB = 3 * 1024 * 1024 bytes)
+                const maxSize = 3 * 1024 * 1024; // 3MB
+                if (file.size > maxSize) {
+                    setNotification({
+                        type: 'error',
+                        message: 'File size must be less than 3MB. Please choose a smaller file.'
+                    });
+                    // Clear the file input
+                    e.target.value = '';
+                    return;
+                }
+                
+                // Check file format for image uploads
+                const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+                if (!allowedTypes.includes(file.type)) {
+                    setNotification({
+                        type: 'error',
+                        message: 'Only PNG, JPG, and JPEG formats are allowed. Please choose a valid image file.'
+                    });
+                    // Clear the file input
+                    e.target.value = '';
+                    return;
+                }
+            }
+            
             // Check if this is a base64 field (regardless of what type is specified in service config)
             if (file && (name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64'))) {
-                // console.log('🖼️ Processing base64 field:', name);
+                console.log('🖼️ Processing base64 field:', name);
+                
+                // Create a closure to capture the current field name and timestamp for uniqueness
+                const currentFieldName = name;
+                const timestamp = Date.now();
+                console.log('🔐 Captured field name in closure:', currentFieldName, 'at', timestamp);
+                
                 // Convert image to base64 for base64data field
                 const reader = new FileReader();
                 reader.onload = (event) => {
+                    console.log('🎯 FileReader completed for field:', currentFieldName, 'at', timestamp);
                     let base64String = event.target.result;
                     
                     // Debug: Log the original base64 string
-                    // console.log('🖼️ Original base64 from FileReader for field', name, ':', base64String.substring(0, 100) + '...');
+                    console.log('🖼️ Original base64 from FileReader for field', currentFieldName, ':', base64String.substring(0, 100) + '...');
                     
                     // Extract just the base64 part (remove data:image/jpeg;base64, prefix)
                     if (base64String.includes(',')) {
                         base64String = base64String.split(',')[1];
-                        // console.log('🔧 Extracted base64 for field', name, '(without prefix):', base64String.substring(0, 100) + '...');
+                        console.log('🔧 Extracted base64 for field', currentFieldName, '(without prefix):', base64String.substring(0, 100) + '...');
                     }
                     
-                    // console.log('💾 Updating formData for field:', name);
+                    console.log('💾 Updating formData for field:', currentFieldName);
                     setFormData((prev) => {
-                        const newData = { ...prev, [name]: base64String };
-                        // console.log('📊 Updated form state:', Object.keys(newData));
+                        console.log('📥 Previous form data before update:', Object.keys(prev));
+                        const newData = { 
+                            ...prev, 
+                            [currentFieldName]: base64String 
+                        };
+                        console.log('📊 Updated form state fields:', Object.keys(newData));
+                        console.log('📊 Form data for field', currentFieldName, ':', newData[currentFieldName] ? 'Has data' : 'No data');
+                        
+                        // Log all base64 fields to see if multiple are being affected
+                        Object.keys(newData).forEach(key => {
+                            if (key.toLowerCase().includes('base64')) {
+                                console.log(`📋 Base64 field ${key}:`, newData[key] ? 'Has data' : 'No data');
+                            }
+                        });
+                        
                         return newData;
                     });
                 };
                 reader.readAsDataURL(file);
             } else {
-                // console.log('📎 Processing regular file field:', name);
+                console.log('📎 Processing regular file field:', name);
                 // Regular file handling for other file inputs
                 setFormData((prev) => ({ ...prev, [name]: file || null }));
             }
         } else {
-            // console.log('✏️ Processing text field:', name);
+            console.log('✏️ Processing text field:', name);
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
@@ -300,6 +355,13 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isFormFilled) {
+            console.log('🚀 Submitting form data:', formData);
+            console.log('🚀 All base64 fields in submission:');
+            Object.keys(formData).forEach(key => {
+                if (key.toLowerCase().includes('base64')) {
+                    console.log(`📤 ${key}:`, formData[key] ? 'Has data' : 'No data');
+                }
+            });
             onVerify({ ...formData });
         }
     };
@@ -321,14 +383,25 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                             // **NEW** Special handling for base64data field - always treat as image upload regardless of type
                             const isBase64Field = name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64');
                             
+                            console.log('🎯 Field analysis:', { 
+                                name, 
+                                type, 
+                                label, 
+                                isBase64Field,
+                                hasData: !!formData[name]
+                            });
+                            
                             if (isBase64Field) {
-                                // console.log('🎯 Rendering base64 field:', { name, type, label });
+                                console.log('🎯 Rendering base64 field:', { name, type, label });
                                 const imageData = formData[name];
                                 return (
                                     <div key={name} className="space-y-1">
                                         <CustomLabel htmlFor={name}>
                                             {label || 'Upload Image'} <span className="text-red-500">*</span>
                                         </CustomLabel>
+                                        <p className="text-xs text-gray-500 mb-2">
+                                            📁 File size must be less than 3MB. Supported formats: PNG, JPG, JPEG
+                                        </p>
                                         {!imageData ? (
                                             <div className="relative">
                                                 <input
@@ -382,6 +455,9 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                                         <CustomLabel htmlFor={name}>
                                             {label || toTitleCase(name)} <span className="text-red-500">*</span>
                                         </CustomLabel>
+                                        <p className="text-xs text-gray-500 mb-2">
+                                            📁 File size must be less than 3MB. Supported formats: PNG, JPG, JPEG
+                                        </p>
                                         {!file ? (
                                             <div className="relative">
                                                 <input
@@ -416,7 +492,7 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                                 );
                             }
                             
-                            // **NEW** Special handling for financial_year field
+
                             if (label === 'Financial Year (eg: 2024-25)') {
                                 const financialYears = getFinancialYears();
                                 return (
@@ -495,8 +571,8 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
 
 const isVerificationSuccessful = (result) => {
     console.log(result.data)
-    if (!result || !result.data) return false;
-    const apiData = result.data;
+    if (!result || !result.data || !result.ocr_data) return false;
+    const apiData = result.data || result.ocr_data;
 
     // First check for explicit error codes
     const errorCodes = [ '404', '400'];

@@ -1,14 +1,17 @@
 const isVerificationSuccessful = (apiData) => {
+    // console.log(result.data)
     // if (!result || !result.data) return false;
     // const apiData = result.data;
 
-    // // First check for explicit error codes
-    // const errorCodes = ['1004', '1001', '1003', '1005', '1006', '404', '400'];
+    // First check for explicit error codes
+    // const errorCodes = [ '404', '400'];
     // if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     // if (apiData.status === 'INVALID') return false;
 
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
+        ' not ',
+        ' no ',
         'no record',
         'not found',
         'not valid',
@@ -46,7 +49,7 @@ const isVerificationSuccessful = (apiData) => {
     ];
 
     // Check if the response contains negative indicators (using exact phrase matching)
-    const responseText = JSON.stringify(apiData).toLowerCase();
+    const responseText = ' ' + JSON.stringify(apiData).toLowerCase() + ' '; // Add spaces for boundary checking
     
     // Debug: Check each negative word individually
     console.log('🔍 Full API Response:', apiData);
@@ -62,7 +65,6 @@ const isVerificationSuccessful = (apiData) => {
         console.log('Verification failed: Negative indicators found in response', apiData);
         return false;
     }
-    
 
     // Positive success indicators (only check if no negative words found)
     // if (result.success === true) return true;
@@ -78,5 +80,6 @@ const isVerificationSuccessful = (apiData) => {
     // If no negative words and some positive indicators, consider successful
     return true;
 };
-const re =isVerificationSuccessful("Fetched PAN data")
+
+const re =isVerificationSuccessful("Data Extracted")
 console.log(re  )
