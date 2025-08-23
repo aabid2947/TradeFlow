@@ -91,23 +91,47 @@ const SimpleDataTable = ({ data, title }) => {
 
       if (value === null || value === undefined) continue;
 
-      // Skip arrays only
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+
+      // Handle arrays - process each item but don't show indices
       if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          if (item && typeof item === 'object') {
+            // For array items that are objects, flatten them without showing the index
+            const nestedEntries = getMeaningfulEntries(item, fullKey);
+            entries.push(...nestedEntries);
+          } else if (item !== null && item !== undefined) {
+            // For primitive values in arrays, use the parent key without index
+            entries.push([fullKey, String(item)]);
+          }
+        });
         continue;
       }
 
-      const fullKey = prefix ? `${prefix}.${key}` : key;
-
       if (typeof value === 'object' && !Array.isArray(value)) {
+        // Check if this object looks like a converted array (all numeric keys)
+        const objectKeys = Object.keys(value);
+        const isArrayLikeObject = objectKeys.length > 0 && objectKeys.every(k => !isNaN(k) && Number.isInteger(Number(k)));
+        
+        if (isArrayLikeObject) {
+          // Handle array-like objects - process values but skip numeric keys
+          Object.values(value).forEach((item) => {
+            if (item && typeof item === 'object') {
+              const nestedEntries = getMeaningfulEntries(item, fullKey);
+              entries.push(...nestedEntries);
+            } else if (item !== null && item !== undefined) {
+              entries.push([fullKey, String(item)]);
+            }
+          });
+          continue;
+        }
+        
         // For nested objects, recursively get entries
         const nestedEntries = getMeaningfulEntries(value, fullKey);
         entries.push(...nestedEntries);
       } else {
-        // Truncate long values to 20 characters
+        // Show full value without truncation
         let displayValue = String(value);
-        if (displayValue.length > 20) {
-          displayValue = displayValue.substring(0, 20) + '...';
-        }
         entries.push([fullKey, displayValue]);
       }
     }
@@ -131,18 +155,18 @@ const SimpleDataTable = ({ data, title }) => {
         {entries.map(([key, value], index) => (
           <div
             key={key}
-            className={`flex justify-between items-center px-4 py-3 hover:bg-gray-100 transition-colors ${index !== entries.length - 1 ? 'border-b border-gray-200' : ''
+            className={`flex px-4 py-3 hover:bg-gray-100 transition-colors ${index !== entries.length - 1 ? 'border-b border-gray-200' : ''
               }`}
           >
-            <span className="text-sm font-medium text-gray-700 min-w-0 flex-1">
+            <span className="text-sm font-medium text-gray-700 min-w-0 w-1/3 mr-4">
               {toTitleCase(key.split('.').pop())}
               {key.includes('.') && (
                 <span className="text-xs text-gray-500 block">
-                  {key.split('.').slice(0, -1).map(toTitleCase).join(' → ')}
+                  {/* {key.split('.').slice(0, -1).map(toTitleCase).join(' → ')} */}
                 </span>
               )}
             </span>
-            <span className="text-sm text-gray-900 font-medium text-right max-w-xs break-words ml-4">
+            <span className="text-sm text-gray-900 font-medium w-2/3 break-words whitespace-pre-wrap">
               {typeof value === 'boolean' ? (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${value
                     ? 'bg-green-100 text-green-800'
@@ -195,10 +219,8 @@ const generatePDF = (result, serviceName = 'Verification') => {
       if (value && typeof value === 'object') {
         acc.push(...flattenDetailsForDisplay(value, newKey));
       } else {
-        // Truncate value if it's longer than 20 characters
-        const displayValue = value && value.toString().length > 20 
-          ? value.toString().substring(0, 20) + '...' 
-          : value;
+        // Show full value without truncation
+        const displayValue = value || '';
         acc.push({ key: newKey, value: displayValue });
       }
       return acc;

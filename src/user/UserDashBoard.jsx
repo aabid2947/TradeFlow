@@ -150,6 +150,7 @@ export default function UserDashBoard() {
     if (categoryFilter === "All Services") {
       return services;
     }
+    // console.log(services.filter(service => service.category === service.category))
     return services.filter(service => service.category === categoryFilter);
   }, [services, categoryFilter]);
 
@@ -164,6 +165,7 @@ export default function UserDashBoard() {
   const handleCategorySelect = (category) => {
     setActiveView("services");
     setCategoryFilter(category);
+    console.log(category)
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
