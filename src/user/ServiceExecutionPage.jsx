@@ -277,7 +277,7 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
     );
 };
 
-// **FIXED & UPDATED** Helper function to correctly check if verification was successful
+// FIXED & UPDATED Helper function to correctly check if verification was successful
 const isVerificationSuccessful = (result) => {
     if (!result || !result.data) return false;
     const apiData = result.data;
@@ -289,24 +289,25 @@ const isVerificationSuccessful = (result) => {
 
     // Define negative words/phrases that indicate failure
     const negativeWords = [
-        'no',
-        'not',
-        'does not',
-        'doesn\'t',
-        'cannot',
-        'can\'t',
+        'no record',
+        'not found',
+        'not valid',
+        'not verified',
+        'not active',
+        'no match',
+        'no data',
+        'does not exist',
+        'does not match',
+        'doesn\'t exist',
+        'doesn\'t match',
+        'cannot verify',
+        'can\'t verify',
         'failed',
         'failure',
         'error',
         'invalid',
         'incorrect',
         'mismatch',
-        'not found',
-        'not valid',
-        'not verified',
-        'no record',
-        'no match',
-        'no data',
         'unavailable',
         'denied',
         'rejected',
@@ -317,10 +318,18 @@ const isVerificationSuccessful = (result) => {
         'cancelled'
     ];
 
-    // Check if the response contains negative indicators
+    // Check if the response contains negative indicators (using exact phrase matching)
     const responseText = JSON.stringify(apiData).toLowerCase();
-    const hasNegativeWord = negativeWords.some(word => responseText.includes(word));
     
+    // Debug: Check each negative word individually
+    console.log('🔍 Full API Response:', apiData);
+    console.log('📝 Response Text:', responseText);
+    
+    const foundNegatives = negativeWords.filter(phrase => responseText.includes(phrase));
+    console.log('❌ Found negative phrases:', foundNegatives);
+    
+    const hasNegativeWord = foundNegatives.length > 0;
+    console.log('🎯 Has negative word:', hasNegativeWord);
     // If negative words are found, treat as error
     if (hasNegativeWord) {
         console.log('Verification failed: Negative indicators found in response', apiData);

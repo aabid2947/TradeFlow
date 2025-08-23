@@ -210,15 +210,15 @@ export default function SidebarComponent({
                     const isActive = activeView === "services" && activeCategory === category.label;
                     
                     // Debug logging for category matching
-                    if (category.label === 'Employer Verification') {
-                      console.log('🎯 Sidebar Debug - Employer Verification:', {
-                        activeView,
-                        activeCategory,
-                        categoryLabel: category.label,
-                        isActive,
-                        comparison: `"${activeCategory}" === "${category.label}"`
-                      });
-                    }
+                    // if (category.label === 'Employer Verification') {
+                    //   // console.log('🎯 Sidebar Debug - Employer Verification:', {
+                    //   //   activeView,
+                    //   //   activeCategory,
+                    //   //   categoryLabel: category.label,
+                    //   //   isActive,
+                    //   //   comparison: `"${activeCategory}" === "${category.label}"`
+                    //   // });
+                    // }
                     
                     return (
                       <SubMenuButton

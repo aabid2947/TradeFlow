@@ -232,10 +232,10 @@ export default function Profile() {
                                         <p className="text-sm text-gray-600">{user?.email}</p>
                                         <div className="flex items-center space-x-2 mt-1">
                                             {user?.role === 'admin' && <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs"><Crown className="w-3 h-3 mr-1" />Admin</Badge>}
-                                            <Badge variant={user?.isVerified ? 'default' : 'destructive'} className="text-xs">
+                                            {/* <Badge variant={user?.isVerified ? 'default' : 'destructive'} className="text-xs">
                                                 {user?.isVerified ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
                                                 {user?.isVerified ? 'Verified' : 'Unverified'}
-                                            </Badge>
+                                            </Badge> */}
                                         </div>
                                     </div>
                                 )}
