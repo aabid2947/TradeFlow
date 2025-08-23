@@ -578,7 +578,7 @@ const isVerificationSuccessful = (result) => {
     const errorCodes = [ '404', '400'];
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     // if (apiData.status === 'INVALID') return false;
-
+    if(apiData.message == "Data Extracted") return true;
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
         ' not ',
