@@ -70,8 +70,7 @@ const findDetailsObject = (data) => {
   const detailsKey = Object.keys(data).find(key => 
     typeof data[key] === 'object' && 
     data[key] !== null && 
-    key && typeof key === 'string' &&
-    !['message', 'code', 'success', 'timestamp', 'status_code', 'outputFields'].includes(key.toLowerCase()) &&
+    !['message', 'code', 'success', 'timestamp', 'status_code', 'outputFields'].includes((key || '').toLowerCase()) &&
     Object.keys(data[key]).length > 0
   );
   
@@ -446,7 +445,7 @@ const SimpleDataTable = ({ data, title }) => {
     const entries = [];
     
     for (const [key, value] of Object.entries(obj)) {
-      if (key && typeof key === 'string' && ['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
+      if (['message', 'code', 'success', 'timestamp', 'status_code'].includes((key || '').toLowerCase())) {
         continue;
       }
       
@@ -555,17 +554,17 @@ const ResultCard = ({ result, index }) => {
   };
 
   const getServiceIcon = (serviceName = "") => {
-    if (!serviceName || typeof serviceName !== 'string') return Shield;
-    if (serviceName.toLowerCase().includes('identity')) return User;
-    if (serviceName.toLowerCase().includes('address')) return MapPin;
-    if (serviceName.toLowerCase().includes('phone')) return Phone;
+    const name = (serviceName || '').toLowerCase();
+    if (name.includes('identity')) return User;
+    if (name.includes('address')) return MapPin;
+    if (name.includes('phone')) return Phone;
     return Shield;
   };
 
   const formatInputData = (payload, serviceName) => {
     if (!payload) return [];
-    if (!serviceName || typeof serviceName !== 'string') return [];
-    if (serviceName.toLowerCase().includes('identity')) {
+    const name = (serviceName || '').toLowerCase();
+    if (name.includes('identity')) {
       return [
         { icon: User, title: "Full Name", value: `${payload.firstName || ''} ${payload.lastName || ''}`, description: "Name provided" },
         { icon: CreditCard, title: "Document Type", value: payload.documentType?.toUpperCase() || 'N/A', description: "ID document type" },
@@ -573,7 +572,7 @@ const ResultCard = ({ result, index }) => {
       ];
     }
     
-    if (serviceName.toLowerCase().includes('address')) {
+    if (name.includes('address')) {
       return [
         { icon: MapPin, title: "Street Address", value: payload.address || 'N/A', description: "Primary address to verify" },
         { icon: MapPin, title: "City & State", value: `${payload.city || 'N/A'}, ${payload.state || ''}`, description: "City and state information" },
@@ -581,7 +580,7 @@ const ResultCard = ({ result, index }) => {
       ];
     }
 
-    if (serviceName.toLowerCase().includes('phone') || serviceName.toLowerCase().includes('mobile')) {
+    if (name.includes('phone') || name.includes('mobile')) {
       return [
         { icon: Phone, title: "Phone Number", value: payload.phoneNumber || payload.mobile_number || 'N/A', description: "Phone number to verify" },
         { icon: Info, title: "Country", value: payload.countryCode || 'N/A', description: "Country code for the number" }
@@ -704,9 +703,7 @@ export default function VerificationHistory() {
   const filteredResults = useMemo(() => {
     return (results || []).filter(result => {
       const serviceName = result.service?.name || '';
-      const matchesSearch = serviceName && typeof serviceName === 'string' 
-        ? serviceName.toLowerCase().includes((searchTerm || '').toLowerCase())
-        : false;
+      const matchesSearch = serviceName && typeof serviceName === 'string' ? serviceName.toLowerCase().includes(searchTerm.toLowerCase()) : false;
       const matchesFilter = filterStatus === "all" || result.status === filterStatus;
       return matchesSearch && matchesFilter;
     });
