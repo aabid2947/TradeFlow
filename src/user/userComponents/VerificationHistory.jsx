@@ -70,6 +70,7 @@ const findDetailsObject = (data) => {
   const detailsKey = Object.keys(data).find(key => 
     typeof data[key] === 'object' && 
     data[key] !== null && 
+    key && typeof key === 'string' &&
     !['message', 'code', 'success', 'timestamp', 'status_code', 'outputFields'].includes(key.toLowerCase()) &&
     Object.keys(data[key]).length > 0
   );
@@ -91,12 +92,12 @@ const generatePDF = (result) => {
       const newKey = toTitleCase(key);
       
       // Skip if key contains base64 image file reference
-      if (key.toLowerCase().includes('base64')) {
+      if (key && typeof key === 'string' && key.toLowerCase().includes('base64')) {
         return acc;
       }
       
       // Skip metadata fields
-      if (key.toLowerCase().includes('metadata')) {
+      if (key && typeof key === 'string' && key.toLowerCase().includes('metadata')) {
         return acc;
       }
       
@@ -445,7 +446,7 @@ const SimpleDataTable = ({ data, title }) => {
     const entries = [];
     
     for (const [key, value] of Object.entries(obj)) {
-      if (['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
+      if (key && typeof key === 'string' && ['message', 'code', 'success', 'timestamp', 'status_code'].includes(key.toLowerCase())) {
         continue;
       }
       
@@ -554,6 +555,7 @@ const ResultCard = ({ result, index }) => {
   };
 
   const getServiceIcon = (serviceName = "") => {
+    if (!serviceName || typeof serviceName !== 'string') return Shield;
     if (serviceName.toLowerCase().includes('identity')) return User;
     if (serviceName.toLowerCase().includes('address')) return MapPin;
     if (serviceName.toLowerCase().includes('phone')) return Phone;
@@ -562,6 +564,7 @@ const ResultCard = ({ result, index }) => {
 
   const formatInputData = (payload, serviceName) => {
     if (!payload) return [];
+    if (!serviceName || typeof serviceName !== 'string') return [];
     if (serviceName.toLowerCase().includes('identity')) {
       return [
         { icon: User, title: "Full Name", value: `${payload.firstName || ''} ${payload.lastName || ''}`, description: "Name provided" },
@@ -701,7 +704,9 @@ export default function VerificationHistory() {
   const filteredResults = useMemo(() => {
     return (results || []).filter(result => {
       const serviceName = result.service?.name || '';
-      const matchesSearch = serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = serviceName && typeof serviceName === 'string' 
+        ? serviceName.toLowerCase().includes((searchTerm || '').toLowerCase())
+        : false;
       const matchesFilter = filterStatus === "all" || result.status === filterStatus;
       return matchesSearch && matchesFilter;
     });
