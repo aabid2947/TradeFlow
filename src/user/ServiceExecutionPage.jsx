@@ -66,6 +66,63 @@ const toTitleCase = (str) => {
     return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
+// Category to Subcategory mapping based on service data
+const CATEGORY_SUBCATEGORY_MAPPING = {
+    "Identity Verification": [
+        "Address Verification",
+        "Passport Verification", 
+        "Voter ID verification",
+        "Driving License verification"
+    ],
+    "Financial & Business Checks": [
+        "GSTIN verification",
+        "Bank Account Verification", 
+        "Buissness Check"
+    ],
+    "Employer Verification": [
+        "Employer Verification"
+    ],
+    "Biometric & AI-Based Verification": [
+        "Facematch",
+        "Liveness"
+    ],
+    "Profile & Database Lookup": [
+        "Profile Lookup"
+    ],
+    "Legal & Compliance Checks": [
+        "Criminal and Court Record Verification"
+    ],
+    "Vehicle Verification": [
+        "Driving License verification"
+    ]
+};
+
+// Subcategory to Category reverse mapping for quick lookup
+const SUBCATEGORY_TO_CATEGORY_MAPPING = {
+    "Address Verification": "Identity Verification",
+    "Passport Verification": "Identity Verification", 
+    "Voter ID verification": "Identity Verification",
+    "Driving License verification": "Identity Verification", // Can also be Vehicle Verification
+    "GSTIN verification": "Financial & Business Checks",
+    "Bank Account Verification": "Financial & Business Checks", 
+    "Buissness Check": "Financial & Business Checks",
+    "Employer Verification": "Employer Verification",
+    "Facematch": "Biometric & AI-Based Verification",
+    "Liveness": "Biometric & AI-Based Verification",
+    "Profile Lookup": "Profile & Database Lookup",
+    "Criminal and Court Record Verification": "Legal & Compliance Checks"
+};
+
+// Function to get category by subcategory
+const getCategoryBySubcategory = (subcategory) => {
+    return SUBCATEGORY_TO_CATEGORY_MAPPING[subcategory] || null;
+};
+
+// Function to get all subcategories for a category
+const getSubcategoriesByCategory = (category) => {
+    return CATEGORY_SUBCATEGORY_MAPPING[category] || [];
+};
+
 // Custom Button Component
 const CustomButton = ({ children, onClick, disabled, type = "button", className = "" }) => {
     return (
@@ -379,8 +436,8 @@ const isVerificationSuccessful = (result) => {
 
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
-        'not',
-        'no',
+        ' not ',
+        ' no ',
         'no record',
         'not found',
         'not valid',
@@ -418,7 +475,7 @@ const isVerificationSuccessful = (result) => {
     ];
 
     // Check if the response contains negative indicators (using exact phrase matching)
-    const responseText = JSON.stringify(apiData).toLowerCase();
+    const responseText = ' ' + JSON.stringify(apiData).toLowerCase() + ' '; // Add spaces for boundary checking
     
     // Debug: Check each negative word individually
     console.log('🔍 Full API Response:', apiData);
@@ -479,30 +536,35 @@ export default function ServiceExecutionPage() {
         const serviceSubcategory = service.subcategory;
         const serviceCategory = service.category;
         
-        // console.log('🔍 Service mapping debug:', {
-        //     serviceKey,
-        //     serviceCategory,
-        //     serviceSubcategory,
-        //     serviceName: service.name
-        // });
+        console.log('🔍 Service mapping debug:', {
+            serviceKey,
+            serviceCategory,
+            serviceSubcategory,
+            serviceName: service.name
+        });
         
-        // Direct subcategory mapping
-        if (serviceSubcategory === 'Employer Verification') {
-            return 'Employer Verification';
+        // If we have a subcategory, map it to its parent category using our mapping
+        if (serviceSubcategory) {
+            const mappedCategory = getCategoryBySubcategory(serviceSubcategory);
+            if (mappedCategory) {
+                console.log('📍 Mapped subcategory to category:', serviceSubcategory, '->', mappedCategory);
+                return mappedCategory;
+            }
         }
         
-        // Category to sidebar label mapping
+        // If no subcategory mapping found, use direct category mapping
         const categoryMapping = {
             'Employment': 'Employer Verification',
             'Identity Verification': 'Identity Verification', 
             'Financial & Business Checks': 'Financial & Business Checks',
             'Legal & Compliance Checks': 'Legal & Compliance Checks',
             'Biometric & AI-Based Verification': 'Biometric & AI-Based Verification',
-            'Profile & Database Lookup': 'Profile & Database Lookup'
+            'Profile & Database Lookup': 'Profile & Database Lookup',
+            'Vehicle Verification': 'Vehicle Verification'
         };
         
         const mappedCategory = categoryMapping[serviceCategory] || serviceCategory || serviceSubcategory;
-        // console.log('📍 Final mapped category:', mappedCategory);
+        console.log('📍 Final mapped category:', mappedCategory);
         return mappedCategory;
     }, [service, serviceKey]);
 
