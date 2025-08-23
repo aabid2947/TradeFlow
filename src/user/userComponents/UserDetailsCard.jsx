@@ -537,19 +537,19 @@ const generatePDF = (result, serviceName = 'Verification') => {
           
           <div class="disclaimer-content" style="font-size: 14px; color: #718096; line-height: 1.8;">
             <p style="margin-bottom: 18px; text-align: justify;">
-              All rights reserved. The report and its contents are the property of SearchAI (operated by Navigant Digital Pvt. Ltd.) and may not be reproduced in any manner without the express written permission of SearchAI.
+              All rights reserved. The report and its contents are the property of VerifyMyKyc (operated by Navigant Digital Pvt. Ltd.) and may not be reproduced in any manner without the express written permission of VerifyMyKyc.
             </p>
             <p style="margin-bottom: 18px; text-align: justify;">
-              The reports and information contained herein are confidential and are meant only for the internal use of the SearchAI client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.
+              The reports and information contained herein are confidential and are meant only for the internal use of the VerifyMyKyc client for assessing the background of their applicant. The information and report are subject to change based on changes in factual information.
             </p>
             <p style="margin-bottom: 18px; text-align: justify;">
-              Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. SearchAI expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice. No warranty of any kind implied, express, or statutory including but not limited to the warranties of non-infringement of third party rights, title, merchantability, fitness for a particular purpose or freedom from computer virus, is given with respect to the contents of this report.
+              Information and reports, including text, graphics, links, or other items, are provided on an "as is," "as available" basis. VerifyMyKyc expressly disclaims liability for errors or omissions in the report, information, and materials, as the information is obtained from various sources as per industry practice. No warranty of any kind implied, express, or statutory including but not limited to the warranties of non-infringement of third party rights, title, merchantability, fitness for a particular purpose or freedom from computer virus, is given with respect to the contents of this report.
             </p>
             <p style="margin-bottom: 18px; text-align: justify;">
               Our findings are based on the information available to us and industry practice; therefore, we cannot guarantee the accuracy of the information collected. Should additional information or documentation become available that impacts our conclusions, we reserve the right to amend our findings accordingly.
             </p>
             <p style="margin-bottom: 18px; text-align: justify;">
-              These reports are not intended for publication or circulation. They should not be shared with any person, entity, association, corporation, or any other purposes, in whole or in part, without prior written consent from SearchAI in each specific instance. Our reports cannot be used by clients to claim all responsibility or liability that may arise due to omissions, additions, correction, and accuracy. All the information has been obtained from various sources as per industry practice to make an informed decision, and we hereby disclaim all responsibility or liability that may arise due to errors in the report.
+              These reports are not intended for publication or circulation. They should not be shared with any person, entity, association, corporation, or any other purposes, in whole or in part, without prior written consent from VerifyMyKyc in each specific instance. Our reports cannot be used by clients to claim all responsibility or liability that may arise due to omissions, additions, correction, and accuracy. All the information has been obtained from various sources as per industry practice to make an informed decision, and we hereby disclaim all responsibility or liability that may arise due to errors in the report.
             </p>
             <p style="margin-bottom: 30px; text-align: justify;">
               Due to the limitations mentioned above, the result of our work with respect to background checks should be considered only as a guideline. Our reports and comments should not be considered a definitive pronouncement on the individual.
@@ -566,7 +566,7 @@ const generatePDF = (result, serviceName = 'Verification') => {
             padding: 25px 0;
             border-top: 1px solid #e5e7eb;
           ">
-            - SEARCHAI CONFIDENTIAL -
+            - VerifyMyKyc CONFIDENTIAL -
           </div>
         </div>
       `;
