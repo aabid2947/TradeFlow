@@ -66,6 +66,7 @@ const CustomButton = ({ children, onClick, disabled, className = "" }) => {
 // Enhanced Data Table Component that handles nested objects better
 const SimpleDataTable = ({ data, title }) => {
   if (!data || typeof data !== 'object') return null;
+  console.log(data)
   
 
 

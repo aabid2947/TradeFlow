@@ -37,7 +37,7 @@ const serviceCategories = [
     { value: 'Legal & Compliance Checks', label: 'Legal & Compliance Checks', icon: Scale },
     { value: 'Biometric & AI-Based Verification', label: 'Biometric & AI-Based Verification', icon: Scan },
     { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup', icon: Database },
-    { value: 'Employer Verification', label: 'Employer Verification', icon: Briefcase },
+    { value: 'Empoyer Verification', label: 'Empoyer Verification', icon: Briefcase },
 ];
 
 const navigationData = {
