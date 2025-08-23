@@ -514,8 +514,8 @@ export function SignUpForm() {
               <div className="mt-6 text-center">
                 <p className="text-xs text-gray-500 leading-relaxed">
                   By continuing, you agree to our{" "}
-                  <a href="https://e-kyc-eight.vercel.app/terms-and-conditions" className="text-blue-600 hover:text-blue-800 underline font-medium">
-                    Terms & Conditions
+                  <a href="https://e-kyc-eight.vercel.app/terms-and-condition" className="text-blue-600 hover:text-blue-800 underline font-medium">
+                    Terms & Condition
                   </a>{" "}
                   and{" "}
                   <a href="https://e-kyc-eight.vercel.app/privacy-policy" className="text-blue-600 hover:text-blue-800 underline font-medium">
