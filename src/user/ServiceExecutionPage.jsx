@@ -383,16 +383,16 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
                             // **NEW** Special handling for base64data field - always treat as image upload regardless of type
                             const isBase64Field = name === 'base64data' || name === 'base64_data' || name.toLowerCase().includes('base64');
                             
-                            console.log('🎯 Field analysis:', { 
-                                name, 
-                                type, 
-                                label, 
-                                isBase64Field,
-                                hasData: !!formData[name]
-                            });
+                            // console.log('🎯 Field analysis:', { 
+                            //     name, 
+                            //     type, 
+                            //     label, 
+                            //     isBase64Field,
+                            //     hasData: !!formData[name]
+                            // });
                             
                             if (isBase64Field) {
-                                console.log('🎯 Rendering base64 field:', { name, type, label });
+                                // console.log('🎯 Rendering base64 field:', { name, type, label });
                                 const imageData = formData[name];
                                 return (
                                     <div key={name} className="space-y-1">
@@ -570,15 +570,16 @@ const DynamicServiceForm = ({ service, onVerify, isVerifying }) => {
 
 
 const isVerificationSuccessful = (result) => {
+    console.log(result)
+    if (!result || !result.data ) return false;
+    const apiData = result.data ;
     console.log(result.data)
-    if (!result || (!result.data || !result.ocr_data)) return false;
-    const apiData = result.data || result.ocr_data;
 
     // First check for explicit error codes
     const errorCodes = [ '404', '400'];
     if (apiData.code && errorCodes.includes(String(apiData.code))) return false;
     // if (apiData.status === 'INVALID') return false;
-    if(apiData.message == "Data Extracted") return true;
+    // if(apiData.message == "Data Extracted") return true;
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
         ' not ',
@@ -620,7 +621,7 @@ const isVerificationSuccessful = (result) => {
     ];
 
     // Check if the response contains negative indicators (using exact phrase matching)
-    const responseText = ' ' + JSON.stringify(apiData).toLowerCase() + ' '; // Add spaces for boundary checking
+    const responseText = ' ' + JSON.stringify(apiData?.message).toLowerCase() + ' '; // Add spaces for boundary checking
     
     // Debug: Check each negative word individually
     console.log('🔍 Full API Response:', apiData);
