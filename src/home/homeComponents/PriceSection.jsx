@@ -70,6 +70,7 @@ const pricingPlans = [
 export default function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false)
   const [selectedPlanName, setSelectedPlanName] = useState('Professional'); // Default highlighted plan
+  const [loadingPlanName, setLoadingPlanName] = useState(null); // Track which plan button is loading
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
@@ -87,6 +88,9 @@ export default function PricingSection() {
       toast.error("Payment gateway is still loading. Please wait a moment.")
       return
     }
+
+    setLoadingPlanName(planName); // Set loading state for this specific plan
+
     try {
       const orderData = await createSubscriptionOrder({ planName, planType }).unwrap()
       if (orderData.paymentSkipped) {
@@ -113,20 +117,29 @@ export default function PricingSection() {
             navigate("/user")
           } catch (verifyError) {
             toast.error(verifyError.data?.message || "Payment verification failed. Please contact support.")
+          } finally {
+            setLoadingPlanName(null); // Clear loading state
           }
         },
         prefill: { name: user.name, email: user.email, contact: user.mobile },
         notes: { transactionId: orderData.transactionId, userId: user._id },
         theme: { color: "#2563EB" },
+        modal: {
+          ondismiss: function() {
+            setLoadingPlanName(null); // Clear loading state if payment modal is closed
+          }
+        }
       }
       const rzp = new window.Razorpay(options)
       rzp.open()
     } catch (err) {
       toast.error(err.data?.message || "An error occurred. Please try again.")
+      setLoadingPlanName(null); // Clear loading state on error
     }
   }
 
   const isLoading = isCreatingOrder || isVerifyingPayment;
+  const isAnyPlanLoading = loadingPlanName !== null; // Check if any plan is loading
 
   return (
     <section className="w-full to-white py-12 md:py-16 relative overflow-hidden">
@@ -192,12 +205,14 @@ export default function PricingSection() {
                 (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
               );
               const isSelected = plan.name === selectedPlanName;
+              const isPlanLoading = loadingPlanName === plan.name;
+              const isOtherPlanLoading = isAnyPlanLoading && !isPlanLoading;
 
               return (
                 <Card
                   key={plan.name}
-                  onClick={() => setSelectedPlanName(plan.name)}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group cursor-pointer ${isSelected ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} `}
+                  onClick={() => !isAnyPlanLoading && setSelectedPlanName(plan.name)}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group cursor-pointer ${isSelected ? "border-2 border-blue-500 shadow-md scale-[1.02] bg-white" : "border border-gray-200 hover:border-blue-300 bg-white"} ${isOtherPlanLoading ? "opacity-50" : ""}`}
                 >
                   {/* {isSelected && (
                     <div className="absolute top-1 left-1/2 transform -translate-x-1/2">
@@ -261,10 +276,25 @@ export default function PricingSection() {
                         e.stopPropagation(); // Prevent card's onClick from firing
                         handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
                       }}
-                      disabled={isLoading }
-                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${ isSelected ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                      disabled={isAnyPlanLoading || isPlanActive}
+                      className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${
+                        isPlanLoading 
+                          ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" 
+                          : isOtherPlanLoading 
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                            : isSelected 
+                              ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" 
+                              : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"
+                      } ${(isAnyPlanLoading || isPlanActive) && "cursor-not-allowed"}`}
                     >
-                      { (isLoading ? "Processing..." : plan.cta)}
+                      {isPlanLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        plan.cta
+                      )}
                     </Button>
                     <p className="text-[10px] text-gray-500 text-center mt-3">
                       No setup fees • Cancel anytime

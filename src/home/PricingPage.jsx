@@ -30,6 +30,7 @@ const itemVariants = {
 const PricingPage = () => {
   const [isAnnual, setIsAnnual] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState('professional'); // Default highlighted plan
+  const [loadingPlanId, setLoadingPlanId] = useState(null); // Track which plan button is loading
   const navigate = useNavigate()
   const razorpayLoaded = useRazorpay()
   const user = useSelector(selectCurrentUser)
@@ -37,7 +38,7 @@ const PricingPage = () => {
   const [createSubscriptionOrder, { isLoading: isCreatingOrder }] = useCreateSubscriptionOrderMutation()
   const [verifySubscriptionPayment, { isLoading: isVerifyingPayment }] = useVerifySubscriptionPaymentMutation()
 
-  const handlePurchase = async (planName, planType) => {
+  const handlePurchase = async (planId, planName, planType) => {
     if (!user) {
       toast.info("Please log in to purchase a plan.")
       navigate("/login")
@@ -48,6 +49,8 @@ const PricingPage = () => {
       toast.error("Payment gateway is still loading. Please wait a moment.")
       return
     }
+
+    setLoadingPlanId(planId); // Set loading state for this specific plan
 
     try {
       const orderData = await createSubscriptionOrder({ planName, planType }).unwrap()
@@ -78,6 +81,8 @@ const PricingPage = () => {
             navigate("/user")
           } catch (verifyError) {
             toast.error(verifyError.data?.message || "Payment verification failed. Please contact support.")
+          } finally {
+            setLoadingPlanId(null); // Clear loading state
           }
         },
         prefill: {
@@ -92,6 +97,11 @@ const PricingPage = () => {
         theme: {
           color: "#2563EB",
         },
+        modal: {
+          ondismiss: function() {
+            setLoadingPlanId(null); // Clear loading state if payment modal is closed
+          }
+        }
       }
 
       const rzp = new window.Razorpay(options)
@@ -99,10 +109,12 @@ const PricingPage = () => {
 
     } catch (err) {
       toast.error(err.data?.message || "An error occurred. Please try again.")
+      setLoadingPlanId(null); // Clear loading state on error
     }
   }
 
   const isLoading = isCreatingOrder || isVerifyingPayment;
+  const isAnyPlanLoading = loadingPlanId !== null; // Check if any plan is loading
 
   // Hardcoded pricing data for the main plans
   const plans = [
@@ -240,13 +252,15 @@ const PricingPage = () => {
                 (sub) => sub.category === plan.name && new Date(sub.expiresAt) > new Date()
               );
               const isSelected = plan.id === selectedPlanId;
+              const isPlanLoading = loadingPlanId === plan.id;
+              const isOtherPlanLoading = isAnyPlanLoading && !isPlanLoading;
 
               return (
               <motion.div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border cursor-pointer ${isSelected ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} ${isPlanActive ? "border-green-500" : ""} flex flex-col`}
+                className={`relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border cursor-pointer ${isSelected ? "border-blue-500 scale-105" : "border-gray-200 hover:scale-[1.02]"} ${isPlanActive ? "border-green-500" : ""} ${isOtherPlanLoading ? "opacity-50" : ""} flex flex-col`}
                 variants={itemVariants}
-                onClick={() => setSelectedPlanId(plan.id)}
+                onClick={() => !isAnyPlanLoading && setSelectedPlanId(plan.id)}
               >
                 {/* {isSelected && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -292,12 +306,27 @@ const PricingPage = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card's onClick from firing
-                      handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
+                      handlePurchase(plan.id, plan.name, isAnnual ? 'yearly' : 'monthly')
                     }}
-                    disabled={isLoading || isPlanActive}
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${ isSelected ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"} ${isLoading && "opacity-50 cursor-not-allowed"}`}
+                    disabled={isAnyPlanLoading || isPlanActive}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                      isPlanLoading 
+                        ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white" 
+                        : isOtherPlanLoading 
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                          : isSelected 
+                            ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" 
+                            : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                    } ${(isAnyPlanLoading || isPlanActive) && "cursor-not-allowed"}`}
                   >
-                    { (isLoading ? "Processing..." : plan.buttonText)}
+                    {isPlanLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      plan.buttonText
+                    )}
                   </button>
                 </div>
               </motion.div>
