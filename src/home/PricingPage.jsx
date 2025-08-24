@@ -308,7 +308,7 @@ const PricingPage = () => {
                       e.stopPropagation(); // Prevent card's onClick from firing
                       handlePurchase(plan.id, plan.name, isAnnual ? 'yearly' : 'monthly')
                     }}
-                    disabled={isAnyPlanLoading || isPlanActive}
+                    disabled={isAnyPlanLoading}
                     className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
                       isPlanLoading 
                         ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white" 
@@ -317,7 +317,7 @@ const PricingPage = () => {
                           : isSelected 
                             ? "bg-gradient-to-r from-blue-600 to-sky-700 text-white hover:shadow-lg transform hover:-translate-y-1" 
                             : "border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                    } ${(isAnyPlanLoading || isPlanActive) && "cursor-not-allowed"}`}
+                    } ${isAnyPlanLoading && "cursor-not-allowed"}`}
                   >
                     {isPlanLoading ? (
                       <div className="flex items-center justify-center gap-2">

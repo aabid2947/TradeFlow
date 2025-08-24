@@ -276,7 +276,7 @@ export default function PricingSection() {
                         e.stopPropagation(); // Prevent card's onClick from firing
                         handlePurchase(plan.name, isAnnual ? 'yearly' : 'monthly')
                       }}
-                      disabled={isAnyPlanLoading || isPlanActive}
+                      disabled={isAnyPlanLoading}
                       className={`w-full py-3 text-sm font-semibold transition-all duration-300 ${
                         isPlanLoading 
                           ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" 
@@ -285,7 +285,7 @@ export default function PricingSection() {
                             : isSelected 
                               ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow hover:shadow-md" 
                               : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 hover:border-blue-500 hover:text-blue-600"
-                      } ${(isAnyPlanLoading || isPlanActive) && "cursor-not-allowed"}`}
+                      } ${isAnyPlanLoading && "cursor-not-allowed"}`}
                     >
                       {isPlanLoading ? (
                         <div className="flex items-center justify-center gap-2">
