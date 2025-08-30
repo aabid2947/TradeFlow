@@ -3,7 +3,8 @@
 import {
   LayoutDashboard, Shield, User, BarChart3, PieChart, Settings, LogOut,
   ChevronDown, Tag, Building, Scale, FileText, Scan, Database,
-  AlertTriangle, MapPin, MoreVertical, IdCard, Briefcase, LayoutGrid
+  AlertTriangle, MapPin, MoreVertical, IdCard, Briefcase, LayoutGrid,
+  Car
 } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
@@ -31,10 +32,10 @@ const generateRandomColor = (name) => {
 };
 
 const serviceCategories = [
-    { value: 'All Services', label: 'All Services', icon: LayoutGrid },
     { value: 'Identity Verification', label: 'Identity Verification', icon: User },
     { value: 'Financial & Business Checks', label: 'Financial & Business Checks', icon: Building },
     { value: 'Legal & Compliance Checks', label: 'Legal & Compliance Checks', icon: Scale },
+    { value: 'Vehicle Verification', label: 'Vehicle Verification', icon: Car }, // Added new category
     { value: 'Biometric & AI-Based Verification', label: 'Biometric & AI-Based Verification', icon: Scan },
     { value: 'Profile & Database Lookup', label: 'Profile & Database Lookup', icon: Database },
     { value: 'Employer Verification', label: 'Employer Verification', icon: Briefcase },

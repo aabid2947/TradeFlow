@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { logOut } from "@/features/auth/authSlice"
+import logo from "../../assets/Final.png.png" // ← अपना logo image यहां import करें
 
 const navigationItems = [
   { title: "Dashboard", icon: Home, key: "dashboard" },
@@ -95,20 +96,20 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
       >
         <SidebarProvider>
           <Sidebar collapsible="none" className="flex flex-col h-full">
-            <SidebarHeader className="p-4 border-b border-gray-700 flex flex-row justify-between items-center cursor-pointer" >
-              <div className="flex items-center gap-2 ">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-5 bg-blue-500 rounded-full" />
-                  <div className="w-2 h-5 bg-blue-500 rounded-full" />
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-3" />
-                </div>
-                <span className="text-white text-2xl font-bold">VerifyKyc</span>
-                <span className="bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full ml-1">PRO</span>
-              </div>
-              <button onClick={() => setIsOpen(false)} className="cursor-pointer lg:hidden p-1">
-                <X className="w-6 h-6 text-gray-400 hover:text-white" />
-              </button>
-            </SidebarHeader>
+
+<SidebarHeader className="p-4 border-b border-gray-700 flex flex-col items-center">
+  <div className="flex flex-col items-center gap-2 ">
+    <img 
+      src={logo} 
+      alt="Logo" 
+      className="w-80 h-15 object-contain" // यहाँ साइज को w-20 h-20 कर दिया गया है
+    />
+  </div>
+  <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 cursor-pointer lg:hidden p-1">
+    <X className="w-6 h-6 text-gray-400 hover:text-white" />
+  </button>
+</SidebarHeader>
+
             <SidebarContent className="flex-1 p-2 overflow-y-auto">
               <SidebarGroup>
                 <SidebarMenu>

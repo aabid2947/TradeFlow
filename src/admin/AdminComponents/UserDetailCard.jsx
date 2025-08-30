@@ -201,7 +201,7 @@ export const UserDetailsCard = ({ user, isOpen, onClose }) => {
                 <h4 className="font-semibold text-gray-800 mb-3 flex items-center"><User className="w-4 h-4 mr-2 text-blue-600" />Contact Information</h4>
                 <div className="space-y-3">
                   {user.email && (<div className="flex items-center space-x-3 group"><Mail className="w-4 h-4 text-blue-600" /><span className="flex-1 text-gray-700">{user.email}</span><button onClick={() => copyToClipboard(user.email)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition-all"><Copy className="w-3 h-3 text-gray-500" /></button></div>)}
-                  {user.mobile && (<div className="flex items-center space-x-3 group"><Phone className="w-4 h-4 text-blue-600" /><span className="flex-1 text-gray-700">{user.mobile}</span><button onClick={() => copyToClipboard(user.mobile)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition-all"><Copy className="w-3 h-3 text-gray-500" /></button></div>)}
+                  {/* {user.mobile && (<div className="flex items-center space-x-3 group"><Phone className="w-4 h-4 text-blue-600" /><span className="flex-1 text-gray-700">{user.mobile}</span><button onClick={() => copyToClipboard(user.mobile)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition-all"><Copy className="w-3 h-3 text-gray-500" /></button></div>)} */}
                   {user.googleId && (<div className="flex items-center space-x-3"><ExternalLink className="w-4 h-4 text-blue-600" /><span className="text-gray-700">Google Account</span></div>)}
                 </div>
               </div>

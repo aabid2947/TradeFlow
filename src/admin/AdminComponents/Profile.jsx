@@ -158,9 +158,9 @@ export default function Profile() {
         { id: 'services', label: 'Services Used', icon: Activity },
         { id: 'security', label: 'Security', icon: Shield }
     ];
-    if (user?.role === 'admin') {
-        tabs.push({ id: 'admin', label: 'Admin Tools', icon: Tool });
-    }
+    // if (user?.role === 'admin') {
+    //     tabs.push({ id: 'admin', label: 'Admin Tools', icon: Tool });
+    // }
 
     const allSubscriptions = [
         ...(user?.activeSubscriptions?.map(sub => ({ ...sub, isPromoted: false })) || []),
@@ -238,7 +238,7 @@ export default function Profile() {
                                <div className="space-y-4">
                                    <h4 className="font-semibold text-gray-800">Contact Information</h4>
                                    <div className="flex items-center gap-3"><Mail className="w-4 h-4 text-blue-600" /><span className="text-gray-700">{user?.email || 'N/A'}</span></div>
-                                   <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-blue-600" /><span className="text-gray-700">{user?.mobile || 'N/A'}</span></div>
+                                   {/* <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-blue-600" /><span className="text-gray-700">{user?.mobile || 'N/A'}</span></div> */}
                                </div>
                                <div className="space-y-4">
                                    <h4 className="font-semibold text-gray-800">Account Details</h4>
@@ -284,7 +284,7 @@ export default function Profile() {
                         )}
 
                         {/*   Admin Tools Tab Content  */}
-                        {activeTab === 'admin' && user?.role === 'admin' && (
+                        {/* {activeTab === 'admin' && user?.role === 'admin' && (
                             <div className="space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Manage Subscriptions</h3>
                                 {allSubscriptions.length > 0 ? allSubscriptions.map(sub => (
@@ -306,7 +306,7 @@ export default function Profile() {
                                     </div>
                                 )) : <p className="text-center text-gray-500 py-8">No subscriptions to manage.</p>}
                             </div>
-                        )}
+                        )} */}
                     </CardContent>
                 </Card>
             </div>
@@ -323,20 +323,25 @@ export default function Profile() {
                             <div className="p-6 border-b"><h3 className="text-xl font-semibold">Edit Profile</h3></div>
                             <div className="p-6 space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Email</label>
-                                    <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"/>
-                                </div>
-                                <div className="space-y-2">
                                     <label className="text-sm font-medium">Name</label>
                                     <input type="text" value={editedName} onChange={handleNameChange} className={`w-full px-4 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`} autoFocus/>
                                     {error && (<p className="text-sm text-red-600 mt-1">{error}</p>)}
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Email</label>
+                                    <input type="email" value={user?.email || ""} disabled className="w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"/>
+                                </div>
                             </div>
                             <div className="flex gap-3 p-4 bg-gray-50 border-t rounded-b-2xl">
                                 <Button variant="outline" className="flex-1" onClick={handleCancelEdit} disabled={isUpdatingProfile}>Cancel</Button>
-                                <Button className="flex-1" onClick={handleSaveName} disabled={isUpdatingProfile || !editedName.trim()}>
-                                    {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
-                                </Button>
+                               <Button 
+  className="flex-1 bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300" 
+  onClick={handleSaveName} 
+  disabled={isUpdatingProfile || !editedName.trim()}
+>
+  {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+</Button>
+
                             </div>
                         </motion.div>
                     </motion.div>

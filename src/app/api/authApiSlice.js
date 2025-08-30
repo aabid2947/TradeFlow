@@ -109,6 +109,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: 'User', id: 'ADMIN_LIST' }],
     }),
+      deleteAdmin: builder.mutation({
+      query: (id) => ({
+        url: `${ADMIN_URL}/${id}`,
+        method: "DELETE",
+      }),
+       }),
     verifyEmailOtp: builder.mutation({
       query: (body) => ({
         url: `${AUTH_URL}/verify-email-otp`,
@@ -255,7 +261,6 @@ export const {
   useResetPasswordMutation, 
   useUpdateProfileMutation,
     usePromoteUserToSubcategoryMutation,
-  
   usePromoteUserCategoryMutation,
   useDemoteUserCategoryMutation,
   useUpdateAvatarMutation,
@@ -264,5 +269,7 @@ export const {
   useRemindSubscriptionMutation,
   useExtendSubscriptionMutation,
   useRevokeSubscriptionMutation,
-  useSubscribeToNewsletterMutation
+  useSubscribeToNewsletterMutation,
+  useDeleteAdminMutation
+  
 } = authApiSlice;

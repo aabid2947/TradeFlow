@@ -261,7 +261,9 @@ export default function Footer() {
                 <span className="text-sm leading-relaxed">{footerData.company.contact.address}</span>
               </div>
             </div>
-            <div>
+            
+            {/* Social Icons for Desktop */}
+            <div className="hidden md:block">
               <h4 className="font-semibold mb-3">Follow Us</h4>
               <div className="flex gap-3">
                 {footerData.social.map((social) => (
@@ -275,34 +277,53 @@ export default function Footer() {
 
           {/* Services Sections */}
           <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 justify-start lg:justify-center mx-auto gap-8">
-            {/* Verification Services */}
-            <div>
-              <h3 className="font-semibold mb-4 text-white">Verification Services</h3>
-              <ul className="space-y-3">
-                {footerData.links.verificationServices.map((link) => (
-                  <NavLink key={link.name} link={link} showIcon={true} />
-                ))}
-              </ul>
+            {/* Verification & Domestic Services - Combined for mobile */}
+            <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-8 md:gap-0">
+              {/* Verification Services */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">Verification Services</h3>
+                <ul className="space-y-3">
+                  {footerData.links.verificationServices.map((link) => (
+                    <NavLink key={link.name} link={link} showIcon={true} />
+                  ))}
+                </ul>
+              </div>
+              {/* Domestic & Tenant Verification */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">🏠 Domestic & Tenant</h3>
+                <ul className="space-y-3">
+                  {footerData.links.domesticServices.map((link) => (
+                    <NavLink key={link.name} link={link} showIcon={true} />
+                  ))}
+                </ul>
+              </div>
             </div>
 
-            {/* Domestic & Tenant Verification */}
-            <div>
-              <h3 className="font-semibold mb-4 text-white">🏠 Domestic & Tenant</h3>
-              <ul className="space-y-3">
-                {footerData.links.domesticServices.map((link) => (
-                  <NavLink key={link.name} link={link} showIcon={true} />
-                ))}
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h3 className="font-semibold mb-4 text-white">Company</h3>
-              <ul className="space-y-3">
-                {footerData.links.company.map((link) => (
-                  <NavLink key={link.name} link={link} />
-                ))}
-              </ul>
+            {/* Company & Social Links - Combined for mobile */}
+            <div className="flex flex-col md:col-span-1">
+              {/* Company */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">Company</h3>
+                <ul className="space-y-3">
+                  {footerData.links.company.map((link) => (
+                    <NavLink key={link.name} link={link} />
+                  ))}
+                </ul>
+              </div>
+              {/* Follow Us (Mobile) */}
+              <div className="md:hidden mt-8">
+                <h4 className="font-semibold mb-4 text-white">Follow Us</h4>
+                <ul className="space-y-3">
+                  {footerData.social.map((social) => (
+                    <li key={social.name}>
+                      <a href={social.href} className="text-blue-100 hover:text-white transition-colors duration-200 text-sm flex items-center gap-2 group cursor-pointer" target="_blank" rel="noopener noreferrer">
+                        <social.icon className="w-4 h-4 text-blue-300" />
+                        {social.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 
