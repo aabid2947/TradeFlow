@@ -97,7 +97,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
         <SidebarProvider>
           <Sidebar collapsible="none" className="flex flex-col h-full">
 
-<SidebarHeader className="p-4 border-b border-gray-700 flex flex-col items-center">
+<SidebarHeader className="p-4 border-b border-gray-700 flex flex-col items-center" onClick={() => navigate("/")}>
   <div className="flex flex-col items-center gap-2 ">
     <img 
       src={logo} 
