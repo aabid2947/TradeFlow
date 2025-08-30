@@ -97,7 +97,7 @@ const AppRoutes = () => {
             <Route key={`public-${idx}`} path={route.path} element={route.element} />
           ))}
         </Route>
-        <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
           {protectedUserRoutes.map((route, idx) => (
             <Route key={`user-${idx}`} path={route.path} element={route.element} />
           ))}

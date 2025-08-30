@@ -609,8 +609,9 @@ const isVerificationSuccessful = (result) => {
     // if(apiData.message == "Data Extracted") return true;
     // Define negative words/phrases that indicate failure - using specific phrases to avoid false positives
     const negativeWords = [
-        ' not ',
+        'not',
         ' no ',
+        'not ',
         'no record',
         'not found',
         'not valid',

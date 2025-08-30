@@ -244,6 +244,18 @@ export const authApiSlice = apiSlice.injectEndpoints({
        invalidatesTags: ['User']
     }),
 
+    deleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `${USERS_URL}/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, userId) => [
+        { type: 'User', id: userId },
+        { type: 'User', id: 'LIST' },
+        { type: 'User', id: 'ADMIN_LIST' },
+      ],
+    }),
+
   }),
 });
 
