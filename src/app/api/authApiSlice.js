@@ -282,6 +282,6 @@ export const {
   useExtendSubscriptionMutation,
   useRevokeSubscriptionMutation,
   useSubscribeToNewsletterMutation,
-  useDeleteAdminMutation
-  
+  useDeleteAdminMutation,
+  useDeleteUserMutation
 } = authApiSlice;
