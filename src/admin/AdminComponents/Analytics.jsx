@@ -126,12 +126,7 @@ const generateMockUsageData = (services, timeInterval = 'alltime') => {
 
 const COLORS = ['#3b82f6', '#f97316', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
 
-/**
- * Advanced Analytics component for the Admin Dashboard.
- * @param {object} props
- * @param {Array} props.services - An array containing ALL available services.
- * @param {boolean} props.isLoading - The loading state from the API query.
- */
+
 export default function Analytics({ services = [], isLoading = false }) {
   const [timeInterval, setTimeInterval] = useState('alltime');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -161,31 +156,32 @@ export default function Analytics({ services = [], isLoading = false }) {
   }, [services, selectedCategory]);
 
   // Calculate category performance
-  const categoryPerformance = useMemo(() => {
-    const categoryStats = {};
+// Calculate category performance
+const categoryPerformance = useMemo(() => {
+  const categoryStats = {};
 
-    services.forEach(service => {
-      if (!categoryStats[service.category]) {
-        categoryStats[service.category] = {
-          name: service.category,
-          totalUsage: 0,
-          serviceCount: 0,
-          averagePrice: 0,
-          totalRevenue: 0
-        };
-      }
+  filteredServices.forEach(service => {
+    if (!categoryStats[service.category]) {
+      categoryStats[service.category] = {
+        name: service.category,
+        totalUsage: 0,
+        serviceCount: 0,
+        averagePrice: 0,
+        totalRevenue: 0
+      };
+    }
 
-      categoryStats[service.category].totalUsage += service.globalUsageCount || 0;
-      categoryStats[service.category].serviceCount += 1;
-      categoryStats[service.category].averagePrice += service.price || 0;
-      categoryStats[service.category].totalRevenue += (service.globalUsageCount || 0) * (service.price || 0);
-    });
+    categoryStats[service.category].totalUsage += service.globalUsageCount || 0;
+    categoryStats[service.category].serviceCount += 1;
+    categoryStats[service.category].averagePrice += service.price || 0;
+    categoryStats[service.category].totalRevenue += (service.globalUsageCount || 0) * (service.price || 0);
+  });
 
-    return Object.values(categoryStats).map(cat => ({
-      ...cat,
-      averagePrice: cat.averagePrice / cat.serviceCount
-    })).sort((a, b) => b.totalUsage - a.totalUsage);
-  }, [services]);
+  return Object.values(categoryStats).map(cat => ({
+    ...cat,
+    averagePrice: cat.averagePrice / cat.serviceCount
+  })).sort((a, b) => b.totalUsage - a.totalUsage);
+}, [filteredServices]); // Changed dependency from [services] to [filteredServices]
 
   // Top performing services for time interval
   const topPerformingServices = useMemo(() => {

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { Trash2, UserPlus, CheckCircle, XCircle, Users, Shield, Mail, Lock, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSignupAdminMutation, useGetAllAdminQuery } from "@/app/api/authApiSlice";
+import { useDeleteAdminMutation } from "../../app/api/authApiSlice";
 
 const Card = ({ children, className }) => (
   <div className={`bg-white rounded-lg shadow-lg ${className}`}>{children}</div>
@@ -159,8 +160,8 @@ export default function RegisterAdmin() {
 
   // RTK Query hooks for API interaction
   const [signupAdmin, { isLoading: isSubmitting }] = useSignupAdminMutation();
-  const { data: fetchedAdmins, isLoading: isLoadingAdmins, isError, error } = useGetAllAdminQuery();
-
+  const { data: fetchedAdmins, isLoading: isLoadingAdmins, isError, error, refetch } = useGetAllAdminQuery();
+  const [deleteAdmin] = useDeleteAdminMutation(); // ✅ Added delete mutation hook
 
   useEffect(() => {
     window.scrollTo({
@@ -171,8 +172,6 @@ export default function RegisterAdmin() {
 
   const admins = React.useMemo(() => {
     if (!fetchedAdmins) return [];
-    // console.log(fetchedAdmins)
-    // Format data for the UI, creating avatars and mapping id
     return fetchedAdmins.data.map(admin => ({
       ...admin,
       id: admin._id,
@@ -203,6 +202,7 @@ export default function RegisterAdmin() {
         setEmail("");
         setPassword("");
         setErrors({});
+        refetch(); // ✅ reload admin list
         setTimeout(() => setMessage(null), 4000);
       } catch (err) {
         setMessage({ type: "error", text: err.data?.message || "Failed to register admin" });
@@ -214,14 +214,18 @@ export default function RegisterAdmin() {
     }
   }
 
-  const handleDelete = (id) => {
-    const adminToDelete = admins.find(admin => admin.id === id);
-    setMessage({
-      type: "success",
-      text: `${adminToDelete?.name || 'Admin'} has been removed (UI only).`
-    });
+const handleDelete = async (id) => {
+  try {
+    await deleteAdmin(id).unwrap();
+    setMessage({ type: "success", text: `Admin has been removed successfully.` });
+    refetch();
+    setTimeout(() => setMessage(null), 3000);
+  } catch (err) {
+    setMessage({ type: "error", text: err.data?.message || "Failed to delete admin" });
     setTimeout(() => setMessage(null), 3000);
   }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
