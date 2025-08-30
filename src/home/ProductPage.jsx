@@ -85,6 +85,7 @@ const ProductPage = ({ serviceId }) => {
     const hasUsedService = userInfo?.usedServices?.some(s =>
         s.service === currentServiceId || (service?.subcategory && s.subcategory === service.subcategory)
     ) || false;
+    
 
     const userReview = userInfo ? reviews.find(r => r.user?._id === userInfo._id) : null;
 
@@ -106,9 +107,12 @@ const ProductPage = ({ serviceId }) => {
         _id: service?._id,
         title: service?.name || "Service Verification",
         price: `₹${hasDiscount ? discountedPrice.toFixed(0) : (service?.price || 0)}`,
-        originalPrice: hasDiscount ? `₹${service.price}` : null,
+        // originalPrice: hasDiscount ? `₹${service.price}` : null,
+          originalPrice:  `₹${service?.price}` ,
+
+
         rating: 4.8,
-        totalReviews: service?.globalUsageCount || 100,
+        totalReviews: reviews?.length ,
         description: service?.description || "Get your documents verified instantly with our secure and reliable verification service.",
         features: service?.features || [
             "Instant Verification",
@@ -277,8 +281,8 @@ const ProductPage = ({ serviceId }) => {
                                     <span className="text-gray-600">({productData.totalReviews} reviews)</span>
                                 </div>
                                 <div className="flex items-center gap-4 mb-6">
-                                    <span className="text-4xl font-bold text-blue-600">{productData.price}</span>
-                                    {productData.originalPrice && <span className="text-xl text-gray-500 line-through">{productData.originalPrice}</span>}
+                                    <span className="text-4xl font-bold text-blue-600">{productData.originalPrice}</span>
+                                    {/* {productData.originalPrice && <span className="text-xl text-gray-500 line-through">{productData.originalPrice}</span>} */}
                                 </div>
                             </div>
                             <p className="text-gray-700 text-lg leading-relaxed">{productData.description}</p>
@@ -300,7 +304,7 @@ const ProductPage = ({ serviceId }) => {
                                 </div>
                             </div>
                             <button onClick={handlePurchaseClick} className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
-                                Verify Now - {productData.price}
+                                Verify Now - {productData.originalPrice}
                             </button>
                             <div className="bg-white rounded-xl p-6 shadow-lg">
                                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">

@@ -171,7 +171,7 @@ export default function RegisterAdmin() {
 
   const admins = React.useMemo(() => {
     if (!fetchedAdmins) return [];
-    // console.log(fetchedAdmins)
+    console.log(fetchedAdmins)
     // Format data for the UI, creating avatars and mapping id
     return fetchedAdmins.data.map(admin => ({
       ...admin,

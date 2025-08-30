@@ -95,7 +95,7 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
       >
         <SidebarProvider>
           <Sidebar collapsible="none" className="flex flex-col h-full">
-            <SidebarHeader className="p-4 border-b border-gray-700 flex flex-row justify-between items-center cursor-pointer" >
+            <SidebarHeader className="p-4 border-b border-gray-700 flex flex-row justify-between items-center cursor-pointer" onClick={()=>navigate('/')}>
               <div className="flex items-center gap-2 ">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-5 bg-blue-500 rounded-full" />

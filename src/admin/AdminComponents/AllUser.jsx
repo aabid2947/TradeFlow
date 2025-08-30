@@ -4,7 +4,8 @@ import {
     Users,
     Award,
     X,
-    Loader2
+    Loader2,
+    Trash2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,8 @@ import { toast } from 'react-hot-toast';
 import {
     useGetAllUsersQuery,
     usePromoteUserToSubcategoryMutation, // Hook for promotion
-    useRevokeSubscriptionMutation // Re-using this for demotion
+    useRevokeSubscriptionMutation, // Re-using this for demotion
+    useDeleteUserMutation // Hook for deleting users
 } from '@/app/api/authApiSlice';
 import { useGetServicesQuery } from '@/app/api/serviceApiSlice';
 
@@ -256,7 +258,7 @@ const PromotionModal = ({ user, allSubcategories, isOpen, onClose }) => {
 };
 
 // User Card Component 
-const UserCard = ({ user, onPromote, onNameClick }) => {
+const UserCard = ({ user, onPromote, onNameClick, onDelete }) => {
     const getRoleStyle = (role) => {
         switch (role?.toLowerCase()) {
             case 'admin': return 'bg-purple-100 text-purple-800 border-purple-200';
@@ -275,8 +277,17 @@ const UserCard = ({ user, onPromote, onNameClick }) => {
     const initials = user.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U';
 
     return (
-        <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden">
+        <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden relative">
             <CardContent className="p-6">
+                {/* Delete button in top right */}
+                <button
+                    onClick={() => onDelete(user)}
+                    className="absolute top-3 right-3 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    title="Delete User"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+
                 <div className="flex items-center gap-4 mb-4">
                     <div className={`w-14 h-14 bg-gradient-to-br ${avatarBg} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                         {initials}
@@ -319,6 +330,7 @@ export default function AllUser() {
     // Fetch data using RTK Query
     const { data: usersData, isLoading: isLoadingUsers, isError: isUsersError, refetch } = useGetAllUsersQuery();
     const { data: servicesData, isLoading: isLoadingServices } = useGetServicesQuery();
+    const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
 
     useEffect(() => {
@@ -366,6 +378,19 @@ export default function AllUser() {
     const handleCloseDetailCard = () => {
         setIsDetailCardOpen(false);
         setTimeout(() => setDetailUser(null), 300); // Allow animation to finish
+    };
+
+    const handleDeleteUser = async (user) => {
+        if (window.confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+            try {
+                await deleteUser(user._id).unwrap();
+                toast.success(`User ${user.name} has been deleted successfully`);
+                refetch(); // Refresh the user list
+            } catch (error) {
+                toast.error(error.data?.message || 'Failed to delete user');
+                console.error('Delete user error:', error);
+            }
+        }
     };
 
     const isLoading = isLoadingUsers || isLoadingServices;
@@ -420,6 +445,7 @@ export default function AllUser() {
                                         user={user}
                                         onPromote={handlePromoteClick}
                                         onNameClick={handleUserDetailClick}
+                                        onDelete={handleDeleteUser}
                                     />
                                 ))}
                             </div>
