@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import Header from "./homeComponents/Header"
 import Footer from "./homeComponents/Footer"
 import { useNavigate } from "react-router-dom"
+import TopBar from "./homeComponents/TopBar"
 
 export default function HowToVerifyPage() {
   const [expandedSection, setExpandedSection] = useState("start")
@@ -163,6 +164,7 @@ export default function HowToVerifyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
+      <TopBar/>
       <Header/>
       {/* <div className="bg-gradient-to-r from-blue-800 to-blue-900 text-white py-16">
         <div className="max-w-4xl mx-auto px-6">

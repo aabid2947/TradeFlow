@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import LandingPageFooter from "./homeComponents/Footer"
 import HomePageHeader from "./homeComponents/Header"
 import { useNavigate } from "react-router-dom"
+import TopBar from "./homeComponents/TopBar"
 
 export default function PrivacyPolicy() {
   // FIX: Removed the TypeScript type annotation <string>
@@ -576,6 +577,7 @@ useEffect(()=>{
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
+      <TopBar/>
       <HomePageHeader/>
       {/* <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-6">

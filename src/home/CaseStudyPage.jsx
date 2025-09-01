@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle, Users, Shield, Clock, Star, ArrowUpRight } fro
 import Header from "./homeComponents/Header"
 import Footer from "./homeComponents/Footer"
 import { useNavigate } from "react-router-dom"
+import TopBar from "./homeComponents/TopBar"
 
 const caseStudies = [
   {
@@ -105,6 +106,7 @@ export default function CaseStudyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
+      <TopBar/>
       <Header/>
       <section className="relative bg-gradient-to-br from-blue-50 to-teal-50 py-20">
         <div className="container mx-auto px-4">

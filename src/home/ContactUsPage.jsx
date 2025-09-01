@@ -14,6 +14,7 @@ import Header from "./homeComponents/Header"
 import Footer from "./homeComponents/Footer" 
 import HeroSection from "./homeComponents/HeroSection"
 import ContactUs from "./homeComponents/Contact"
+import TopBar from "./homeComponents/TopBar"
 
 //  SectionHeader Component (Helper for ContactUsPage) 
 const SectionHeader = ({ title, subtitle }) => (
@@ -206,6 +207,7 @@ export default function ContactUsPage() {
   
   return (
     <div className="flex flex-col min-h-screen">
+      <TopBar/>
       <Header />
       {/* <HeroSection/> */}
       {/* <main className="flex-grow py-16 px-4 md:px-8 lg:px-16 max-w-7xl mx-auto">

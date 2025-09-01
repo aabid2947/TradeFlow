@@ -15,6 +15,7 @@ import useRazorpay from "@/hooks/useRazorpay"
 import { useCreateSubscriptionOrderMutation, useVerifySubscriptionPaymentMutation } from "@/app/api/paymentApiSlice"
 import { selectCurrentUser } from "@/features/auth/authSlice"
 import SubscriptionComponent from "./homeComponents/SubsciptionSection"
+import TopBar from "./homeComponents/TopBar"
 // Animation variants for sections
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -207,6 +208,7 @@ const PricingPage = () => {
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
+      <TopBar/>
       <Header />
 
       <motion.div

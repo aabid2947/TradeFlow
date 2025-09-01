@@ -165,8 +165,8 @@ export default function Services() {
         <div className="min-h-screen bg-gray-50 ">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="flex justify-between items-center my-8">
-                    <h1 className="font-bold text-xl">Service Management</h1>
-                    <div className="flex items-center space-x-2">
+                    <h1 className="font-bold text-xl mt-2">Service Management</h1>
+                    <div className="hidden lg:flex items-center space-x-2">
                         <button
                             onClick={() => setViewMode('list')}
                             className={`p-2  mt-3 rounded-md ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'}`}

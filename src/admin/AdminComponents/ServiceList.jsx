@@ -62,9 +62,9 @@ export default function ServiceList({
           <h3 className="text-xl font-semibold text-gray-900 truncate">
             {serviceName}
           </h3>
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+          {/* <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
             {demandLevel}
-          </Badge>
+          </Badge> */}
         </div>
 
         <div className="flex items-center gap-6 text-sm text-gray-600 my-3">

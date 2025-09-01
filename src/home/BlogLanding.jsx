@@ -15,6 +15,7 @@ import { useGetBlogsQuery, useGetBlogCategoriesQuery } from "@/app/api/blogApiSl
 import Header from "./homeComponents/Header";
 import Footer from "./homeComponents/Footer";
 import SubscriptionComponent from "./homeComponents/SubsciptionSection";
+import TopBar from "./homeComponents/TopBar";
 
 
 export default function BlogLandingPage() {
@@ -95,6 +96,7 @@ export default function BlogLandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <TopBar/>
       <Header />
       
       <main className="flex-1 bg-white">

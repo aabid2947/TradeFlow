@@ -29,6 +29,7 @@ import SubscriptionPurchaseCard from "../user/userComponents/SubscriptionPurchas
 import Header from "./homeComponents/Header";
 import Footer from "./homeComponents/Footer";
 import ReviewModal from "./homeComponents/ReviewModal";
+import TopBar from "./homeComponents/TopBar";
 
 // Helper function to calculate the final price after applying a discount.
 const calculateDiscountedPrice = (originalPrice, discount) => {
@@ -230,6 +231,7 @@ const ProductPage = ({ serviceId }) => {
     if (isError) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+         
                 <Header />
                 <div className="max-w-7xl mx-auto px-4 py-8 flex items-center justify-center min-h-[60vh]">
                     <div className="text-center">
@@ -249,6 +251,7 @@ const ProductPage = ({ serviceId }) => {
     return (
         <>
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+                <TopBar/>
                 <Header />
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     <div className="grid lg:grid-cols-2 gap-12 mb-12">

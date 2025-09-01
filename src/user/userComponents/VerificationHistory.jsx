@@ -871,8 +871,8 @@ export default function VerificationHistory() {
         )}
 
         {pagination && pagination.pages > 1 && (
-          <div className="flex justify-between items-center mt-6 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <Button variant="outline" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={isLoading || page === 1}>
+          <div className="flex justify-center  space-x-2 items-center mt-6 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <Button variant="outline"  onClick={() => setPage(p => Math.max(1, p - 1))} disabled={isLoading || page === 1}>
               Previous
             </Button>
             <span className="text-sm font-semibold text-gray-600">Page {pagination.page} of {pagination.pages}</span>

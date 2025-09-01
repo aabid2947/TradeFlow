@@ -311,7 +311,7 @@ export default function Footer() {
                 </ul>
               </div>
               {/* Follow Us (Mobile) */}
-              <div className="md:hidden mt-8">
+              {/* <div className="md:hidden mt-8">
                 <h4 className="font-semibold mb-4 text-white">Follow Us</h4>
                 <ul className="space-y-3">
                   {footerData.social.map((social) => (
@@ -323,7 +323,17 @@ export default function Footer() {
                     </li>
                   ))}
                 </ul>
+              </div> */}
+              <div className="md:hidden mt-8">
+              <h4 className="font-semibold mb-3">Follow Us</h4>
+              <div className="flex gap-3">
+                {footerData.social.map((social) => (
+                  <a key={social.name} href={social.href} className={`w-10 h-10 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 ${social.color}`} aria-label={social.name} target="_blank" rel="noopener noreferrer">
+                    <social.icon className="w-5 h-5" />
+                  </a>
+                ))}
               </div>
+            </div>
             </div>
           </div>
 

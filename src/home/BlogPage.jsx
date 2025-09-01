@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGetBlogBySlugQuery, useGetRelatedBlogsQuery } from "@/app/api/blogApiSlice";
 import Header from "./homeComponents/Header";
 import Footer from "./homeComponents/Footer";
+import TopBar from "./homeComponents/TopBar";
 
 // Custom styles for rich text content
 const richTextStyles = {
@@ -112,6 +113,7 @@ export default function BlogPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <TopBar/>
       <Header />
       
       <main className="flex-1">
@@ -199,14 +201,15 @@ export default function BlogPage() {
             </div>
         )}
 
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
+            className="overflow-hidden"
           >
             <div 
-              className="prose prose-lg prose-gray max-w-none
+              className="prose prose-lg prose-gray max-w-none overflow-hidden
                 prose-headings:text-gray-900 prose-headings:font-bold
                 prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-8
                 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-6
@@ -220,8 +223,13 @@ export default function BlogPage() {
                 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600
                 prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm
                 prose-pre:bg-gray-900 prose-pre:text-white prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
-                prose-img:rounded-lg prose-img:shadow-md prose-img:my-8"
-              style={richTextStyles}
+                [&_*]:max-w-full [&_*]:box-border
+                [&_img]:!max-w-full [&_img]:!w-full [&_img]:h-auto [&_img]:object-cover [&_img]:rounded-lg [&_img]:shadow-md [&_img]:my-4 [&_img]:block
+                [&_figure]:!max-w-full [&_figure]:w-full [&_figure]:overflow-hidden
+                [&_div]:!max-w-full [&_div]:overflow-hidden [&_div]:box-border
+                [&_table]:!max-w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:whitespace-nowrap
+                sm:[&_img]:my-6 md:[&_img]:my-8"
+              style={{...richTextStyles, maxWidth: '100%', overflowWrap: 'break-word', wordBreak: 'break-word'}}
               dangerouslySetInnerHTML={{ __html: blog.content }} 
             />
           </motion.div>

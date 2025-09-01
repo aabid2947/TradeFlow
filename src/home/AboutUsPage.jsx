@@ -22,6 +22,7 @@ import Footer from "./homeComponents/Footer"
 import HeroSection from "./homeComponents/HeroSection"
 import AboutUs from "./homeComponents/About"
 import { useEffect } from "react"
+import TopBar from "./homeComponents/TopBar"
 
 const SectionHeader = ({ title, subtitle }) => (
   <motion.div
@@ -61,6 +62,7 @@ export default function AboutUsPage() {
 
   return (
     <>
+    <TopBar/>
       <Header />
     <div className="flex flex-col min-h-screen overflow-x-hidden">
       {/* <HeroSection/> */}

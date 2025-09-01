@@ -97,12 +97,12 @@ export default function AdminDashboardSidebar({ isOpen, setIsOpen, activeView, o
         <SidebarProvider>
           <Sidebar collapsible="none" className="flex flex-col h-full">
 
-<SidebarHeader className="p-4 border-b border-gray-700 flex flex-col items-center" onClick={() => navigate("/")}>
+<SidebarHeader className="border-b border-gray-700 flex flex-col items-center" onClick={() => navigate("/")}>
   <div className="flex flex-col items-center gap-2 ">
     <img 
       src={logo} 
       alt="Logo" 
-      className="w-80 h-15 object-contain" // यहाँ साइज को w-20 h-20 कर दिया गया है
+      className="w-80 h-16 object-contain" // यहाँ साइज को w-20 h-20 कर दिया गया है
     />
   </div>
   <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 cursor-pointer lg:hidden p-1">

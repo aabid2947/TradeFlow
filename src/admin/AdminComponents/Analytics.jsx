@@ -177,10 +177,13 @@ const categoryPerformance = useMemo(() => {
     categoryStats[service.category].totalRevenue += (service.globalUsageCount || 0) * (service.price || 0);
   });
 
-  return Object.values(categoryStats).map(cat => ({
+  const categoryArray = Object.values(categoryStats).map(cat => ({
     ...cat,
     averagePrice: cat.averagePrice / cat.serviceCount
   })).sort((a, b) => b.totalUsage - a.totalUsage);
+  
+  // Remove top 2 categories and return the rest
+  return categoryArray.slice(2);
 }, [filteredServices]); // Changed dependency from [services] to [filteredServices]
 
   // Top performing services for time interval
@@ -189,6 +192,7 @@ const categoryPerformance = useMemo(() => {
       .sort((a, b) => (b.globalUsageCount || 0) - (a.globalUsageCount || 0))
       .slice(0, 10);
   }, [filteredServices]);
+ 
 
   const statsData = useMemo(() => {
     const placeholder = [

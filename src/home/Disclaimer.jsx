@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import LandingPageFooter from "./homeComponents/Footer"
 import HomePageHeader from "./homeComponents/Header"
 import { useNavigate } from "react-router-dom"
+import TopBar from "./homeComponents/TopBar"
 
 export default function DisclaimerPage() {
   const [expandedSection, setExpandedSection] = useState("definitions")
@@ -152,6 +153,7 @@ export default function DisclaimerPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <TopBar/>
       <HomePageHeader />
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16">
         <div className="max-w-4xl mx-auto px-6">
