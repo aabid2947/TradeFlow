@@ -158,32 +158,65 @@ export default function Analytics({ services = [], isLoading = false }) {
   // Calculate category performance
 // Calculate category performance
 const categoryPerformance = useMemo(() => {
-  const categoryStats = {};
-
+  // First, create a mapping of subcategories to categories
+  const subcategoryToCategoryMap = {};
+  
+  // Build the mapping by finding services with both category and subcategory
   filteredServices.forEach(service => {
-    if (!categoryStats[service.category]) {
-      categoryStats[service.category] = {
-        name: service.category,
+    if (service.category && service.category.trim() !== '' && 
+        service.subcategory && service.subcategory.trim() !== '') {
+      subcategoryToCategoryMap[service.subcategory] = service.category;
+    }
+  });
+
+  // Now process services and assign categories based on subcategory mapping
+  const categoryStats = {};
+  
+  filteredServices.forEach(service => {
+    let effectiveCategory = service.category;
+    
+    // If service has no category but has subcategory, try to inherit category
+    if ((!effectiveCategory || effectiveCategory.trim() === '') && 
+        service.subcategory && service.subcategory.trim() !== '') {
+      effectiveCategory = subcategoryToCategoryMap[service.subcategory];
+    }
+    
+    // Skip services that still don't have a category
+    if (!effectiveCategory || effectiveCategory.trim() === '') {
+      return;
+    }
+
+    if (!categoryStats[effectiveCategory]) {
+      categoryStats[effectiveCategory] = {
+        name: effectiveCategory,
         totalUsage: 0,
         serviceCount: 0,
         averagePrice: 0,
-        totalRevenue: 0
+        totalRevenue: 0,
+        subcategories: new Set() // Track subcategories under this category
       };
     }
 
-    categoryStats[service.category].totalUsage += service.globalUsageCount || 0;
-    categoryStats[service.category].serviceCount += 1;
-    categoryStats[service.category].averagePrice += service.price || 0;
-    categoryStats[service.category].totalRevenue += (service.globalUsageCount || 0) * (service.price || 0);
+    categoryStats[effectiveCategory].totalUsage += service.globalUsageCount || 0;
+    categoryStats[effectiveCategory].serviceCount += 1;
+    categoryStats[effectiveCategory].averagePrice += service.price || 0;
+    categoryStats[effectiveCategory].totalRevenue += (service.globalUsageCount || 0) * (service.price || 0);
+    
+    // Add subcategory to the set if it exists
+    if (service.subcategory && service.subcategory.trim() !== '') {
+      categoryStats[effectiveCategory].subcategories.add(service.subcategory);
+    }
   });
 
   const categoryArray = Object.values(categoryStats).map(cat => ({
     ...cat,
-    averagePrice: cat.averagePrice / cat.serviceCount
+    averagePrice: cat.averagePrice / cat.serviceCount,
+    subcategories: Array.from(cat.subcategories) // Convert Set to Array
   })).sort((a, b) => b.totalUsage - a.totalUsage);
   
-  // Remove top 2 categories and return the rest
-  return categoryArray.slice(2);
+  console.log('Category Performance with Subcategories:', categoryArray);
+  
+  return categoryArray;
 }, [filteredServices]); // Changed dependency from [services] to [filteredServices]
 
   // Top performing services for time interval
