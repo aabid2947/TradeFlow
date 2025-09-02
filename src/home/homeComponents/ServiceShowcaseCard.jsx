@@ -294,7 +294,7 @@ export default function ServiceCard({ data }) {
                 <ModernButton variant="primary"
                 onClick={() => {
                   if(data.navTo) navigate(data.navTo)
-                  else navigate('/blog')
+                  else navigate('/contact-us')
                 
                 }}
                 >
