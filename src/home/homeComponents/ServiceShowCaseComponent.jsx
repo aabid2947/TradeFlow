@@ -125,7 +125,9 @@ const servicesData = [
       "Validate land titles",
       "Reduce the risk of fraud",
     ],
+
     ctaText: 'Explore Realty Products',
+    navTo:'/contact-us',
     VisualComponent: CompanyCredentialVisual,
   }
 ];

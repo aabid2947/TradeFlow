@@ -292,7 +292,11 @@ export default function ServiceCard({ data }) {
               {/* Buttons Section - Moved to bottom */}
               <div className="flex items-center flex-wrap gap-4">
                 <ModernButton variant="primary"
-                onClick={() => navigate('/blog')}
+                onClick={() => {
+                  if(data.navTo) navigate(data.navTo)
+                  else navigate('/blog')
+                
+                }}
                 >
                   {ctaText}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
