@@ -53,6 +53,8 @@ export default function Header() {
   const [navigationItems, setNavigationItems] = useState(staticNavItems)
   const [activeMobileCategory, setActiveMobileCategory] = useState(null)
   const [submenuOffset, setSubmenuOffset] = useState(0)
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
   const user = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
 
@@ -63,54 +65,65 @@ export default function Header() {
   const { data: servicesData } = useGetServicesQuery()
 
   // Process services data to group by category
-  useEffect(() => {
-    if (servicesData && Array.isArray(servicesData.data)) {
-      let groupedServices = servicesData.data.reduce((acc, service) => {
-        if (service.category && typeof service.category === 'string' && service.category.trim()) {
-          const category = service.category.trim();
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(service);
+// Process services data to group by category
+useEffect(() => {
+  if (servicesData && Array.isArray(servicesData.data)) {
+    let groupedServices = servicesData.data.reduce((acc, service) => {
+      if (service.category && typeof service.category === "string" && service.category.trim()) {
+        const category = service.category.trim();
+        if (!acc[category]) {
+          acc[category] = [];
         }
-        return acc;
-      }, {});
-
-      if (groupedServices["PAN"]) {
-        groupedServices["PAN verification"] = groupedServices["PAN"];
-        delete groupedServices["PAN"];
+        acc[category].push(service);
       }
-      if (groupedServices["CIN"]) {
-        groupedServices["CIN verification"] = groupedServices["CIN"];
-        delete groupedServices["CIN"];
-      }
+      return acc;
+    }, {});
 
-      const reordered = {};
-      Object.keys(groupedServices).forEach((key) => {
-        if (key !== "PAN verification" && key !== "CIN verification") {
-          reordered[key] = groupedServices[key];
-        }
-      });
-      if (groupedServices["PAN verification"]) {
-        reordered["PAN verification"] = groupedServices["PAN verification"];
-      }
-      if (groupedServices["CIN verification"]) {
-        reordered["CIN verification"] = groupedServices["CIN verification"];
-      }
-
-      groupedServices = reordered;
-      setProcessedProducts(groupedServices);
-
-      const dynamicProductItem = {
-        name: "Products",
-        hasDropdown: true,
-      };
-
-      if (!navigationItems.find((item) => item.name === "Products")) {
-        setNavigationItems([dynamicProductItem, ...staticNavItems]);
-      }
+    // Rename categories
+    if (groupedServices["PAN"]) {
+      groupedServices["PAN verification"] = groupedServices["PAN"];
+      delete groupedServices["PAN"];
     }
-  }, [servicesData, navigationItems]);
+    if (groupedServices["CIN"]) {
+      groupedServices["CIN verification"] = groupedServices["CIN"];
+      delete groupedServices["CIN"];
+    }
+
+    const reordered = {};
+    Object.keys(groupedServices).forEach((key) => {
+      if (key !== "PAN verification" && key !== "CIN verification") {
+        reordered[key] = groupedServices[key];
+      }
+    });
+
+    if (groupedServices["PAN verification"]) {
+      reordered["PAN verification"] = groupedServices["PAN verification"];
+    }
+    if (groupedServices["CIN verification"]) {
+      reordered["CIN verification"] = groupedServices["CIN verification"];
+    }
+
+    // ✅ Add Static extra sub-options ONLY under Identity Verification
+    if (reordered["Identity Verification"]) {
+      reordered["Identity Verification"].push(
+        { _id: "static-pan", name: "PAN Card Verification" },
+        { _id: "static-aadhar", name: "Aadhar Verification" }
+      );
+    }
+
+    setProcessedProducts(reordered);
+
+    const dynamicProductItem = {
+      name: "Products",
+      hasDropdown: true,
+    };
+
+    if (!navigationItems.find((item) => item.name === "Products")) {
+      setNavigationItems([dynamicProductItem, ...staticNavItems]);
+    }
+  }
+}, [servicesData, navigationItems]);
+
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -226,21 +239,33 @@ export default function Header() {
                                 style={{ top: `${submenuOffset}px` }}
                               >
                                 <div className="space-y-1">
-                                  {processedProducts[hoveredCategory]?.map((service) => (
-                                    <a
-                                      key={service._id}
-                                      href={`/product/${service._id}`}
-                                      onClick={(e) => {
-                                        e.preventDefault()
-                                        handleNavigation(`/product/${service._id}`)
-                                      }}
-                                      className="block p-3 rounded-lg bg-white hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
-                                    >
-                                      <div className="font-semibold text-gray-800 group-hover:text-[#1987BF] transition-colors duration-200 text-sm whitespace-nowrap">
-                                        {service.name}
-                                      </div>
-                                    </a>
-                                  ))}
+                           {processedProducts[hoveredCategory]?.map((service) => (
+  service._id === "static-pan" || service._id === "static-aadhar" ? (
+    <div
+      key={service._id}
+      className="block p-3 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
+    >
+      <div className="font-semibold text-sm whitespace-nowrap">
+        {service.name}
+      </div>
+    </div>
+  ) : (
+    <a
+      key={service._id}
+      href={`/product/${service._id}`}
+      onClick={(e) => {
+        e.preventDefault()
+        handleNavigation(`/product/${service._id}`)
+      }}
+      className="block p-3 rounded-lg bg-white hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
+    >
+      <div className="font-semibold text-gray-800 group-hover:text-[#1987BF] transition-colors duration-200 text-sm whitespace-nowrap">
+        {service.name}
+      </div>
+    </a>
+  )
+))}
+
                                 </div>
                               </div>
                             )}
@@ -298,39 +323,47 @@ export default function Header() {
             {/* Right Side Actions */}
             <div className="flex items-center">
               {user ? (
-                <div className="hidden lg:block relative group">
-                  <Button
-                    variant="ghost"
-                    className="flex items-center text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 bg-white shadow-sm transition duration-200"
-                  >
-                    <User className="w-5 h-5 mr-1 text-gray-600" />
-                    Account
-                    <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180 text-gray-600" />
-                  </Button>
-                  <div className="absolute top-full right-0 w-40 bg-white border border-gray-100 shadow-lg rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
-                    <button
-                      onClick={() => {
-                        if (user.role === 'admin') {
-                          navigate("/admin");
-                        } else {
-                          navigate("/user");
-                        }
-                      }}
-                      className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Go to Account
-                    </button>
-                     <button
-                      onClick={ handleLogout}
-                        
-                      
-                      className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Log Out
-                    </button>
-                    
-                  </div>
-                </div>
+              <div
+  className="hidden lg:block relative"
+  onMouseEnter={() => setIsAccountMenuOpen(true)}
+  onMouseLeave={() => setIsAccountMenuOpen(false)}
+>
+  <Button
+    variant="ghost"
+    className="flex items-center text-gray-700 hover:text-[#1987BF] border border-gray-300 rounded-full font-bold px-4 bg-white shadow-sm transition duration-200"
+  >
+    <User className="w-5 h-5 mr-1 text-gray-600" />
+    Account
+    <ChevronDown
+      className={`w-4 h-4 transition-transform ${
+        isAccountMenuOpen ? "rotate-180" : ""
+      }`}
+    />
+  </Button>
+
+  {isAccountMenuOpen && (
+    <div className="absolute top-full right-0 w-40 bg-white border border-gray-100 shadow-lg rounded-md z-50 rounded-md">
+      <button
+        onClick={() => {
+          if (user.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/user");
+          }
+        }}
+        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+      >
+        Go to Account
+      </button>
+      <button
+        onClick={handleLogout}
+        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+      >
+        Log Out
+      </button>
+    </div>
+  )}
+</div>
               ) : (
                 <div className="hidden lg:block">
                   <Button
@@ -398,19 +431,29 @@ export default function Header() {
                               className={`overflow-hidden transition-all duration-300 ease-out ${activeMobileCategory === category ? "max-h-96" : "max-h-0"}`}
                             >
                               <div className="pl-4 space-y-3 pt-2">
-                                {processedProducts[category].map((service) => (
-                                  <a
-                                    key={service._id}
-                                    href={`/product/${service._id}`}
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      handleNavigation(`/product/${service._id}`)
-                                    }}
-                                    className="block py-2 text-md text-gray-600 hover:text-[#1987BF] transition-colors duration-200 cursor-pointer"
-                                  >
-                                    {service.name}
-                                  </a>
-                                ))}
+                               {processedProducts[category].map((service) => (
+  service._id === "static-pan" || service._id === "static-aadhar" ? (
+    <div
+      key={service._id}
+      className="block py-2 text-md text-gray-400 cursor-not-allowed"
+    >
+      {service.name}
+    </div>
+  ) : (
+    <a
+      key={service._id}
+      href={`/product/${service._id}`}
+      onClick={(e) => {
+        e.preventDefault()
+        handleNavigation(`/product/${service._id}`)
+      }}
+      className="block py-2 text-md text-gray-600 hover:text-[#1987BF] transition-colors duration-200 cursor-pointer"
+    >
+      {service.name}
+    </a>
+  )
+))}
+
                               </div>
                             </div>
                           </div>
