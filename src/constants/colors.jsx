@@ -1,1 +1,0 @@
-export const highlightedTextColor = "#1A89C1"

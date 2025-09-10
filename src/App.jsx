@@ -1,12 +1,17 @@
-import { createBrowserRouter } from "react-router-dom";
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { initializeAuth } from './features/auth/authSlice';
 import AppRoutes from "./routes/index.jsx"; 
 
+function App() {
+  const dispatch = useDispatch();
 
-const App = createBrowserRouter([
-  {
-    path: "*",
-    Component: AppRoutes,
-  },
-]);
+  useEffect(() => {
+    // Initialize auth state from localStorage on app startup
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
+  return <AppRoutes />;
+}
 
 export default App;

@@ -1,25 +1,12 @@
+import { Routes, Route } from "react-router-dom";
 
-import AdminDashBoard from "@/admin/AdminDashBoard"
+const ProtectedAdminRoutes = () => {
+  return (
+    <Routes>
+      {/* Add protected admin routes here */}
+      <Route path="/" element={<div>Admin Dashboard</div>} />
+    </Routes>
+  );
+};
 
-import ErrorPage from "@/pages/ErrorPage";
-
-export const protectedAdminRoutes = [
-
-    // {
-    //     path: '/coupon-offer',
-    //     element: <CouponOfferPage />
-    // },
-
-    {
-        path: '/admin',
-        element: <AdminDashBoard />,
-        errorElement: <ErrorPage />
-    },
-    // {
-    //     path: '/purchase-list',
-    //     element: <AdminRecentPurchasedListPage />,
-    //     errorElement: <ErrorPage />
-    // },
-
-];
-
+export default ProtectedAdminRoutes;

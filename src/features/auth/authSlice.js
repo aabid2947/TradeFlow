@@ -1,72 +1,139 @@
-// src/features/auth/authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const storedUser = localStorage.getItem('user');
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
-  token: localStorage.getItem('token') || null,
-  isLoading: false, 
+  user: null,
+  token: localStorage.getItem('token'),
+  refreshToken: localStorage.getItem('refreshToken'),
+  isAuthenticated: !!localStorage.getItem('token'),
+  isLoading: false,
+  error: null,
+};
+
+// Helper function to safely parse stored user data
+const getStoredUser = () => {
+  try {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error('Error parsing stored user data:', error);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
+// Update initial state to include stored user
+const enhancedInitialState = {
+  ...initialState,
+  user: getStoredUser(),
 };
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState,
+  initialState: enhancedInitialState,
   reducers: {
-    // This action will be called once Firebase has determined the auth state.
-    setAuthReady: (state) => {
-      state.isLoading = false;
+    setCredentials: (state, action) => {
+      const { user, token, refreshToken } = action.payload
+      state.user = user
+      state.token = token
+      state.refreshToken = refreshToken
+      state.isAuthenticated = true
+      state.error = null
+      state.isLoading = false
+      
+      // Persist to localStorage
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken)
+      }
     },
     
-    setCredentials: (state, action) => {
-      const { data } = action.payload;
-      const { token, ...userData } = data;
-
-      state.user = userData;
-      state.token = token;
-      state.isLoading = false; 
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', token);
+    logout: (state) => {
+      state.user = null
+      state.token = null
+      state.refreshToken = null
+      state.isAuthenticated = false
+      state.error = null
+      state.isLoading = false
+      
+      // Clear localStorage
+      localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
     },
-
+    
+    setLoading: (state, action) => {
+      state.isLoading = action.payload
+    },
+    
+    setError: (state, action) => {
+      state.error = action.payload
+      state.isLoading = false
+    },
+    
+    clearError: (state) => {
+      state.error = null
+    },
+    
     updateUser: (state, action) => {
-      const updatedUserData = action.payload;
-      state.user = { 
-        ...state.user, 
-        ...updatedUserData,
-        promotedCategories: updatedUserData.promotedCategories || state.user?.promotedCategories || []
-      };
-      localStorage.setItem('user', JSON.stringify(state.user));
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload }
+      }
+    },
+    
+    updateTokens: (state, action) => {
+      const { token, refreshToken } = action.payload
+      if (token) {
+        state.token = token
+        localStorage.setItem('token', token)
+      }
+      if (refreshToken) {
+        state.refreshToken = refreshToken
+        localStorage.setItem('refreshToken', refreshToken)
+      }
     },
 
-    refreshUser: (state, action) => {
-      const freshUserData = action.payload;
-      state.user = freshUserData;
-      localStorage.setItem('user', JSON.stringify(freshUserData));
-    },
+    // Initialize auth state from localStorage (for app startup)
+    initializeAuth: (state) => {
+      const token = localStorage.getItem('token')
+      const refreshToken = localStorage.getItem('refreshToken')
+      const user = getStoredUser()
 
-    logOut: (state) => {
-      state.user = null;
-      state.token = null;
-      state.isLoading = false;
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      if (token && user) {
+        state.token = token
+        state.refreshToken = refreshToken
+        state.user = user
+        state.isAuthenticated = true
+      } else {
+        // Clear inconsistent state
+        state.token = null
+        state.refreshToken = null
+        state.user = null
+        state.isAuthenticated = false
+        localStorage.removeItem('token')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+      }
     },
   },
 });
 
-// Export action creators
-export const { setAuthReady, setCredentials, logOut, updateUser, refreshUser } = authSlice.actions; 
+export const {
+  setCredentials,
+  logout,
+  setLoading,
+  setError,
+  clearError,
+  updateUser,
+  updateTokens,
+  initializeAuth,
+} = authSlice.actions;
 
 export default authSlice.reducer;
 
 // Selectors
 export const selectCurrentUser = (state) => state.auth.user;
 export const selectCurrentToken = (state) => state.auth.token;
-export const selectCurrentUserRole = (state) => state.auth.user?.role;
-export const selectIsAuthLoading = (state) => state.auth.isLoading; 
-export const selectPromotedCategories = (state) => state.auth.user?.promotedCategories || [];
-export const selectIsSubscribedTo = (category) => (state) => {
-  const categories = state.auth.user?.promotedCategories || [];
-  return categories.includes(category);
-};
+export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectAuthLoading = (state) => state.auth.isLoading;
+export const selectAuthError = (state) => state.auth.error;
