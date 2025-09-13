@@ -81,12 +81,14 @@ export function LoginForm() {
         photoURL: user.photoURL,
         uid: user.uid,
       }).unwrap();
+      console.log('Google Auth Response:', response);
 
       dispatch(setCredentials({
         user: response.data.user,
         token: response.data.token,
         refreshToken: response.data.refreshToken,
       }));
+      console.log('User logged in via Google:', response.data.user);
       toast({
         title: "Google Sign-In Successful",
         description: `Welcome, ${response.data.user.displayName || response.data.user.email}`,
@@ -94,6 +96,7 @@ export function LoginForm() {
       navigate("/dashboard");
     } catch (error) {
       console.error('Google Sign-In Error:', error);
+      console.log('Error details:', error.data || error.message || error);
       toast({
         title: "Google Sign-In Failed",
         description: error.data?.message || error.message || "Failed to authenticate with Google",
