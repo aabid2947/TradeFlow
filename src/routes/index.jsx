@@ -15,6 +15,8 @@ import CreateListingPage from "../pages/CreateListingPage.jsx";
 import ChatPage from "../pages/ChatPage.jsx";
 import TradesPage from "../pages/TradesPage.jsx";
 import TradeDetailsPage from "../pages/TradeDetailsPage.jsx";
+import WithdrawalCheckoutPage from "../pages/WithdrawalCheckoutPage.jsx";
+import WithdrawalHistoryPage from "../pages/WithdrawalHistoryPage.jsx";
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -52,6 +54,10 @@ const AppRoutes = () => {
       {/* Protected trade routes */}
       <Route path="/trades" element={isAuthenticated ? <TradesPage /> : <LoginPage />} />
       <Route path="/trades/:tradeId" element={isAuthenticated ? <TradeDetailsPage /> : <LoginPage />} />
+      
+      {/* Protected withdrawal route */}
+      <Route path="/withdraw" element={isAuthenticated ? <WithdrawalCheckoutPage /> : <LoginPage />} />
+      <Route path="/withdrawals" element={isAuthenticated ? <WithdrawalHistoryPage /> : <LoginPage />} />
       
       {/* Protected user routes */}
       <Route path="/dashboard/*" element={<ProtectedRoutes />} />

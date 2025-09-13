@@ -1,4 +1,12 @@
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../config/firebase";
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  createUserWithEmailAndPassword, 
+  sendEmailVerification
+} from "firebase/auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +17,7 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { useToast } from "../hooks/use-toast";
-import { useRegisterMutation } from "../features/api/apiSlice";
+import { useRegisterMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
 import { setCredentials } from "../features/auth/authSlice";
 
 const schema = z.object({
@@ -25,12 +33,13 @@ const schema = z.object({
   businessName: z.string().optional(),
   agree: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms to continue" }) }),
 }).superRefine((data, ctx) => {
+  // Business name validation
   if (data.role === "seller" && !data.businessName?.trim()) {
     ctx.addIssue({
       code: "custom",
       message: "Business name is required for sellers",
       path: ["businessName"],
-    })
+    });
   }
 });
 
@@ -39,10 +48,23 @@ export function SignUpForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [register, { isLoading }] = useRegisterMutation();
+  const [googleAuth, { isLoading: isGoogleLoading }] = useGoogleAuthMutation();
+  
+  // Email verification state
+  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { username: "", email: "", password: "", role: "buyer", businessName: "", agree: false },
+    defaultValues: { 
+      username: "", 
+      email: "", 
+      password: "", 
+      role: "buyer", 
+      businessName: "", 
+      agree: false 
+    },
     mode: "onChange",
   });
 
@@ -51,11 +73,20 @@ export function SignUpForm() {
 
   async function onSubmit(values) {
     try {
+      // Email signup flow
+      const firebaseResult = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const firebaseUser = firebaseResult.user;
+
+      // Send email verification
+      await sendEmailVerification(firebaseUser);
+      
+      // Create user account in our backend
       const userData = {
         username: values.username,
         email: values.email,
         password: values.password,
         role: values.role,
+        firebaseUid: firebaseUser.uid,
       };
       
       if (values.role === "seller" && values.businessName?.trim()) {
@@ -63,21 +94,28 @@ export function SignUpForm() {
       }
       
       const result = await register(userData).unwrap();
-      dispatch(setCredentials({
-        user: result.data.user,
-        token: result.data.token,
-        refreshToken: result.data.refreshToken,
-      }));
+      
+      // Show email verification message
+      setUserEmail(values.email);
+      setIsEmailSent(true);
+      
       toast({
         title: "Account created successfully!",
-        description: "Welcome to TradeFlow!",
+        description: "Please check your email and click the verification link to complete your registration.",
       });
-      navigate("/dashboard");
     } catch (err) {
       console.error('Registration error:', err);
       let errorMessage = "Something went wrong";
       
-      if (err.data && err.data.message) {
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = "An account with this email already exists.";
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = "Password is too weak. Please choose a stronger password.";
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = "Please enter a valid email address.";
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = "Too many requests. Please try again later.";
+      } else if (err.data && err.data.message) {
         errorMessage = err.data.message;
       } else if (err.message) {
         errorMessage = err.message;
@@ -93,6 +131,158 @@ export function SignUpForm() {
         variant: "destructive"
       });
     }
+  }
+
+  // Resend email verification
+  const handleResendVerification = async () => {
+    setIsResendingEmail(true);
+    try {
+      if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser);
+        toast({
+          title: "Verification email sent",
+          description: "Please check your email for the verification link.",
+        });
+      }
+    } catch (error) {
+      console.error('Error resending verification email:', error);
+      toast({
+        title: "Failed to resend email",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
+
+  // Google Sign-Up handler
+  const handleGoogleSignUp = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Send user info to your backend for authentication
+      const response = await googleAuth({
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      }).unwrap();
+
+      dispatch(setCredentials({
+        user: response.data.user,
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+      }));
+      toast({
+        title: "Google Sign-Up Successful",
+        description: `Welcome to TradeFlow, ${response.data.user.displayName || response.data.user.email}!`,
+      });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error('Google Sign-Up Error:', error);
+      toast({
+        title: "Google Sign-Up Failed",
+        description: error.data?.message || error.message || "Failed to authenticate with Google",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Show email verification screen if email was sent
+  if (isEmailSent) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+        style={{
+          background: `
+            linear-gradient(135deg, #000 0%, #050505 50%, #0a0a0a 100%),
+            radial-gradient(ellipse at 20% 80%, rgba(20, 40, 80, 0.05) 0%, transparent 70%),
+            radial-gradient(ellipse at 80% 20%, rgba(30, 60, 120, 0.03) 0%, transparent 80%),
+            radial-gradient(circle at 70% 30%, rgba(50, 80, 140, 0.02) 0%, transparent 85%),
+            radial-gradient(circle at 30% 70%, rgba(80, 120, 200, 0.015) 0%, transparent 90%)
+          `,
+          backgroundSize: '100% 100%, 100% 100%, 200% 200%, 200% 200%, 300% 300%',
+          animation: 'gradientShift 25s ease-in-out infinite'
+        }}
+      >
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-left mb-8">
+            <h1 className="text-white text-xl font-normal">TradeFlow</h1>
+          </div>
+
+          {/* Email Verification Card */}
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
+            {/* Email Icon */}
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            {/* Header */}
+            <h2 className="text-2xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent">
+                Verify Your Email
+              </span>
+            </h2>
+
+            <p className="text-gray-400 mb-6">
+              We've sent a verification link to:
+              <br />
+              <span className="text-white font-medium">{userEmail}</span>
+            </p>
+
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+              <p className="text-blue-300 text-sm">
+                Please check your email and click the verification link to activate your account. 
+                You may need to check your spam folder.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={handleResendVerification}
+                disabled={isResendingEmail}
+                className="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-750 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResendingEmail ? "Sending..." : "Resend Verification Email"}
+              </button>
+
+              <Link
+                to="/login"
+                className="block w-full bg-white text-black font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors text-center"
+              >
+                Go to Login
+              </Link>
+
+              <button
+                onClick={() => {
+                  setIsEmailSent(false);
+                  setUserEmail('');
+                }}
+                className="w-full text-gray-400 hover:text-white transition-colors py-2"
+              >
+                Back to Registration
+              </button>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-6 pt-6 border-t border-gray-700">
+              <p className="text-xs text-gray-500">
+                Didn't receive the email? Check your spam folder or try resending.
+                <br />
+                For help, contact our support team.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -160,19 +350,19 @@ export function SignUpForm() {
               )}/>
               
               <FormField control={form.control} name="password" render={({ field }) => (
-                  <FormItem className="mb-2">
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="Password" 
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <p className="mt-1 text-xs text-gray-500">Use 8+ characters with letters and numbers.</p>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-              )}/>
+                <FormItem className="mb-2">
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Password" 
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <p className="mt-1 text-xs text-gray-500">Use 8+ characters with letters and numbers.</p>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+            )}/>
               
               <FormField control={form.control} name="role" render={({ field }) => (
                   <FormItem>
@@ -252,7 +442,9 @@ export function SignUpForm() {
               {/* Google Sign Up Button */}
               <button
                 type="button"
-                className="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-750 transition-colors flex items-center justify-center gap-3"
+                onClick={handleGoogleSignUp}
+                disabled={isGoogleLoading}
+                className="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-750 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -272,7 +464,7 @@ export function SignUpForm() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Google
+                {isGoogleLoading ? "Signing up with Google..." : "Google"}
               </button>
 
               {/* Terms and Privacy */}

@@ -26,7 +26,7 @@ const BuyListingModal = ({ listing, trigger }) => {
   const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation()
   const { toast } = useToast()
 
-  const userBalance =profileData['data'].user?.balances?.funToken || 0
+  const userBalance = profileData?.['data'].user?.balances?.funToken || 0
   const totalCost = buyAmount ? Number(buyAmount) * listing.priceInFunToken : 0
   const shortfall = totalCost - userBalance
   

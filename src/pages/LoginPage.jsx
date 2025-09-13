@@ -1,4 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../config/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +9,7 @@ import { Button } from "../components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { Input } from "../components/ui/input";
 import { useToast } from "../hooks/use-toast";
-import { useLoginMutation } from "../features/api/apiSlice";
+import { useLoginMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
 import { setCredentials } from "../features/auth/authSlice";
 
 const schema = z.object({
@@ -20,6 +22,7 @@ export function LoginForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const [googleAuth, { isLoading: isGoogleLoading }] = useGoogleAuthMutation();
   
   const form = useForm({
     resolver: zodResolver(schema),
@@ -65,7 +68,39 @@ export function LoginForm() {
   }
   
   // Dummy handlers for social sign-in
-  const handleGoogleSignIn = () => { console.log("Google Sign-In clicked"); };
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Send user info to your backend for authentication
+      const response = await googleAuth({
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      }).unwrap();
+
+      dispatch(setCredentials({
+        user: response.data.user,
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+      }));
+      toast({
+        title: "Google Sign-In Successful",
+        description: `Welcome, ${response.data.user.displayName || response.data.user.email}`,
+      });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      toast({
+        title: "Google Sign-In Failed",
+        description: error.data?.message || error.message || "Failed to authenticate with Google",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
  <div
@@ -176,7 +211,8 @@ export function LoginForm() {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-750 transition-colors flex items-center justify-center gap-3"
+                disabled={isGoogleLoading}
+                className="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-750 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -196,7 +232,7 @@ export function LoginForm() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Google
+                {isGoogleLoading ? "Signing in with Google..." : "Google"}
               </button>
 
               {/* Terms and Privacy */}

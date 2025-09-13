@@ -3,9 +3,9 @@ import { useSelector, useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import { Card } from "../components/ui/card"
-import { Coins, TrendingUp, Users, Shield, BarChart3, Wallet, LogOut, ArrowUpRight, ArrowDownLeft, Eye, Bell, Settings, ChevronRight, Star, Activity } from "lucide-react"
+import { Coins, TrendingUp, Users, Shield, BarChart3, Wallet, Clock,LogOut, ArrowUpRight, ArrowDownLeft, Eye, Bell, Settings, ChevronRight, Star, Activity } from "lucide-react"
 import { selectCurrentUser } from "../features/auth/authSlice"
-import { useLogoutMutation, useGetDashboardStatsQuery } from "../features/api/apiSlice"
+import { useLogoutMutation, useGetDashboardStatsQuery, useGetUserTradesQuery, useGetWithdrawalHistoryQuery } from "../features/api/apiSlice"
 import { logout } from "../features/auth/authSlice"
 import { useToast } from "../hooks/use-toast"
 import { SiteHeader } from "../components/SiteHeader"
@@ -16,6 +16,8 @@ export default function DashboardPage() {
   const dispatch = useDispatch()
   const [logoutMutation] = useLogoutMutation()
   const { data: dashboardData, isLoading: statsLoading, error: statsError } = useGetDashboardStatsQuery()
+  const { data: tradesData, isLoading: tradesLoading } = useGetUserTradesQuery({ limit: 3 })
+  const { data: withdrawalHistory, isLoading: withdrawalsLoading } = useGetWithdrawalHistoryQuery({ page: 1, limit: 5 })
   const { toast } = useToast()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [hoveredStat, setHoveredStat] = useState(null)
@@ -103,38 +105,40 @@ export default function DashboardPage() {
     }
   ]
 
-  const recentTrades = [
-    { 
-      id: 1, 
-      type: "Buy", 
-      amount: "$1,234.56", 
-      asset: "BTC", 
-      status: "Completed", 
-      time: "2 hours ago",
-      user: "Alice_T",
-      profit: "+$45.23"
-    },
-    { 
-      id: 2, 
-      type: "Sell", 
-      amount: "$567.89", 
-      asset: "ETH", 
-      status: "Pending", 
-      time: "4 hours ago",
-      user: "Bob_C",
-      profit: "pending"
-    },
-    { 
-      id: 3, 
-      type: "Buy", 
-      amount: "$890.12", 
-      asset: "USDT", 
-      status: "Completed", 
-      time: "6 hours ago",
-      user: "Charlie_P",
-      profit: "+$12.45"
-    },
-  ]
+  // Get recent trades from API
+  const recentTrades = tradesData?.data?.trades?.slice(0, 3) || []
+
+  // Get recent withdrawals from API
+  const recentWithdrawals = withdrawalHistory?.data?.withdrawals?.slice(0, 5) || []
+
+  // Utility function to format date
+  const formatTimeAgo = (dateString) => {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60)
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+    } else {
+      const days = Math.floor(diffInMinutes / 1440)
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`
+    }
+  }
+
+  // Utility function to determine trade type for current user
+  const getTradeType = (trade, currentUserId) => {
+    return trade.buyerId?._id === currentUserId ? 'Buy' : 'Sell'
+  }
+
+  // Utility function to get other party username
+  const getOtherPartyUsername = (trade, currentUserId) => {
+    return trade.buyerId?._id === currentUserId 
+      ? trade.sellerId?.username || 'Unknown'
+      : trade.buyerId?.username || 'Unknown'
+  }
 
   const marketData = [
     { name: "Bitcoin (BTC)", price: "$43,250.00", change: "+2.5%", isUp: true },
@@ -142,6 +146,38 @@ export default function DashboardPage() {
     { name: "Tether (USDT)", price: "$1.00", change: "0.0%", isUp: null },
     { name: "Binance Coin (BNB)", price: "$385.50", change: "-0.8%", isUp: false },
   ]
+
+  // Format withdrawal status
+  const getWithdrawalStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-600'
+      case 'pending':
+        return 'text-yellow-600'
+      case 'processing':
+        return 'text-blue-600'
+      case 'failed':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
+    }
+  }
+
+  // Format withdrawal status text
+  const getWithdrawalStatusText = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'Completed'
+      case 'pending':
+        return 'Pending'
+      case 'processing':
+        return 'Processing'
+      case 'failed':
+        return 'Failed'
+      default:
+        return status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 relative" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -254,6 +290,7 @@ export default function DashboardPage() {
                 <Button 
                 variant="outline" 
                 className="w-full justify-start border-zinc-300 text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all duration-300 hover:scale-101 group/btn h-12"
+                onClick={() => navigate('/trading')}
               >
                 <BarChart3 className="h-4 w-4 mr-3 group-hover/btn:scale-110 transition-transform" />
                 <div className="flex-1 text-left">
@@ -264,23 +301,25 @@ export default function DashboardPage() {
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full justify-start border-zinc-300 text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all duration-300 hover:scale-101 group/btn h-12"
+                className="w-full justify-start border-green-300 text-green-900 hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-101 group/btn h-12"
+                onClick={() => navigate('/withdraw')}
               >
-                <BarChart3 className="h-4 w-4 mr-3 group-hover/btn:scale-110 transition-transform" />
+                <ArrowDownLeft className="h-4 w-4 mr-3 group-hover/btn:scale-110 transition-transform" />
                 <div className="flex-1 text-left">
-                  <div className="font-semibold leading-snug">View Analytics</div>
-                  <div className="text-xs font-normal leading-relaxed opacity-70">Track performance</div>
+                  <div className="font-semibold leading-snug">Withdraw Funds</div>
+                  <div className="text-xs font-normal leading-relaxed opacity-70">Convert FUN to INR</div>
                 </div>
                 <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 variant="outline" 
                 className="w-full justify-start border-zinc-300 text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all duration-300 hover:scale-101 group/btn h-12"
+                onClick={() => navigate('/withdrawals')}
               >
                 <Users className="h-4 w-4 mr-3 group-hover/btn:scale-110 transition-transform" />
                 <div className="flex-1 text-left">
-                  <div className="font-semibold leading-snug">Find Partners</div>
-                  <div className="text-xs font-normal leading-relaxed opacity-70">Connect with traders</div>
+                  <div className="font-semibold leading-snug">Withdrawal History</div>
+                  <div className="text-xs font-normal leading-relaxed opacity-70">View past withdrawals</div>
                 </div>
                 <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
               </Button>
@@ -290,59 +329,107 @@ export default function DashboardPage() {
           <Card className="lg:col-span-2 bg-white border-zinc-200 backdrop-blur p-6 shadow-md shadow-zinc-300/50 hover:shadow-lg hover:shadow-zinc-400/60 hover:border-zinc-300 group">
             <h3 className="text-lg md:text-xl lg:text-2xl font-semibold leading-snug text-zinc-900 mb-6 flex items-center justify-between">
               Recent Trades
-              <Button variant="ghost" size="sm" className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-all duration-200">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-all duration-200"
+                onClick={() => navigate('/trades')}
+              >
                 <Eye className="h-4 w-4 mr-1" />
                 View All
               </Button>
             </h3>
             <div className="space-y-4">
-              {recentTrades.map((trade) => (
-                <div
-                  key={trade.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300 hover:scale-101 hover:-translate-y-1 transition-all duration-300 cursor-pointer group/trade hover:shadow-md"
-                  onMouseEnter={() => setHoveredCard(trade.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`px-3 py-1 rounded-lg text-xs font-normal leading-relaxed font-medium flex items-center gap-1 transition-all duration-200 ${
-                      trade.type === 'Buy' 
-                        ? 'bg-green-100 text-green-700 group-hover/trade:bg-green-200' 
-                        : 'bg-red-100 text-red-700 group-hover/trade:bg-red-200'
-                    }`}>
-                      {trade.type === 'Buy' ? (
-                        <ArrowUpRight className="h-3 w-3" />
-                      ) : (
-                        <ArrowDownLeft className="h-3 w-3" />
-                      )}
-                      {trade.type}
-                    </div>
-                    <div>
-                      <p className="font-semibold leading-snug text-zinc-900 group-hover/trade:text-zinc-900 transition-colors">
-                        {trade.amount}
-                      </p>
-                      <p className="text-sm font-normal leading-relaxed text-zinc-600 flex items-center gap-2 group-hover/trade:text-zinc-700 transition-colors">
-                        {trade.asset} • {trade.user}
-                      </p>
+              {tradesLoading ? (
+                // Loading skeleton
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-200">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-6 bg-zinc-200 rounded"></div>
+                        <div>
+                          <div className="w-24 h-4 bg-zinc-200 rounded mb-2"></div>
+                          <div className="w-32 h-3 bg-zinc-200 rounded"></div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="w-16 h-4 bg-zinc-200 rounded mb-2"></div>
+                        <div className="w-12 h-3 bg-zinc-200 rounded"></div>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-medium ${
-                      trade.status === 'Completed' 
-                        ? 'text-green-600' 
-                        : 'text-amber-600'
-                    }`}>
-                      {trade.status}
-                    </p>
-                    <p className="text-zinc-600 text-xs group-hover/trade:text-zinc-700 transition-colors">
-                      {trade.time}
-                    </p>
-                    {trade.profit !== 'pending' && (
-                      <p className="text-green-600 text-xs font-medium">{trade.profit}</p>
-                    )}
-                  </div>
-                  <ChevronRight className={`h-4 w-4 text-zinc-500 group-hover/trade:text-zinc-600 group-hover/trade:translate-x-1 transition-all ${hoveredCard === trade.id ? 'scale-110' : ''}`} />
+                ))
+              ) : recentTrades.length === 0 ? (
+                // No trades message
+                <div className="text-center py-8">
+                  <TrendingUp className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
+                  <p className="text-zinc-500 mb-2">No recent trades</p>
+                  <p className="text-sm text-zinc-400">Start trading to see your activity here</p>
                 </div>
-              ))}
+              ) : (
+                // Actual trades
+                recentTrades.map((trade) => {
+                  const tradeType = getTradeType(trade, user?._id)
+                  const otherParty = getOtherPartyUsername(trade, user?._id)
+                  const statusMap = {
+                    'pending': 'Pending',
+                    'paid': 'Payment Confirmed',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled',
+                    'disputed': 'Disputed'
+                  }
+                  
+                  return (
+                    <div
+                      key={trade._id}
+                      className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300 hover:scale-101 hover:-translate-y-1 transition-all duration-300 cursor-pointer group/trade hover:shadow-md"
+                      onClick={() => navigate(`/trades/${trade._id}`)}
+                      onMouseEnter={() => setHoveredCard(trade._id)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`px-3 py-1 rounded-lg text-xs font-normal leading-relaxed font-medium flex items-center gap-1 transition-all duration-200 ${
+                          tradeType === 'Buy' 
+                            ? 'bg-green-100 text-green-700 group-hover/trade:bg-green-200' 
+                            : 'bg-red-100 text-red-700 group-hover/trade:bg-red-200'
+                        }`}>
+                          {tradeType === 'Buy' ? (
+                            <ArrowUpRight className="h-3 w-3" />
+                          ) : (
+                            <ArrowDownLeft className="h-3 w-3" />
+                          )}
+                          {tradeType}
+                        </div>
+                        <div>
+                          <p className="font-semibold leading-snug text-zinc-900 group-hover/trade:text-zinc-900 transition-colors">
+                            {trade.funTokenAmount} FUN
+                          </p>
+                          <p className="text-sm font-normal leading-relaxed text-zinc-600 flex items-center gap-2 group-hover/trade:text-zinc-700 transition-colors">
+                            Payment: {trade.funTokenPayment} FUN • {otherParty}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-medium ${
+                          trade.status === 'completed' 
+                            ? 'text-green-600' 
+                            : trade.status === 'pending'
+                            ? 'text-amber-600'
+                            : trade.status === 'paid'
+                            ? 'text-blue-600'
+                            : 'text-red-600'
+                        }`}>
+                          {statusMap[trade.status] || trade.status}
+                        </p>
+                        <p className="text-zinc-600 text-xs group-hover/trade:text-zinc-700 transition-colors">
+                          {formatTimeAgo(trade.createdAt)}
+                        </p>
+                      </div>
+                      <ChevronRight className={`h-4 w-4 text-zinc-500 group-hover/trade:text-zinc-600 group-hover/trade:translate-x-1 transition-all ${hoveredCard === trade._id ? 'scale-110' : ''}`} />
+                    </div>
+                  )
+                })
+              )}
             </div>
           </Card>
         </div>
@@ -351,33 +438,80 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-white border-zinc-200 backdrop-blur p-6 transition-all duration-300 shadow-md shadow-zinc-300/50 hover:shadow-lg hover:shadow-zinc-400/60 hover:border-zinc-300 group">
             <h3 className="text-lg font-semibold text-zinc-900 mb-6 flex items-center justify-between">
-              Market Overview
-              <TrendingUp className="h-5 w-5 text-green-600 group-hover:scale-110 transition-transform" />
+              Recent Withdrawals
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-all duration-200"
+                onClick={() => navigate('/withdrawals')}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View All
+              </Button>
             </h3>
             <div className="space-y-4">
-              {marketData.map((market, index) => (
-                <div key={index} className="flex justify-between items-center p-3 rounded-lg hover:bg-zinc-100 transition-all duration-300 cursor-pointer group/market hover:scale-105">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-xs">
-                      {market.name.split(' ')[0].substring(0, 2)}
-                    </div>
-                    <span className="text-zinc-600 group-hover/market:text-zinc-900 transition-colors font-medium">
-                      {market.name}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-zinc-900 font-medium">{market.price}</div>
-                    <div className={`text-sm flex items-center gap-1 ${
-                      market.isUp === true ? 'text-green-600' : 
-                      market.isUp === false ? 'text-red-600' : 'text-zinc-600'
-                    }`}>
-                      {market.isUp === true && <ArrowUpRight className="h-3 w-3" />}
-                      {market.isUp === false && <ArrowDownLeft className="h-3 w-3" />}
-                      {market.change}
+              {withdrawalsLoading ? (
+                // Loading skeleton
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 border border-zinc-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-zinc-200 rounded-full"></div>
+                        <div>
+                          <div className="w-20 h-4 bg-zinc-200 rounded mb-2"></div>
+                          <div className="w-24 h-3 bg-zinc-200 rounded"></div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="w-16 h-4 bg-zinc-200 rounded mb-2"></div>
+                        <div className="w-12 h-3 bg-zinc-200 rounded"></div>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : recentWithdrawals.length === 0 ? (
+                // No withdrawals message
+                <div className="text-center py-8">
+                  <ArrowDownLeft className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
+                  <p className="text-zinc-500 mb-2">No recent withdrawals</p>
+                  <p className="text-sm text-zinc-400">Your withdrawal history will appear here</p>
                 </div>
-              ))}
+              ) : (
+                // Actual withdrawals
+                recentWithdrawals.map((withdrawal) => (
+                  <div
+                    key={withdrawal._id}
+                    className="flex justify-between items-center p-3 rounded-lg hover:bg-zinc-100 transition-all duration-300 cursor-pointer group/withdrawal hover:scale-105"
+                    onClick={() => navigate('/withdrawals')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 via-blue-400 to-green-500 flex items-center justify-center text-white font-bold text-xs">
+                        <ArrowDownLeft className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-zinc-900 font-medium group-hover/withdrawal:text-zinc-900 transition-colors">
+                          {withdrawal.amount} FUN
+                        </div>
+                        <div className="text-zinc-500 text-xs group-hover/withdrawal:text-zinc-600 transition-colors">
+                          {formatTimeAgo(withdrawal.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-zinc-900 font-medium">
+                        ₹{withdrawal.paymentGatewayDetails?.withdrawalAmountINR || withdrawal.amount}
+                      </div>
+                      <div className={`text-sm flex items-center gap-1 justify-end ${getWithdrawalStatusColor(withdrawal.status)}`}>
+                        {withdrawal.status === 'completed' && <ArrowUpRight className="h-3 w-3" />}
+                        {withdrawal.status === 'pending' && <Clock className="h-3 w-3" />}
+                        {withdrawal.status === 'processing' && <Activity className="h-3 w-3" />}
+                        {withdrawal.status === 'failed' && <ArrowDownLeft className="h-3 w-3" />}
+                        {getWithdrawalStatusText(withdrawal.status)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </Card>
 

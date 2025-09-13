@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { selectIsAuthenticated, selectCurrentUser, logout } from "../features/auth/authSlice";
 import NotificationBell from "./NotificationBell";
+import Logo from "../assets/logo.svg"
 function TradeFlowLogo() {
   return (
     <Link to="/" className="flex items-center gap-2" aria-label="TradeFlow home">
@@ -243,7 +244,7 @@ export function SiteHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
-          <TradeFlowLogo />
+          <img src={Logo} alt="TradeFlow Logo" />
           <DesktopNav isAuthenticated={isAuthenticated} />
         </div>
 

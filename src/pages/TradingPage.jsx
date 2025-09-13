@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Filter, TrendingUp, TrendingDown, User, CreditCard, Smartphone, Building2, Star, Shield, Activity, Plus, Loader2, ChevronRight, Eye } from 'lucide-react';
+import { Search, ChevronDown, Filter, TrendingUp, TrendingDown, User, CreditCard, Smartphone, Building2, Star, Shield, Activity, Plus, Loader2, ChevronRight, Eye, MessageCircle } from 'lucide-react';
 import { useGetActiveListingsQuery } from '../features/api/apiSlice';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {SiteHeader} from '../components/SiteHeader';
 import Footer from '../components/Footer';
 import BuyListingModal from '../components/BuyListingModal';
@@ -32,6 +32,7 @@ const TradingPage = () => {
 
     // Get authentication state
     const { user, isAuthenticated } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
 
 
     // Fetch real listings data
@@ -70,6 +71,17 @@ const TradingPage = () => {
         </button>
     );
 
+    // Handle chat navigation
+    const handleChatWithSeller = (sellerId) => {
+        if (!isAuthenticated) {
+            // Redirect to login if not authenticated
+            navigate('/login');
+            return;
+        }
+        // Navigate to chat with seller ID
+        navigate(`/chat?userId=${sellerId}`);
+    };
+
     const OrderRow = ({ listing }) => (
         <div
             className="bg-white border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 hover:shadow-lg hover:shadow-zinc-300/50 transition-all duration-300 cursor-pointer group hover:-translate-y-1"
@@ -89,7 +101,14 @@ const TradingPage = () => {
                     </div>
                     <div className="space-y-1">
                         <div className="font-semibold text-zinc-900 group-hover:text-zinc-900 transition-colors">
-                            {listing.sellerId?.username || 'Anonymous Seller'}
+                            <button
+                                onClick={() => handleChatWithSeller(listing.sellerId?._id)}
+                                className="flex items-center gap-2 hover:text-green-600 transition-colors group/seller"
+                                title="Chat with seller"
+                            >
+                                {listing.sellerId?.username || 'Anonymous Seller'}
+                                <MessageCircle className="w-4 h-4 opacity-0 group-hover/seller:opacity-100 transition-opacity" />
+                            </button>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                             <span className="text-zinc-600 group-hover:text-zinc-700 transition-colors">

@@ -6,7 +6,6 @@ const baseQuery = fetchBaseQuery({
   prepareHeaders: (headers, { getState }) => {
     // Get token from Redux state
     const token = getState().auth.token
-    console.log(token)
     
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
@@ -71,7 +70,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Profile', 'Listing', 'Trade'],
+  tagTypes: ['User', 'Profile', 'Listing', 'Trade', 'Chat', 'Message'],
   endpoints: (builder) => ({
     // Authentication endpoints
     register: builder.mutation({
@@ -87,6 +86,14 @@ export const apiSlice = createApi({
         url: '/users/login',
         method: 'POST',
         body: credentials,
+      }),
+    }),
+    
+    googleAuth: builder.mutation({
+      query: (googleData) => ({
+        url: '/users/google-auth',
+        method: 'POST',
+        body: googleData,
       }),
     }),
     
@@ -271,12 +278,113 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Profile'], // Invalidate profile to refresh balance
     }),
+
+    // Withdrawal endpoints
+    withdrawFunTokens: builder.mutation({
+      query: (withdrawalData) => ({
+        url: '/payments/withdraw',
+        method: 'POST',
+        body: withdrawalData,
+      }),
+      invalidatesTags: ['Profile', 'WithdrawalHistory'], // Invalidate profile to refresh balance and withdrawal history
+    }),
+
+    getWithdrawalHistory: builder.query({
+      query: ({ page = 1, limit = 10 } = {}) => `/payments/withdrawals?page=${page}&limit=${limit}`,
+      providesTags: ['WithdrawalHistory'],
+    }),
+
+    // Chat endpoints
+    startChat: builder.mutation({
+      query: (chatData) => ({
+        url: '/chats/start',
+        method: 'POST',
+        body: chatData,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    getUserChats: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => {
+        const params = new URLSearchParams({ 
+          page: page.toString(), 
+          limit: limit.toString() 
+        });
+        return `/chats?${params}`;
+      },
+      providesTags: ['Chat'],
+    }),
+
+    getChatDetails: builder.query({
+      query: (chatId) => `/chats/${chatId}`,
+      providesTags: (result, error, chatId) => [{ type: 'Chat', id: chatId }],
+    }),
+
+    sendMessage: builder.mutation({
+      query: ({ chatId, ...messageData }) => ({
+        url: `/chats/${chatId}/messages`,
+        method: 'POST',
+        body: messageData,
+      }),
+      invalidatesTags: (result, error, { chatId }) => [
+        { type: 'Chat', id: chatId },
+        { type: 'Message', id: chatId },
+        'Chat' // Invalidate chat list to update last message
+      ],
+    }),
+
+    getChatMessages: builder.query({
+      query: ({ chatId, page = 1, limit = 50 }) => {
+        const params = new URLSearchParams({ 
+          page: page.toString(), 
+          limit: limit.toString() 
+        });
+        return `/chats/${chatId}/messages?${params}`;
+      },
+      providesTags: (result, error, { chatId }) => [{ type: 'Message', id: chatId }],
+    }),
+
+    markMessagesAsRead: builder.mutation({
+      query: (chatId) => ({
+        url: `/chats/${chatId}/messages/read`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (result, error, chatId) => [
+        { type: 'Chat', id: chatId },
+        { type: 'Message', id: chatId },
+        'Chat'
+      ],
+    }),
+
+    getUnreadCount: builder.query({
+      query: () => '/chats/unread-count',
+      providesTags: ['Chat'],
+    }),
+
+    deleteChat: builder.mutation({
+      query: (chatId) => ({
+        url: `/chats/${chatId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    // Store message to backend for reference (used with Firebase)
+    storeMessage: builder.mutation({
+      query: (messageData) => ({
+        url: '/chats/store-message',
+        method: 'POST',
+        body: messageData,
+      }),
+      // Don't invalidate tags since this is just for reference storage
+    }),
   }),
 })
 
 export const {
   useRegisterMutation,
   useLoginMutation,
+  useGoogleAuthMutation,
   useLogoutMutation,
   useLogoutAllMutation,
   useRefreshTokenMutation,
@@ -303,4 +411,17 @@ export const {
   // Payment hooks
   useCreatePaymentOrderMutation,
   useVerifyPaymentMutation,
+  // Withdrawal hooks
+  useWithdrawFunTokensMutation,
+  useGetWithdrawalHistoryQuery,
+  // Chat hooks
+  useStartChatMutation,
+  useGetUserChatsQuery,
+  useGetChatDetailsQuery,
+  useSendMessageMutation,
+  useGetChatMessagesQuery,
+  useMarkMessagesAsReadMutation,
+  useGetUnreadCountQuery,
+  useDeleteChatMutation,
+  useStoreMessageMutation,
 } = apiSlice
