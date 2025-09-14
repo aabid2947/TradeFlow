@@ -4,9 +4,8 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import { Card } from "../components/ui/card"
 import { Coins, TrendingUp, Users, Shield, BarChart3, Wallet, Clock,LogOut, ArrowUpRight, ArrowDownLeft, Eye, Bell, Settings, ChevronRight, Star, Activity } from "lucide-react"
-import { selectCurrentUser } from "../features/auth/authSlice"
+import { selectCurrentUser, logoutUser } from "../features/auth/authSlice"
 import { useLogoutMutation, useGetDashboardStatsQuery, useGetUserTradesQuery, useGetWithdrawalHistoryQuery } from "../features/api/apiSlice"
-import { logout } from "../features/auth/authSlice"
 import { useToast } from "../hooks/use-toast"
 import { SiteHeader } from "../components/SiteHeader"
 
@@ -26,7 +25,7 @@ export default function DashboardPage() {
     try {
       const refreshToken = localStorage.getItem('refreshToken')
       await logoutMutation({ refreshToken }).unwrap()
-      dispatch(logout())
+      dispatch(logoutUser())
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account",
@@ -34,7 +33,7 @@ export default function DashboardPage() {
       navigate("/")
     } catch (err) {
       // Even if the server logout fails, we should still logout locally
-      dispatch(logout())
+      dispatch(logoutUser())
       navigate("/")
     }
   }

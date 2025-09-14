@@ -132,45 +132,47 @@ export default function WithdrawalHistoryPage() {
       
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Enhanced Header */}
-        <div className="mb-8 relative group">
-          <div className="absolute inset-0 bg-white rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative bg-white backdrop-blur border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 transition-all duration-300 shadow-md shadow-zinc-300/50 hover:shadow-lg hover:shadow-zinc-400/60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+        <div className="mb-6 sm:mb-8 relative group">
+          <div className="absolute inset-0 bg-white rounded-xl sm:rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative bg-white backdrop-blur border border-zinc-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-zinc-300 transition-all duration-300 shadow-md shadow-zinc-300/50 hover:shadow-lg hover:shadow-zinc-400/60">
+            <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+              {/* Left Section - Back Button and Title */}
+              <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
                 <Button 
                   variant="ghost" 
                   onClick={() => navigate('/dashboard')}
-                  className="text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-xl transition-all duration-200"
+                  className="text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all duration-200 flex-shrink-0"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
-                <div>
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-zinc-900 mb-2 flex items-center gap-3">
-                    Withdrawal History
-                    <TrendingDown className="w-6 h-6 text-blue-600" />
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-zinc-900 mb-1 sm:mb-2 flex items-center gap-2 sm:gap-3">
+                    <span className="truncate">Withdrawal History</span>
+                    <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
                   </h1>
-                  <p className="text-sm md:text-base lg:text-lg font-normal leading-relaxed text-zinc-600">
+                  <p className="text-xs sm:text-sm md:text-base lg:text-lg font-normal leading-relaxed text-zinc-600">
                     Track all your FUN token withdrawals and transaction history.
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
+              {/* Right Section - Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto md:items-center">
                 <Button 
                   variant="outline" 
                   onClick={handleRefresh}
-                  className="border-zinc-300 text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all duration-300"
+                  className="border-zinc-300 text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all duration-300 text-sm sm:text-base w-full sm:w-auto"
                   disabled={isLoading}
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                  Refresh
+                  <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  <span className="text-sm sm:text-base">Refresh</span>
                 </Button>
                 <Button 
                   onClick={handleNewWithdrawal}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 text-sm sm:text-base w-full sm:w-auto"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  New Withdrawal
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                  <span className="text-sm sm:text-base">New Withdrawal</span>
                 </Button>
               </div>
             </div>

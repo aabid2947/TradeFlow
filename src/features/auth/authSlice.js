@@ -1,4 +1,21 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiSlice } from '../api/apiSlice';
+
+// Async thunk for logout that clears API cache
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { dispatch }) => {
+    // Clear localStorage
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+    
+    // Reset API cache
+    dispatch(apiSlice.util.resetApiState());
+    
+    return null;
+  }
+);
 
 const initialState = {
   user: null,
@@ -48,7 +65,13 @@ const authSlice = createSlice({
       }
     },
     
-    logout: (state) => {
+    logout: (state, action) => {
+      console.log('Logging out user:', state.user);
+      
+      // Get the dispatch function if provided
+      const { dispatch } = action.payload || {};
+      
+      // Clear auth state
       state.user = null
       state.token = null
       state.refreshToken = null
@@ -60,6 +83,11 @@ const authSlice = createSlice({
       localStorage.removeItem('token')
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('user')
+      
+      // Reset API cache if dispatch is available
+      if (dispatch) {
+        dispatch(apiSlice.util.resetApiState());
+      }
     },
     
     setLoading: (state, action) => {
@@ -115,6 +143,19 @@ const authSlice = createSlice({
         localStorage.removeItem('user')
       }
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(logoutUser.fulfilled, (state) => {
+        console.log('Logging out user:', state.user);
+        // Clear auth state
+        state.user = null
+        state.token = null
+        state.refreshToken = null
+        state.isAuthenticated = false
+        state.error = null
+        state.isLoading = false
+      })
   },
 });
 

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Bell, Globe, Menu, User, LogOut, MessageCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { selectIsAuthenticated, selectCurrentUser, logout } from "../features/auth/authSlice";
+import { selectIsAuthenticated, selectCurrentUser, logoutUser } from "../features/auth/authSlice";
 import NotificationBell from "./NotificationBell";
 import Logo from "../assets/logo.svg"
 function TradeFlowLogo() {
@@ -204,7 +204,7 @@ export function SiteHeader() {
   const location = useLocation();
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     setUserMenuOpen(false);
   };
 

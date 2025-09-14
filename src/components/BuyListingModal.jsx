@@ -8,7 +8,7 @@ import { Label } from './ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { useGetProfileQuery, useInitiateTradeMutation, useCreatePaymentOrderMutation, useVerifyPaymentMutation } from '../features/api/apiSlice'
 import { useToast } from '../hooks/use-toast'
-import { Loader2, Wallet, CreditCard, ArrowRight, AlertTriangle, CheckCircle, ShoppingCart } from 'lucide-react'
+import { Loader2, Wallet, CreditCard, ArrowRight, AlertTriangle, CheckCircle, ShoppingCart, X } from 'lucide-react'
 
 const BuyListingModal = ({ listing, trigger }) => {
   const navigate = useNavigate()
@@ -178,24 +178,44 @@ const BuyListingModal = ({ listing, trigger }) => {
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b border-zinc-200">
-          <DialogTitle className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6 text-green-600" />
-            Buy FUN Tokens
-          </DialogTitle>
+      <DialogContent 
+        className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl bg-white mx-4 sm:mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col" 
+        style={{ fontFamily: "'Inter', sans-serif" }}
+      >
+        {/* Header - Fixed */}
+        <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4 border-b border-zinc-200">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-zinc-900 flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+              <span className="hidden xs:inline">Buy FUN Tokens</span>
+              <span className="xs:hidden">Buy FUN</span>
+            </DialogTitle>
+            
+            {/* Mobile close button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="sm:hidden p-1 h-8 w-8"
+              onClick={() => setOpen(false)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto px-1">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto py-3 sm:py-4 space-y-4 sm:space-y-6 pr-1">
           {/* Listing Info */}
           <Card className="bg-zinc-50 border-zinc-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-zinc-900">Listing Details</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg text-zinc-900">Listing Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 text-sm sm:text-base">
               <div className="flex justify-between items-center">
                 <span className="text-zinc-600">Seller:</span>
-                <span className="font-medium text-zinc-900">{listing.sellerId?.username}</span>
+                <span className="font-medium text-zinc-900 truncate ml-2 max-w-[150px] sm:max-w-none">
+                  {listing.sellerId?.username}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-600">Available:</span>
@@ -209,9 +229,9 @@ const BuyListingModal = ({ listing, trigger }) => {
                 <span className="text-zinc-600">Limit:</span>
                 <span className="font-medium text-zinc-900">{listing.minLimit} - {listing.maxLimit} FUN</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <span className="text-zinc-600">Payment Methods:</span>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1">
                   {listing.paymentMethods?.map((method, idx) => (
                     <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
                       {method}
@@ -224,20 +244,22 @@ const BuyListingModal = ({ listing, trigger }) => {
 
           {/* User Balance */}
           <Card className="bg-white border-zinc-200">
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 sm:pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Wallet className="w-5 h-5 text-green-600" />
-                  <span className="text-zinc-700 font-medium">Your Balance:</span>
+                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  <span className="text-zinc-700 font-medium text-sm sm:text-base">Your Balance:</span>
                 </div>
-                <span className="text-xl font-bold text-zinc-900">{userBalance.toLocaleString()} FUN</span>
+                <span className="text-lg sm:text-xl font-bold text-zinc-900">
+                  {userBalance.toLocaleString()} FUN
+                </span>
               </div>
             </CardContent>
           </Card>
 
           {/* Amount Input */}
           <div className="space-y-3">
-            <Label htmlFor="buyAmount" className="text-zinc-700 font-medium">
+            <Label htmlFor="buyAmount" className="text-zinc-700 font-medium text-sm sm:text-base">
               Amount to Buy (FUN Tokens) *
             </Label>
             <Input
@@ -248,7 +270,7 @@ const BuyListingModal = ({ listing, trigger }) => {
               value={buyAmount}
               onChange={(e) => handleAmountChange(e.target.value)}
               placeholder={`Enter amount (${listing.minLimit} - ${Math.min(listing.maxLimit, listing.funTokenAmount)})`}
-              className="bg-white border-zinc-300 text-zinc-900 placeholder-zinc-500 focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50"
+              className="bg-white border-zinc-300 text-zinc-900 placeholder-zinc-500 focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-base"
             />
             {buyAmount && (
               <div className="text-sm text-zinc-600">
@@ -260,10 +282,10 @@ const BuyListingModal = ({ listing, trigger }) => {
           {/* Purchase Summary */}
           {buyAmount && (
             <Card className="bg-white border-zinc-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-zinc-900">Purchase Summary</CardTitle>
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-base sm:text-lg text-zinc-900">Purchase Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-600">FUN Tokens:</span>
                   <span className="font-medium text-zinc-900">{Number(buyAmount).toLocaleString()}</span>
@@ -272,19 +294,19 @@ const BuyListingModal = ({ listing, trigger }) => {
                   <span className="text-zinc-600">Price per Token:</span>
                   <span className="font-medium text-zinc-900">₹{listing.priceInFunToken}</span>
                 </div>
-                <div className="flex justify-between items-center font-semibold pt-3 border-t border-zinc-200">
+                <div className="flex justify-between items-center font-semibold pt-2 sm:pt-3 border-t border-zinc-200">
                   <span className="text-zinc-900">Total Cost:</span>
-                  <span className="text-green-600 text-lg">₹{totalCost.toLocaleString()}</span>
+                  <span className="text-green-600 text-base sm:text-lg">₹{totalCost.toLocaleString()}</span>
                 </div>
 
                 {needsTopUp && (
-                  <Card className="bg-amber-50 border-amber-200 mt-4">
-                    <CardContent className="pt-4">
+                  <Card className="bg-amber-50 border-amber-200 mt-3 sm:mt-4">
+                    <CardContent className="pt-3 sm:pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <AlertTriangle className="w-4 h-4 text-amber-600" />
-                        <span className="text-amber-800 font-medium">Insufficient Balance</span>
+                        <span className="text-amber-800 font-medium text-sm sm:text-base">Insufficient Balance</span>
                       </div>
-                      <div className="text-sm text-amber-700 space-y-1">
+                      <div className="text-xs sm:text-sm text-amber-700 space-y-1">
                         <div>You need {topUpAmount.toLocaleString()} more FUN tokens</div>
                         <div>Current Balance: {userBalance.toLocaleString()} FUN</div>
                         <div>Required: {totalCost.toLocaleString()} FUN (₹{totalCost.toLocaleString()})</div>
@@ -297,21 +319,23 @@ const BuyListingModal = ({ listing, trigger }) => {
           )}
 
           {/* Help Text */}
-          <div className="text-xs text-zinc-500 text-center space-y-1">
+          <div className="text-xs text-zinc-500 text-center space-y-1 px-2">
             <div>• Purchases are processed through our secure P2P system</div>
-            <div>• Top-up payments are processed via Razorpay</div>
-            <div>• All transactions are protected by our escrow system</div>
+            <div className="hidden sm:block">• Top-up payments are processed via Razorpay</div>
+            <div className="sm:hidden">• Top-up via Razorpay</div>
+            <div className="hidden sm:block">• All transactions are protected by our escrow system</div>
+            <div className="sm:hidden">• Protected by escrow system</div>
           </div>
         </div>
 
-        {/* Sticky Action Buttons */}
+        {/* Sticky Action Buttons - Fixed at bottom */}
         {buyAmount && (
-          <div className="sticky bottom-0 bg-white border-t border-zinc-200 pt-4 mt-6">
-            <div className="flex gap-4">
+          <div className="flex-shrink-0 bg-white border-t border-zinc-200 pt-3 sm:pt-4 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
-                className="flex-1 border-zinc-300 text-zinc-900 hover:bg-zinc-100"
+                className="order-2 sm:order-1 flex-1 border-zinc-300 text-zinc-900 hover:bg-zinc-100 h-10 sm:h-11 text-sm sm:text-base"
                 disabled={isProcessing || isVerifyingPayment}
               >
                 Cancel
@@ -321,17 +345,25 @@ const BuyListingModal = ({ listing, trigger }) => {
                 <Button
                   onClick={handleTopUpAndBuy}
                   disabled={!buyAmount || isProcessing || isInitiatingTrade || isCreatingOrder || isVerifyingPayment}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30"
+                  className="order-1 sm:order-2 flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 h-10 sm:h-11 text-sm sm:text-base"
                 >
                   {isProcessing || isCreatingOrder || isVerifyingPayment ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isCreatingOrder ? 'Creating Order...' : isVerifyingPayment ? 'Verifying Payment...' : 'Processing...'}
+                      <Loader2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <span className="hidden sm:inline">
+                        {isCreatingOrder ? 'Creating Order...' : isVerifyingPayment ? 'Verifying Payment...' : 'Processing...'}
+                      </span>
+                      <span className="sm:hidden">Processing...</span>
                     </>
                   ) : (
                     <>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Top Up & Buy (₹{(topUpAmount * 1).toLocaleString()})
+                      <CreditCard className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">
+                        Top Up & Buy (₹{(topUpAmount * 1).toLocaleString()})
+                      </span>
+                      <span className="sm:hidden">
+                        Top Up & Buy
+                      </span>
                     </>
                   )}
                 </Button>
@@ -339,16 +371,19 @@ const BuyListingModal = ({ listing, trigger }) => {
                 <Button
                   onClick={handleBuyDirect}
                   disabled={!buyAmount || totalCost > userBalance || isProcessing || isInitiatingTrade || isVerifyingPayment}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30"
+                  className="order-1 sm:order-2 flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 h-10 sm:h-11 text-sm sm:text-base"
                 >
                   {isProcessing || isInitiatingTrade || isVerifyingPayment ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isInitiatingTrade ? 'Initiating Trade...' : isVerifyingPayment ? 'Verifying Payment...' : 'Processing...'}
+                      <Loader2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <span className="hidden sm:inline">
+                        {isInitiatingTrade ? 'Initiating Trade...' : isVerifyingPayment ? 'Verifying Payment...' : 'Processing...'}
+                      </span>
+                      <span className="sm:hidden">Processing...</span>
                     </>
                   ) : (
                     <>
-                      <ArrowRight className="mr-2 h-4 w-4" />
+                      <ArrowRight className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       Buy Now
                     </>
                   )}
