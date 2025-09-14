@@ -120,6 +120,15 @@ export const apiSlice = createApi({
       }),
     }),
     
+    completeProfile: builder.mutation({
+      query: (profileData) => ({
+        url: '/users/complete-profile',
+        method: 'POST',
+        body: profileData,
+      }),
+      invalidatesTags: ['Profile'],
+    }),
+    
     // Profile endpoints
     getProfile: builder.query({
       query: () => '/users/profile',
@@ -396,6 +405,7 @@ export const {
   useLogoutMutation,
   useLogoutAllMutation,
   useRefreshTokenMutation,
+  useCompleteProfileMutation,
   useGetProfileQuery,
   useGetDashboardStatsQuery,
   useUpdateProfileMutation,

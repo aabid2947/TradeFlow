@@ -1,13 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { auth } from "../config/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 import { Button } from "../components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { Input } from "../components/ui/input";
+import { PasswordInput } from "../components/ui/password-input";
 import { useToast } from "../hooks/use-toast";
 import { useLoginMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
 import { setCredentials } from "../features/auth/authSlice";
@@ -21,6 +23,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const [login, { isLoading }] = useLoginMutation();
   const [googleAuth, { isLoading: isGoogleLoading }] = useGoogleAuthMutation();
   
@@ -32,6 +35,34 @@ export function LoginForm() {
 
   const isValid = form.formState.isValid;
 
+  // Show success messages for password reset or email verification
+  useEffect(() => {
+    const passwordReset = searchParams.get('passwordReset');
+    const emailVerified = searchParams.get('emailVerified');
+    
+    if (passwordReset === 'true') {
+      toast({
+        title: "Password Reset Complete",
+        description: "Your password has been successfully reset. You can now sign in with your new password.",
+      });
+      // Clear the parameter after showing the toast
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('passwordReset');
+      navigate(`/login?${newSearchParams.toString()}`, { replace: true });
+    }
+    
+    if (emailVerified === 'true') {
+      toast({
+        title: "Email Verified",
+        description: "Your email has been successfully verified. You can now sign in to your account.",
+      });
+      // Clear the parameter after showing the toast
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('emailVerified');
+      navigate(`/login?${newSearchParams.toString()}`, { replace: true });
+    }
+  }, [searchParams, toast, navigate]);
+
   async function onSubmit(values) {
     try {
       const result = await login(values).unwrap();
@@ -40,11 +71,20 @@ export function LoginForm() {
         token: result.data.token,
         refreshToken: result.data.refreshToken,
       }));
+      
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in",
       });
-      navigate("/dashboard");
+      
+      // Check if user profile is complete
+      if (!result.data.user.isProfileComplete) {
+        // Redirect to onboarding if profile is incomplete
+        navigate("/onboarding");
+      } else {
+        // Redirect to dashboard if profile is complete
+        navigate("/dashboard");
+      }
     } catch (err) {
       console.error('Login error:', err);
       let errorMessage = "Invalid credentials";
@@ -81,22 +121,25 @@ export function LoginForm() {
         photoURL: user.photoURL,
         uid: user.uid,
       }).unwrap();
-      console.log('Google Auth Response:', response);
 
       dispatch(setCredentials({
         user: response.data.user,
         token: response.data.token,
         refreshToken: response.data.refreshToken,
       }));
-      console.log('User logged in via Google:', response.data.user);
       toast({
         title: "Google Sign-In Successful",
         description: `Welcome, ${response.data.user.displayName || response.data.user.email}`,
       });
-      navigate("/dashboard");
+      
+      // Check if profile is complete to decide where to redirect
+      if (response.data.user.isProfileComplete) {
+        navigate("/dashboard");
+      } else {
+        navigate("/onboarding");
+      }
     } catch (error) {
       console.error('Google Sign-In Error:', error);
-      console.log('Error details:', error.data || error.message || error);
       toast({
         title: "Google Sign-In Failed",
         description: error.data?.message || error.message || "Failed to authenticate with Google",
@@ -165,8 +208,7 @@ export function LoginForm() {
                 render={({ field }) => (
                   <FormItem className="mb-2">
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder="Password"
                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         {...field}

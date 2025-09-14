@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux';
 import { Button } from "../components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { PasswordInput } from "../components/ui/password-input";
 import { Checkbox } from "../components/ui/checkbox";
 import { useToast } from "../hooks/use-toast";
 import { useRegisterMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
@@ -29,18 +29,11 @@ const schema = z.object({
   password: z.string()
     .min(8, "Password must be at least 8 characters")
     .regex(/^(?=.*[a-zA-Z])(?=.*[0-9])/, "Password must contain both letters and numbers"),
-  role: z.enum(["buyer", "seller"], { message: "Please select a role" }),
-  businessName: z.string().optional(),
+  confirmPassword: z.string(),
   agree: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms to continue" }) }),
-}).superRefine((data, ctx) => {
-  // Business name validation
-  if (data.role === "seller" && !data.businessName?.trim()) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Business name is required for sellers",
-      path: ["businessName"],
-    });
-  }
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 export function SignUpForm() {
@@ -61,15 +54,13 @@ export function SignUpForm() {
       username: "", 
       email: "", 
       password: "", 
-      role: "buyer", 
-      businessName: "", 
+      confirmPassword: "",
       agree: false 
     },
     mode: "onChange",
   });
 
   const isValid = form.formState.isValid;
-  const watchRole = form.watch("role");
 
   async function onSubmit(values) {
     try {
@@ -77,21 +68,34 @@ export function SignUpForm() {
       const firebaseResult = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const firebaseUser = firebaseResult.user;
 
-      // Send email verification
-      await sendEmailVerification(firebaseUser);
+      // Configure action code settings for email verification
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login?emailVerified=true`,
+        handleCodeInApp: false,
+      };
+
+      // Send email verification with custom settings
+      try {
+        await sendEmailVerification(firebaseUser, actionCodeSettings);
+        console.log('✅ Email verification sent successfully');
+      } catch (emailError) {
+        console.error('⚠️ Email verification failed:', emailError);
+        // Continue with registration even if email fails
+        toast({
+          title: "Email verification failed",
+          description: "Account created but verification email couldn't be sent. You can still use your account.",
+          variant: "destructive"
+        });
+      }
       
       // Create user account in our backend
       const userData = {
         username: values.username,
         email: values.email,
         password: values.password,
-        role: values.role,
         firebaseUid: firebaseUser.uid,
+        // Profile is incomplete since role is not selected during signup
       };
-      
-      if (values.role === "seller" && values.businessName?.trim()) {
-        userData.businessName = values.businessName.trim();
-      }
       
       const result = await register(userData).unwrap();
       
@@ -138,17 +142,36 @@ export function SignUpForm() {
     setIsResendingEmail(true);
     try {
       if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser);
+        const actionCodeSettings = {
+          url: `${window.location.origin}/login?emailVerified=true`,
+          handleCodeInApp: false,
+        };
+        
+        await sendEmailVerification(auth.currentUser, actionCodeSettings);
         toast({
           title: "Verification email sent",
           description: "Please check your email for the verification link.",
         });
+      } else {
+        toast({
+          title: "Session expired",
+          description: "Please try signing up again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error resending verification email:', error);
+      let errorMessage = "Please try again later.";
+      
+      if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many requests. Please wait a few minutes before trying again.";
+      } else if (error.code === 'auth/user-token-expired') {
+        errorMessage = "Session expired. Please sign up again.";
+      }
+      
       toast({
         title: "Failed to resend email",
-        description: "Please try again later.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -180,7 +203,13 @@ export function SignUpForm() {
         title: "Google Sign-Up Successful",
         description: `Welcome to TradeFlow, ${response.data.user.displayName || response.data.user.email}!`,
       });
-      navigate("/dashboard");
+      
+      // Check if profile is complete to decide where to redirect
+      if (response.data.user.isProfileComplete) {
+        navigate("/dashboard");
+      } else {
+        navigate("/onboarding");
+      }
     } catch (error) {
       console.error('Google Sign-Up Error:', error);
       toast({
@@ -241,6 +270,25 @@ export function SignUpForm() {
                 Please check your email and click the verification link to activate your account. 
                 You may need to check your spam folder.
               </p>
+              {import.meta.env.NODE_ENV === 'development' && (
+                <div className="mt-3 pt-3 border-t border-blue-500/20">
+                  <p className="text-yellow-300 text-xs mb-2">
+                    Development Mode: Skip email verification for testing
+                  </p>
+                  <button
+                    onClick={() => {
+                      toast({
+                        title: "Email verification skipped",
+                        description: "Proceeding to login for testing purposes",
+                      });
+                      navigate("/login");
+                    }}
+                    className="text-xs bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
+                  >
+                    Skip Verification (Dev Only)
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -352,8 +400,7 @@ export function SignUpForm() {
               <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem className="mb-2">
                   <FormControl>
-                    <Input 
-                      type="password" 
+                    <PasswordInput 
                       placeholder="Password" 
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
                       {...field} 
@@ -364,37 +411,18 @@ export function SignUpForm() {
                 </FormItem>
             )}/>
               
-              <FormField control={form.control} name="role" render={({ field }) => (
-                  <FormItem>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white">
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="buyer">Buy from P2P merchants</SelectItem>
-                        <SelectItem value="seller">Sell as a P2P merchant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-              )}/>
-              
-              {watchRole === "seller" && (
-                <FormField control={form.control} name="businessName" render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input 
-                          placeholder="Business Name" 
-                          className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                )}/>
-              )}
+              <FormField control={form.control} name="confirmPassword" render={({ field }) => (
+                <FormItem className="mb-2">
+                  <FormControl>
+                    <PasswordInput 
+                      placeholder="Confirm Password" 
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+            )}/>
               
               <FormField control={form.control} name="agree" render={({ field }) => (
                   <FormItem className="space-y-0">

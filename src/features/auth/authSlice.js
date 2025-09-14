@@ -178,3 +178,4 @@ export const selectCurrentToken = (state) => state.auth.token;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAuthLoading = (state) => state.auth.isLoading;
 export const selectAuthError = (state) => state.auth.error;
+export const selectIsProfileComplete = (state) => state.auth.user?.isProfileComplete ?? true; // Default to true for existing users
