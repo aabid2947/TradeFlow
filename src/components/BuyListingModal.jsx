@@ -72,7 +72,7 @@ const BuyListingModal = ({ listing, trigger }) => {
 
   const handleAmountChange = (value) => {
     const numValue = Number(value)
-    if (numValue >= listing.minLimit && numValue <= listing.maxLimit && numValue <= listing.funTokenAmount) {
+    if (numValue >= listing.minLimit && numValue <= listing.maxLimit && numValue <= (listing.remainingTokens || listing.funTokenAmount)) {
       setBuyAmount(value)
     } else if (value === '') {
       setBuyAmount('')
@@ -298,7 +298,7 @@ const BuyListingModal = ({ listing, trigger }) => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-600">Available:</span>
-                <span className="font-medium text-zinc-900">{listing.funTokenAmount.toLocaleString()} FUN</span>
+                <span className="font-medium text-zinc-900">{(listing.remainingTokens || listing.funTokenAmount).toLocaleString()} FUN</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-600">Price per Token:</span>
@@ -306,7 +306,7 @@ const BuyListingModal = ({ listing, trigger }) => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-600">Limit:</span>
-                <span className="font-medium text-zinc-900">{listing.minLimit} - {listing.maxLimit} FUN</span>
+                <span className="font-medium text-zinc-900">{listing.minLimit} - {Math.min(listing.maxLimit, listing.remainingTokens || listing.funTokenAmount)} FUN</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <span className="text-zinc-600">Payment Methods:</span>
@@ -345,10 +345,10 @@ const BuyListingModal = ({ listing, trigger }) => {
               id="buyAmount"
               type="number"
               min={listing.minLimit}
-              max={Math.min(listing.maxLimit, listing.funTokenAmount)}
+              max={Math.min(listing.maxLimit, listing.remainingTokens || listing.funTokenAmount)}
               value={buyAmount}
               onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder={`Enter amount (${listing.minLimit} - ${Math.min(listing.maxLimit, listing.funTokenAmount)})`}
+              placeholder={`Enter amount (${listing.minLimit} - ${Math.min(listing.maxLimit, listing.remainingTokens || listing.funTokenAmount)})`}
               className="bg-white border-zinc-300 text-zinc-900 placeholder-zinc-500 focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-base"
             />
             {buyAmount && (

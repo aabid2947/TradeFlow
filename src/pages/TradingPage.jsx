@@ -142,10 +142,10 @@ const TradingPage = () => {
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
                         <div className="font-semibold text-zinc-900 text-sm">
-                            {listing.funTokenAmount.toLocaleString()} FUN
+                            {listing.remainingTokens?.toLocaleString() || listing.funTokenAmount.toLocaleString()} FUN
                         </div>
                         <div className="text-xs text-zinc-600">
-                            {listing.minLimit}-{listing.maxLimit} FUN
+                            {listing.minLimit}-{Math.min(listing.maxLimit, listing.remainingTokens || listing.funTokenAmount)} FUN available
                         </div>
                     </div>
                     
@@ -236,10 +236,10 @@ const TradingPage = () => {
                 {/* Amount & Limit */}
                 <div className="text-right space-y-1 flex-shrink-0">
                     <div className="font-semibold text-zinc-900 group-hover:text-zinc-900 transition-colors">
-                        {listing.funTokenAmount.toLocaleString()} FUN
+                        {listing.remainingTokens?.toLocaleString() || listing.funTokenAmount.toLocaleString()} FUN
                     </div>
                     <div className="text-sm text-zinc-600 group-hover:text-zinc-700 transition-colors">
-                        {listing.minLimit}-{listing.maxLimit} FUN
+                        {listing.minLimit}-{Math.min(listing.maxLimit, listing.remainingTokens || listing.funTokenAmount)} FUN available
                     </div>
                 </div>
 
