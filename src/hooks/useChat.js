@@ -7,7 +7,10 @@ import {
   onSnapshot, 
   serverTimestamp,
   doc,
-  setDoc
+  setDoc,
+  limit,
+  startAfter,
+  getDocs
 } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import { db, generateChatId } from '../config/firebase';
@@ -24,6 +27,10 @@ export const useChat = (otherUserId) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [optimisticMessages, setOptimisticMessages] = useState([]);
   
   const currentUser = useSelector(selectCurrentUser);
   const currentUserId = currentUser?._id;
@@ -37,7 +44,9 @@ export const useChat = (otherUserId) => {
   // Generate deterministic chat ID
   const chatId = currentUserId && otherUserId ? generateChatId(currentUserId, otherUserId) : null;
 
-  // Real-time message listener
+  const MESSAGES_PER_PAGE = 20;
+
+  // Real-time message listener for recent messages
   useEffect(() => {
     if (!chatId) {
       setLoading(false);
@@ -50,9 +59,9 @@ export const useChat = (otherUserId) => {
     setConnectionStatus('connecting');
 
     try {
-      // Create query for messages in this chat
+      // Create query for recent messages in this chat (descending order)
       const messagesRef = collection(db, 'chats', chatId, 'messages');
-      const q = query(messagesRef, orderBy('timestamp', 'asc'));
+      const q = query(messagesRef, orderBy('timestamp', 'desc'), limit(MESSAGES_PER_PAGE));
 
       // Subscribe to real-time updates
       const unsubscribe = onSnapshot(
@@ -67,7 +76,14 @@ export const useChat = (otherUserId) => {
               timestamp: doc.data().timestamp?.toDate() || new Date()
             });
           });
-          setMessages(messageList);
+          
+          // Store last visible document for pagination
+          const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+          setLastVisible(lastDoc);
+          setHasMoreMessages(snapshot.docs.length === MESSAGES_PER_PAGE);
+          
+          // Reverse to show chronological order (oldest first)
+          setMessages(messageList.reverse());
           setLoading(false);
           setConnectionStatus('connected');
           setError(null);
@@ -103,13 +119,79 @@ export const useChat = (otherUserId) => {
     }
   }, [chatId]);
 
-  // Send message function
+  // Load older messages (pagination)
+  const loadOlderMessages = useCallback(async () => {
+    if (!chatId || !lastVisible || !hasMoreMessages || loadingOlder) {
+      return;
+    }
+
+    setLoadingOlder(true);
+    
+    try {
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      const q = query(
+        messagesRef, 
+        orderBy('timestamp', 'desc'), 
+        startAfter(lastVisible), 
+        limit(MESSAGES_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        setHasMoreMessages(false);
+        setLoadingOlder(false);
+        return;
+      }
+
+      const olderMessages = [];
+      snapshot.forEach((doc) => {
+        olderMessages.push({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: doc.data().timestamp?.toDate() || new Date()
+        });
+      });
+
+      // Update last visible for next pagination
+      const newLastDoc = snapshot.docs[snapshot.docs.length - 1];
+      setLastVisible(newLastDoc);
+      setHasMoreMessages(snapshot.docs.length === MESSAGES_PER_PAGE);
+
+      // Prepend older messages (reverse to maintain chronological order)
+      setMessages(prev => [...olderMessages.reverse(), ...prev]);
+      
+    } catch (error) {
+      console.error('Error loading older messages:', error);
+      setLoading(false);
+      setConnectionStatus('error');
+      setError('Failed to load older messages');
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [chatId, lastVisible, hasMoreMessages, loadingOlder]);
+
+  // Send message function with optimistic updates
   const sendMessage = useCallback(async (text, messageType = 'text') => {
     if (!chatId || !currentUserId || !otherUserId || !text.trim()) {
       return;
     }
 
-    setSending(true);
+    // Create optimistic message
+    const optimisticMessage = {
+      id: `temp_${Date.now()}`,
+      senderId: currentUserId,
+      receiverId: otherUserId,
+      text: text.trim(),
+      messageType,
+      timestamp: new Date(),
+      isRead: false,
+      isOptimistic: true
+    };
+
+    // Add optimistic message immediately to UI
+    setOptimisticMessages(prev => [...prev, optimisticMessage]);
+
     setError(null);
 
     try {
@@ -125,6 +207,11 @@ export const useChat = (otherUserId) => {
       // 1. Add message to Firestore for real-time updates
       const messagesRef = collection(db, 'chats', chatId, 'messages');
       const docRef = await addDoc(messagesRef, messageData);
+
+      // Remove optimistic message when real message arrives
+      setOptimisticMessages(prev => 
+        prev.filter(msg => msg.id !== optimisticMessage.id)
+      );
 
       // 2. Also store in backend for reference using RTK Query (fire and forget)
       try {
@@ -144,12 +231,19 @@ export const useChat = (otherUserId) => {
       return docRef.id;
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove failed optimistic message
+      setOptimisticMessages(prev => 
+        prev.filter(msg => msg.id !== optimisticMessage.id)
+      );
       setError(error.message);
       throw error;
-    } finally {
-      setSending(false);
     }
   }, [chatId, currentUserId, otherUserId, currentUser?.token]);
+
+  // Combine real messages with optimistic messages
+  const allMessages = [...messages, ...optimisticMessages].sort((a, b) => 
+    new Date(a.timestamp) - new Date(b.timestamp)
+  );
 
   // Mark messages as read (optional)
   const markAsRead = useCallback(async (messageIds) => {
@@ -170,13 +264,13 @@ export const useChat = (otherUserId) => {
 
   // Get unread count
   const getUnreadCount = useCallback(() => {
-    return messages.filter(msg => 
+    return allMessages.filter(msg => 
       msg.receiverId === currentUserId && !msg.isRead
     ).length;
-  }, [messages, currentUserId]);
+  }, [allMessages, currentUserId]);
 
   return {
-    messages,
+    messages: allMessages,
     loading,
     sending,
     error,
@@ -184,7 +278,10 @@ export const useChat = (otherUserId) => {
     sendMessage,
     markAsRead,
     getUnreadCount,
-    chatId
+    chatId,
+    loadOlderMessages,
+    loadingOlder,
+    hasMoreMessages
   };
 };
 

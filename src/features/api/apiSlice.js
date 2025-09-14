@@ -229,6 +229,14 @@ export const apiSlice = createApi({
       providesTags: (result, error, tradeId) => [{ type: 'Trade', id: tradeId }],
     }),
 
+    acceptTrade: builder.mutation({
+      query: (tradeId) => ({
+        url: `/trades/${tradeId}/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, tradeId) => [{ type: 'Trade', id: tradeId }],
+    }),
+
     confirmPayment: builder.mutation({
       query: (tradeId) => ({
         url: `/trades/${tradeId}/confirm-payment`,
@@ -404,6 +412,7 @@ export const {
   // Trade hooks
   useInitiateTradeMutation,
   useGetTradeDetailsQuery,
+  useAcceptTradeMutation,
   useConfirmPaymentMutation,
   useCompleteTradeMutation,
   useGetUserTradesQuery,

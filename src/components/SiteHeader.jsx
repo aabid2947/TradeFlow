@@ -28,6 +28,7 @@ function DesktopNav({ className, isAuthenticated }) {
     { path: '/about', label: 'About us' },
     ...(isAuthenticated ? [
       { path: '/dashboard', label: 'Dashboard' },
+      { path: '/trades', label: 'My Trades' },
       { path: '/chat', label: 'Chat' }
     ] : [])
   ];
@@ -113,6 +114,7 @@ function MobileNav({ isAuthenticated, currentUser, handleLogout, setMobileOpen }
     { path: '/about', label: 'About us' },
     ...(isAuthenticated ? [
       { path: '/dashboard', label: 'Dashboard' },
+      { path: '/trades', label: 'My Trades' },
       { path: '/chat', label: 'Chat' }
     ] : [])
   ];
@@ -147,6 +149,18 @@ function MobileNav({ isAuthenticated, currentUser, handleLogout, setMobileOpen }
       
       {isAuthenticated ? (
         <div className="flex flex-col gap-2">
+          <Link 
+            to="/trades" 
+            className={cn(
+              "text-sm font-semibold py-3 px-4 rounded-lg transition-all duration-300",
+              location.pathname === '/trades'
+                ? "text-amber-600 bg-amber-50"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+            )}
+            onClick={() => setMobileOpen(false)}
+          >
+            My Trades
+          </Link>
           <Link 
             to="/profile" 
             className={cn(
@@ -307,6 +321,18 @@ export function SiteHeader() {
                         onClick={() => setUserMenuOpen(false)}
                       >
                         Dashboard
+                      </Link>
+                      <Link
+                        to="/trades"
+                        className={cn(
+                          "block px-4 py-3 text-sm font-['Inter',sans-serif] font-medium transition-all duration-200 rounded-lg mx-2",
+                          location.pathname === '/trades'
+                            ? "text-amber-600 bg-amber-50"
+                            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                        )}
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        My Trades
                       </Link>
                       <Link
                         to="/profile"

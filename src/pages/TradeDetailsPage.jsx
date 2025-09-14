@@ -18,6 +18,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { SiteHeader } from '../components/SiteHeader';
 import { 
   useGetTradeDetailsQuery, 
+  useAcceptTradeMutation,
   useConfirmPaymentMutation,
   useCompleteTradeMutation,
   useStartChatMutation
@@ -32,6 +33,7 @@ const TradeDetailsPage = () => {
   const { toast } = useToast();
   const currentUser = useSelector(selectCurrentUser);
   
+  const [isAccepting, setIsAccepting] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -44,6 +46,7 @@ const TradeDetailsPage = () => {
     refetchOnMountOrArgChange: true
   });
 
+  const [acceptTrade] = useAcceptTradeMutation();
   const [confirmPayment] = useConfirmPaymentMutation();
   const [completeTrade] = useCompleteTradeMutation();
   const [startChat] = useStartChatMutation();
@@ -125,7 +128,14 @@ const TradeDetailsPage = () => {
         text: 'Trade Initiated',
         color: 'text-blue-600',
         bgColor: 'bg-blue-500/10',
-        description: 'Waiting for buyer to confirm payment'
+        description: 'Waiting for seller to accept the trade request'
+      },
+      accepted: {
+        icon: CheckCircle,
+        text: 'Trade Accepted',
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-500/10',
+        description: 'Seller has accepted, waiting for buyer to confirm payment'
       },
       paid: {
         icon: DollarSign,
@@ -161,8 +171,30 @@ const TradeDetailsPage = () => {
 
   const statusConfig = getStatusConfig(trade.status);
 
+  const handleAcceptTrade = async () => {
+    if (!isSeller || trade.status !== 'pending') return;
+    
+    setIsAccepting(true);
+    try {
+      await acceptTrade(tradeId).unwrap();
+      toast({
+        title: "Trade Accepted",
+        description: "You have accepted the trade. The buyer can now proceed with payment.",
+        variant: "success"
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.data?.message || "Failed to accept trade",
+        variant: "destructive"
+      });
+    }
+    setIsAccepting(false);
+  };
+
   const handleConfirmPayment = async () => {
-    if (!isBuyer || trade.status !== 'pending') return;
+    if (!isBuyer || trade.status !== 'accepted') return;
     
     setIsConfirming(true);
     try {
@@ -308,7 +340,7 @@ const TradeDetailsPage = () => {
               </Card>
 
               {/* Action Cards */}
-              {trade.status === 'pending' && isBuyer && (
+              {trade.status === 'accepted' && isBuyer && (
                 <Card className="bg-white border border-blue-200 rounded-lg shadow-md shadow-blue-300/50 hover:shadow-lg hover:shadow-blue-400/60 transition-all duration-300 group">
                   <CardContent className="p-8">
                     <div className="flex items-start gap-6">
@@ -330,6 +362,43 @@ const TradeDetailsPage = () => {
                         >
                           {isConfirming ? "Confirming..." : "Confirm Payment Sent"}
                         </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {trade.status === 'pending' && isSeller && (
+                <Card className="bg-white border border-amber-200 rounded-lg shadow-md shadow-amber-300/50 hover:shadow-lg hover:shadow-amber-400/60 transition-all duration-300 group">
+                  <CardContent className="p-8">
+                    <div className="flex items-start gap-6">
+                      <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center group-hover:bg-amber-500/20 group-hover:shadow-lg group-hover:shadow-amber-500/20 transition-all duration-300">
+                        <CheckCircle className="h-8 w-8 text-amber-500" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-amber-900 mb-3">
+                          Accept Trade Request
+                        </h3>
+                        <p className="text-amber-700 leading-relaxed mb-6">
+                          A buyer has initiated a trade with you. Please review the trade details 
+                          and accept to allow the buyer to proceed with payment.
+                        </p>
+                        <div className="flex gap-4">
+                          <Button 
+                            onClick={handleAcceptTrade}
+                            disabled={isAccepting}
+                            className="bg-amber-500 hover:bg-amber-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20"
+                          >
+                            {isAccepting ? "Accepting..." : "Accept Trade"}
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 font-medium px-6 py-3 rounded-lg transition-all duration-300"
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Decline Trade
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
