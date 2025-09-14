@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../config/firebase";
-import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  createUserWithEmailAndPassword, 
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword,
   sendEmailVerification
 } from "firebase/auth";
 import { useForm } from "react-hook-form";
@@ -19,12 +19,9 @@ import { Checkbox } from "../components/ui/checkbox";
 import { useToast } from "../hooks/use-toast";
 import { useRegisterMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
 import { setCredentials } from "../features/auth/authSlice";
+import logo from "../assets/favicon.svg";
 
 const schema = z.object({
-  username: z.string()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username cannot exceed 30 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string()
     .min(8, "Password must be at least 8 characters")
@@ -42,20 +39,19 @@ export function SignUpForm() {
   const dispatch = useDispatch();
   const [register, { isLoading }] = useRegisterMutation();
   const [googleAuth, { isLoading: isGoogleLoading }] = useGoogleAuthMutation();
-  
+
   // Email verification state
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [isResendingEmail, setIsResendingEmail] = useState(false);
-  
+
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { 
-      username: "", 
-      email: "", 
-      password: "", 
+    defaultValues: {
+      email: "",
+      password: "",
       confirmPassword: "",
-      agree: false 
+      agree: false
     },
     mode: "onChange",
   });
@@ -87,22 +83,21 @@ export function SignUpForm() {
           variant: "destructive"
         });
       }
-      
+
       // Create user account in our backend
       const userData = {
-        username: values.username,
         email: values.email,
         password: values.password,
         firebaseUid: firebaseUser.uid,
         // Profile is incomplete since role is not selected during signup
       };
-      
+
       const result = await register(userData).unwrap();
-      
+
       // Show email verification message
       setUserEmail(values.email);
       setIsEmailSent(true);
-      
+
       toast({
         title: "Account created successfully!",
         description: "Please check your email and click the verification link to complete your registration.",
@@ -110,7 +105,7 @@ export function SignUpForm() {
     } catch (err) {
       console.error('Registration error:', err);
       let errorMessage = "Something went wrong";
-      
+
       if (err.code === 'auth/email-already-in-use') {
         errorMessage = "An account with this email already exists.";
       } else if (err.code === 'auth/weak-password') {
@@ -146,7 +141,7 @@ export function SignUpForm() {
           url: `${window.location.origin}/login?emailVerified=true`,
           handleCodeInApp: false,
         };
-        
+
         await sendEmailVerification(auth.currentUser, actionCodeSettings);
         toast({
           title: "Verification email sent",
@@ -162,13 +157,13 @@ export function SignUpForm() {
     } catch (error) {
       console.error('Error resending verification email:', error);
       let errorMessage = "Please try again later.";
-      
+
       if (error.code === 'auth/too-many-requests') {
         errorMessage = "Too many requests. Please wait a few minutes before trying again.";
       } else if (error.code === 'auth/user-token-expired') {
         errorMessage = "Session expired. Please sign up again.";
       }
-      
+
       toast({
         title: "Failed to resend email",
         description: errorMessage,
@@ -185,7 +180,7 @@ export function SignUpForm() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
       // Send user info to your backend for authentication
       const response = await googleAuth({
         email: user.email,
@@ -203,7 +198,7 @@ export function SignUpForm() {
         title: "Google Sign-Up Successful",
         description: `Welcome to TradeFlow, ${response.data.user.displayName || response.data.user.email}!`,
       });
-      
+
       // Check if profile is complete to decide where to redirect
       if (response.data.user.isProfileComplete) {
         navigate("/dashboard");
@@ -227,21 +222,24 @@ export function SignUpForm() {
         className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
         style={{
           background: `
-            linear-gradient(135deg, #000 0%, #050505 50%, #0a0a0a 100%),
-            radial-gradient(ellipse at 20% 80%, rgba(20, 40, 80, 0.05) 0%, transparent 70%),
-            radial-gradient(ellipse at 80% 20%, rgba(30, 60, 120, 0.03) 0%, transparent 80%),
-            radial-gradient(circle at 70% 30%, rgba(50, 80, 140, 0.02) 0%, transparent 85%),
-            radial-gradient(circle at 30% 70%, rgba(80, 120, 200, 0.015) 0%, transparent 90%)
-          `,
-          backgroundSize: '100% 100%, 100% 100%, 200% 200%, 200% 200%, 300% 300%',
-          animation: 'gradientShift 25s ease-in-out infinite'
+      radial-gradient(ellipse at 20% 80%, rgba(40, 40, 80, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(30, 60, 120, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, #050505 0%, #0a0a15 25%, #101020 50%, #0a0a15 75%, #000 100%),
+      radial-gradient(circle at 70% 30%, rgba(50, 80, 140, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 30% 70%, rgba(80, 120, 200, 0.05) 0%, transparent 60%)
+    `,
+          backgroundSize: '100% 100%, 100% 100%, 100% 100%, 200% 200%, 200% 200%',
+          animation: 'gradientShift 20s ease-in-out infinite'
         }}
       >
         <div className="w-full max-w-md">
           {/* Logo */}
-          <div className="text-left mb-8">
-            <h1 className="text-white text-xl font-normal">TradeFlow</h1>
-          </div>
+              <div className="text-left flex flex-row mb-8 gap-3 items-center">
+                    <img src={logo}  alt="TradeFlow Logo" />
+                    <h1 className="text-white text-xl font-semibold font-sans">TradeFlow</h1>
+          
+                  </div>
+          
 
           {/* Email Verification Card */}
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
@@ -267,7 +265,7 @@ export function SignUpForm() {
 
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
               <p className="text-blue-300 text-sm">
-                Please check your email and click the verification link to activate your account. 
+                Please check your email and click the verification link to activate your account.
                 You may need to check your spam folder.
               </p>
               {import.meta.env.NODE_ENV === 'development' && (
@@ -334,25 +332,28 @@ export function SignUpForm() {
   }
 
   return (
-<div
-  className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-  style={{
-    background: `
-      linear-gradient(135deg, #000 0%, #050505 50%, #0a0a0a 100%),
-      radial-gradient(ellipse at 20% 80%, rgba(20, 40, 80, 0.05) 0%, transparent 70%),
-      radial-gradient(ellipse at 80% 20%, rgba(30, 60, 120, 0.03) 0%, transparent 80%),
-      radial-gradient(circle at 70% 30%, rgba(50, 80, 140, 0.02) 0%, transparent 85%),
-      radial-gradient(circle at 30% 70%, rgba(80, 120, 200, 0.015) 0%, transparent 90%)
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        background: `
+      radial-gradient(ellipse at 20% 80%, rgba(40, 40, 80, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(30, 60, 120, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, #050505 0%, #0a0a15 25%, #101020 50%, #0a0a15 75%, #000 100%),
+      radial-gradient(circle at 70% 30%, rgba(50, 80, 140, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 30% 70%, rgba(80, 120, 200, 0.05) 0%, transparent 60%)
     `,
-    backgroundSize: '100% 100%, 100% 100%, 200% 200%, 200% 200%, 300% 300%',
-    animation: 'gradientShift 25s ease-in-out infinite'
-  }}
->
+        backgroundSize: '100% 100%, 100% 100%, 100% 100%, 200% 200%, 200% 200%',
+        animation: 'gradientShift 20s ease-in-out infinite'
+      }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-left mb-8">
-          <h1 className="text-white text-xl font-normal">TradeFlow</h1>
+           <div className="text-left flex flex-row mb-8 gap-3 items-center">
+          <img src={logo}  alt="TradeFlow Logo" />
+          <h1 className="text-white text-xl font-semibold font-sans">TradeFlow</h1>
+
         </div>
+
 
         {/* SignUp Card */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
@@ -369,78 +370,64 @@ export function SignUpForm() {
           {/* Form */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="username" render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input 
-                        type="text" 
-                        placeholder="Username" 
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-              )}/>
-              
               <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="Email" 
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-              )}/>
-              
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem className="mb-2">
                   <FormControl>
-                    <PasswordInput 
-                      placeholder="Password" 
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                      {...field} 
+                    <PasswordInput
+                      placeholder="Password"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      {...field}
                     />
                   </FormControl>
                   <p className="mt-1 text-xs text-gray-500">Use 8+ characters with letters and numbers.</p>
                   <FormMessage className="text-red-400" />
                 </FormItem>
-            )}/>
-              
+              )} />
+
               <FormField control={form.control} name="confirmPassword" render={({ field }) => (
                 <FormItem className="mb-2">
                   <FormControl>
-                    <PasswordInput 
-                      placeholder="Confirm Password" 
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                      {...field} 
+                    <PasswordInput
+                      placeholder="Confirm Password"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
-            )}/>
-              
+              )} />
+
               <FormField control={form.control} name="agree" render={({ field }) => (
-                  <FormItem className="space-y-0">
-                    <div className="flex items-start gap-3 mb-6">
-                      <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                      <div className="text-sm text-gray-400">
-                        I have read and agree to TradeFlow's{" "}
-                        <Link to="#" className="text-gray-300 hover:text-gray-100 transition-colors underline">Terms of Service</Link>{" "}
-                        &{" "}
-                        <Link to="#" className="text-gray-300 hover:text-gray-100 transition-colors underline">Privacy Policy</Link>.
-                      </div>
+                <FormItem className="space-y-0">
+                  <div className="flex items-start gap-3 mb-6">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="text-sm text-gray-400">
+                      I have read and agree to TradeFlow's{" "}
+                      <Link to="#" className="text-gray-300 hover:text-gray-100 transition-colors underline">Terms of Service</Link>{" "}
+                      &{" "}
+                      <Link to="#" className="text-gray-300 hover:text-gray-100 transition-colors underline">Privacy Policy</Link>.
                     </div>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-              )}/>
-              
+                  </div>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )} />
+
               {/* Sign Up Button */}
               <button
                 type="submit"

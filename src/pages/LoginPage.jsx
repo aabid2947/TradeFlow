@@ -13,7 +13,7 @@ import { PasswordInput } from "../components/ui/password-input";
 import { useToast } from "../hooks/use-toast";
 import { useLoginMutation, useGoogleAuthMutation } from "../features/api/apiSlice";
 import { setCredentials } from "../features/auth/authSlice";
-
+import logo from "../assets/favicon.svg";
 const schema = z.object({
   identifier: z.string().min(1, "Email or username is required"),
   password: z.string().min(1, "Password is required"),
@@ -166,8 +166,10 @@ export function LoginForm() {
 
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-left mb-8">
-          <h1 className="text-white text-xl font-normal">TradeFlow</h1>
+        <div className="text-left flex flex-row mb-8 gap-3 items-center">
+          <img src={logo}  alt="TradeFlow Logo" />
+          <h1 className="text-white text-xl font-semibold font-sans">TradeFlow</h1>
+
         </div>
 
         {/* Login Card */}
