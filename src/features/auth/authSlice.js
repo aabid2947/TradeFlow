@@ -106,6 +106,8 @@ const authSlice = createSlice({
     updateUser: (state, action) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload }
+        // Update localStorage with the new user data
+        localStorage.setItem('user', JSON.stringify(state.user))
       }
     },
     
@@ -178,4 +180,12 @@ export const selectCurrentToken = (state) => state.auth.token;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAuthLoading = (state) => state.auth.isLoading;
 export const selectAuthError = (state) => state.auth.error;
-export const selectIsProfileComplete = (state) => state.auth.user?.isProfileComplete ?? true; // Default to true for existing users
+export const selectIsProfileComplete = (state) => {
+  // If user is not authenticated, return false
+  if (!state.auth.isAuthenticated || !state.auth.user) {
+    return false;
+  }
+  
+  // Return the actual isProfileComplete value from user object
+  return state.auth.user?.isProfileComplete ?? false;
+};

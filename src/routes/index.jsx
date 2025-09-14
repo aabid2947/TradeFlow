@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated, selectAuthLoading, selectIsProfileComplete } from "../features/auth/authSlice";
+import AuthDebugger from "../components/AuthDebugger.jsx";
 import PublicRoutes from "./PublicRoutes.jsx";
 import ProtectedRoutes from "./ProtectedRoutes.jsx";
 import ProtectedAdminRoutes from "./ProtectedAdminRoutes.jsx";
@@ -24,9 +25,10 @@ const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLoading = useSelector(selectAuthLoading);
   const isProfileComplete = useSelector(selectIsProfileComplete);
+  const user = useSelector(state => state.auth.user);
 
-  // Show loading while authenticating
-  if (isLoading) {
+  // Show loading while authenticating OR while we have a token but no user data yet
+  if (isLoading || (isAuthenticated && !user)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -35,17 +37,19 @@ const AppRoutes = () => {
   }
 
   // Redirect authenticated users with incomplete profiles to onboarding
-  const shouldShowOnboarding = isAuthenticated && !isProfileComplete;
+  const shouldShowOnboarding = isAuthenticated && user && !isProfileComplete;
 
   return (
-    <Routes>
-      {/* Public pages accessible to everyone */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/home" element={<HomePage />} />
-      <Route path="/market" element={<TradingPage />} />
-      <Route path="/trading" element={<TradingPage />} />
-      <Route path="/news" element={<NewsPage />} />
-      <Route path="/about" element={<AboutPage />} />
+    <>
+      {/* <AuthDebugger /> */}
+      <Routes>
+        {/* Public pages accessible to everyone */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/market" element={<TradingPage />} />
+        <Route path="/trading" element={<TradingPage />} />
+        <Route path="/news" element={<NewsPage />} />
+        <Route path="/about" element={<AboutPage />} />
       
       {/* Authentication routes - only accessible when not logged in */}
       <Route path="/login" element={isAuthenticated ? (shouldShowOnboarding ? <OnboardingPage /> : <DashboardPage />) : <LoginPage />} />
@@ -75,6 +79,7 @@ const AppRoutes = () => {
       {/* Protected admin routes */}
       <Route path="/admin/*" element={<ProtectedAdminRoutes />} />
     </Routes>
+    </>
   );
 };
 

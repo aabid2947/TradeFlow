@@ -29,6 +29,28 @@ const BuyListingModal = ({ listing, trigger }) => {
   const userBalance = profileData?.['data'].user?.balances?.funToken || 0
   const totalCost = buyAmount ? Number(buyAmount) * listing.priceInFunToken : 0
   const shortfall = totalCost - userBalance
+
+  // Ensure Razorpay script is loaded
+  const ensureRazorpayLoaded = () => {
+    return new Promise((resolve, reject) => {
+      if (window.Razorpay) {
+        resolve(window.Razorpay)
+        return
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => {
+        if (window.Razorpay) {
+          resolve(window.Razorpay)
+        } else {
+          reject(new Error('Razorpay failed to load'))
+        }
+      }
+      script.onerror = () => reject(new Error('Failed to load Razorpay script'))
+      document.head.appendChild(script)
+    })
+  }
   
   useEffect(() => {
     if (buyAmount && totalCost > userBalance) {
@@ -93,10 +115,16 @@ const BuyListingModal = ({ listing, trigger }) => {
   const handleTopUpAndBuy = async () => {
     setIsProcessing(true)
     try {
+      // Ensure Razorpay is loaded
+      await ensureRazorpayLoaded()
+
       // Create Razorpay order for top-up
       const result = await createPaymentOrder({
         tokenAmount: topUpAmount
       }).unwrap()
+
+      // Close the dialog to prevent z-index conflicts with Razorpay
+      setOpen(false)
 
       // Initialize Razorpay payment
       const options = {
@@ -124,8 +152,30 @@ const BuyListingModal = ({ listing, trigger }) => {
             await refetchProfile()
             
             // Now proceed with the original purchase after a short delay
-            setTimeout(() => {
-              handleBuyDirect()
+            setTimeout(async () => {
+              try {
+                const tradeResult = await initiateTrade({
+                  listingId: listing._id,
+                  funTokenAmount: Number(buyAmount)
+                }).unwrap()
+                
+                toast({
+                  title: "Trade Initiated Successfully",
+                  description: "Your trade request has been sent to the seller.",
+                })
+                
+                // Navigate to the trade details page
+                if (tradeResult?.data?._id) {
+                  navigate(`/trades/${tradeResult.data._id}`)
+                }
+              } catch (tradeError) {
+                toast({
+                  title: "Trade Initiation Failed",
+                  description: tradeError.data?.message || "Failed to initiate trade after top-up",
+                  variant: "destructive",
+                })
+              }
+              setIsProcessing(false)
             }, 1000)
             
           } catch (verifyError) {
@@ -136,16 +186,22 @@ const BuyListingModal = ({ listing, trigger }) => {
               variant: "destructive",
             })
             setIsProcessing(false)
+            // Reopen the modal if payment verification fails
+            setTimeout(() => setOpen(true), 500)
           }
         },
         prefill: {
-          name: user?.firstName + ' ' + user?.lastName,
+          name: user?.firstName + ' ' + user?.lastName || user?.displayName || user?.email?.split('@')[0],
           email: user?.email,
         },
         theme: {
           color: '#059669'
         },
         modal: {
+          confirm_close: true,
+          backdrop_close: false,
+          escape: false,
+          handleback: false,
           ondismiss: function() {
             setIsProcessing(false)
             toast({
@@ -153,14 +209,37 @@ const BuyListingModal = ({ listing, trigger }) => {
               description: "You can try again when ready.",
               variant: "destructive",
             })
+            // Reopen the modal after a short delay
+            setTimeout(() => setOpen(true), 500)
           }
         }
       }
 
-      const rzp = new window.Razorpay(options)
-      rzp.open()
+      // Add a small delay to ensure the dialog is fully closed and DOM is ready
+      setTimeout(() => {
+        try {
+          const rzp = new window.Razorpay(options)
+          
+          // Remove any existing overlays that might interfere
+          document.querySelectorAll('[data-radix-popper-content-wrapper]').forEach(el => {
+            el.style.zIndex = '1'
+          })
+          
+          rzp.open()
+        } catch (rzpError) {
+          console.error('Razorpay initialization error:', rzpError)
+          toast({
+            title: "Payment Gateway Error",
+            description: "Failed to open payment window. Please try again.",
+            variant: "destructive",
+          })
+          setIsProcessing(false)
+          setOpen(true)
+        }
+      }, 300)
 
     } catch (error) {
+      console.error('Top-up error:', error)
       toast({
         title: "Error",
         description: error.data?.message || "Failed to initiate payment",

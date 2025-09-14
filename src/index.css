@@ -5,6 +5,18 @@
 button {
   cursor: pointer;
 }
+
+/* Razorpay modal z-index fix */
+.razorpay-overlay,
+.razorpay-modal {
+  z-index: 999999 !important;
+}
+
+/* Ensure Razorpay iframe is clickable */
+iframe[src*="razorpay"] {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
 /* @custom-variant dark (&:is(.dark *)); */
 /* 
 @theme inline {
